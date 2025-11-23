@@ -15,6 +15,7 @@ add_executable(MFCMusicPlayer WIN32
     MFCMusicPlayer.cpp
     MFCMusicPlayerDlg.cpp
     MusicPlayer.cpp
+    LrcManagerWnd.cpp
     pch.cpp
     MFCMusicPlayer.rc
     res/MFCMusicPlayer.rc2
@@ -41,6 +42,7 @@ target_compile_definitions(MFCMusicPlayer
         UNICODE
         _UNICODE
         _AFXDLL
+        _BUILD_SYSTEM_CMAKE
         $<$<CONFIG:Debug>:_DEBUG>
         $<$<CONFIG:Release>:NDEBUG>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},X86>:WIN32>

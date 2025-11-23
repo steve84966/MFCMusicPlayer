@@ -36,6 +36,9 @@
     <ClInclude Include="MusicPlayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="LrcManagerWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMusicPlayer.cpp">
@@ -48,6 +51,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MusicPlayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LrcManagerWnd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

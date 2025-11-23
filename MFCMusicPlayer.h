@@ -8,6 +8,7 @@
 	#error "在包含此文件之前包含 'pch.h' 以生成 PCH"
 #endif
 
+#include "framework.h"
 #include "resource.h"		// 主符号
 
 
@@ -23,7 +24,7 @@ public:
 
 // 重写
 public:
-	virtual BOOL InitInstance();
+	BOOL InitInstance() override;
 
 // 实现
 

@@ -15,11 +15,17 @@
 #pragma comment(lib, "swresample.lib")
 
 // link xaudio2_9 dll
-
 #pragma comment(lib, "xaudio2.lib")
 
 // High DPI Patch
 #pragma comment(lib, "Shcore.lib")
+
+// Audio high priority patch
+#pragma comment(lib, "avrt.lib")
+
+// Direct2D
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
 
 // DbgHelp
 #pragma comment(lib, "dbghelp.lib")

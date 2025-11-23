@@ -36,7 +36,7 @@ class MusicPlayer
 	CString song_title = {};
 	CString song_artist = {};
 
-	CRITICAL_SECTION* audio_fifo_section;
+	CRITICAL_SECTION* audio_fifo_section{};
 	CRITICAL_SECTION* audio_playback_section;
 
 	IXAudio2* xaudio2 = nullptr;
@@ -71,12 +71,12 @@ class MusicPlayer
 	static int read_func_wrapper(void* opaque, uint8_t* buf, int buf_size);
 	int64_t seek_func(int64_t offset, int whence);
 	static int64_t seek_func_wrapper(void* opaque, int64_t offset, int whence);
-	int load_audio_context(CString audio_filename, CString file_extension = CString());
-	int load_audio_context_stream(CFile* file_stream);
+	int load_audio_context(const CString& audio_filename, const CString& file_extension_in = CString());
+	int load_audio_context_stream(CFile* in_file_stream);
 	void release_audio_context();
 	void reset_audio_context();
 	bool is_audio_context_initialized();
-	HBITMAP decode_id3_album_art(const int stream_index, int scale_size = 128);
+	HBITMAP decode_id3_album_art(int stream_index, int scale_size = 128);
 	void read_metadata();
 
 	// playback area
@@ -125,7 +125,7 @@ public:
 	// Interfaces
 	bool IsInitialized();
 	bool IsPlaying();
-	void OpenFile(CString fileName, CString file_extension = CString());
+	void OpenFile(const CString& fileName, const CString& file_extension_in = CString());
 	float GetMusicTimeLength();
 	CString GetSongTitle();
 	CString GetSongArtist();
@@ -137,12 +137,5 @@ public:
 
 	// destructor
 	~MusicPlayer();
-	static inline float GetSystemDpiScale()
-	{
-		HDC hdc = ::GetDC(NULL);
-		int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-		::ReleaseDC(NULL, hdc);
-		return dpiX / 96.0f;
-	}
 };
 

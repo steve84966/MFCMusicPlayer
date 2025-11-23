@@ -28,7 +28,7 @@ public:
 #endif
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV 支持
 
 	// 实现
 protected:
@@ -65,6 +65,7 @@ void CMFCMusicPlayerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ALBUMART, m_labelAlbumArt);
 	DDX_Control(pDX, IDC_SLIDERPROGRESS, m_sliderProgress);
 	DDX_Control(pDX, IDC_SLIDERVOLUMECTRL, m_sliderVolumeCtrl);
+	DDX_Control(pDX, IDC_BUTTONTRANSLATION, m_buttonTranslation);
 }
 
 BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
@@ -98,12 +99,12 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != nullptr)
+	if (CMenu* pSysMenu = GetSystemMenu(FALSE); pSysMenu != nullptr)
 	{
 		BOOL bNameValid;
 		CString strAboutMenu;
 		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+		UNREFERENCED_PARAMETER(bNameValid); // supress warning
 		ASSERT(bNameValid);
 		if (!strAboutMenu.IsEmpty())
 		{
@@ -121,6 +122,10 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_sliderProgress.SetRangeMax(1000);
 	m_sliderVolumeCtrl.SetRangeMax(100);
 	m_sliderVolumeCtrl.SetPos(100);
+
+	lrc_manager_wnd.SubclassDlgItem(IDC_LRCDISPLAY, this);
+
+	m_buttonTranslation.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -178,15 +183,20 @@ HCURSOR CMFCMusicPlayerDlg::OnQueryDragIcon()
 void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CFileDialog dlg(TRUE, NULL, NULL,
-		OFN_FILEMUSTEXIST,
-		_T("Music Files (*.mp3;*.wav;*.flac;*.aac;*.ogg)|*.mp3;*.wav;*.flac;*.aac;*.ogg||"));
+	CFileDialog dlg(TRUE, NULL, NULL, // NOLINT(*-use-nullptr)
+	                OFN_FILEMUSTEXIST,
+	                _T("Music Files (*.mp3;*.wav;*.flac;*.aac;*.ogg)|*.mp3;*.wav;*.flac;*.aac;*.ogg||"));
 	if (dlg.DoModal() == IDOK)
 	{
 		CString path = dlg.GetPathName();   // Full path
 		CString file = dlg.GetFileName();   // File name only
 		CString ext = dlg.GetFileExt();    // Extension
 		CString dir = dlg.GetFolderPath(); // Directory
+
+		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
+		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
+		int result = lrc_manager_wnd.InitLrcControllerWithFile(lrc_file);
+		ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
 
 		if (music_player) {
 			// immediate stop playing
@@ -240,42 +250,40 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 	}
 }
 
-LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam)
+LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
 	// TODO: 在此添加控件通知处理程序代码
 	return 0;
 }
 
-LRESULT CMFCMusicPlayerDlg::OnPlayerPause(WPARAM wParam, LPARAM lParam)
+LRESULT CMFCMusicPlayerDlg::OnPlayerPause(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
 	return LRESULT();
 }
 
-LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam)
+LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
 	return LRESULT();
 }
 
 LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 {
-	HBITMAP album_art = reinterpret_cast<HBITMAP>(wParam);
-	if (album_art) {
+	if (HBITMAP album_art = reinterpret_cast<HBITMAP>(wParam)) {  // NOLINT(*-use-auto)
 		m_labelAlbumArt.SetBitmap(album_art);
 	}
 	else {
 		HBITMAP no_image = ::LoadBitmap(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_NOIMAGE));
-		float aspect_ratio = MusicPlayer::GetSystemDpiScale();
-		if (fabs(aspect_ratio - 1.0f) > 1e-6) {
-			HDC hScreenDC = ::GetDC(NULL);
+		if (float aspect_ratio = GetSystemDpiScale(); fabs(aspect_ratio - 1.0f) > 1e-6) {
+			HDC hScreenDC = ::GetDC(NULL); // NOLINT(*-use-nullptr)
 			HDC hSrcDC = ::CreateCompatibleDC(hScreenDC);
 			HDC hDstDC = ::CreateCompatibleDC(hScreenDC);
 
-			HBITMAP hOldSrcBmp = (HBITMAP)::SelectObject(hSrcDC, no_image);
-			HBITMAP hScaledBitmap = ::CreateCompatibleBitmap(hScreenDC, 160 * aspect_ratio, 160 * aspect_ratio);
-			HBITMAP hOldDstBmp = (HBITMAP)::SelectObject(hDstDC, hScaledBitmap);
+			HBITMAP hOldSrcBmp = (HBITMAP)::SelectObject(hSrcDC, no_image); // NOLINT(*-use-auto)
+			HBITMAP hScaledBitmap = ::CreateCompatibleBitmap(hScreenDC, static_cast<int>(160 * aspect_ratio), static_cast<int>(160 * aspect_ratio));
+			HBITMAP hOldDstBmp = (HBITMAP)::SelectObject(hDstDC, hScaledBitmap); // NOLINT(*-use-auto)
 			::SetStretchBltMode(hDstDC, HALFTONE); // Better quality
 			::StretchBlt(
-				hDstDC, 0, 0, 160 * aspect_ratio, 160 * aspect_ratio,
+				hDstDC, 0, 0, static_cast<int>(160 * aspect_ratio), static_cast<int>(160 * aspect_ratio),
 				hSrcDC, 0, 0, 160, 160,
 				SRCCOPY
 			);
@@ -283,7 +291,7 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 			::SelectObject(hDstDC, hOldDstBmp);
 			::DeleteDC(hSrcDC);
 			::DeleteDC(hDstDC);
-			::ReleaseDC(NULL, hScreenDC);
+			::ReleaseDC(nullptr, hScreenDC);
 			m_labelAlbumArt.SetBitmap(hScaledBitmap);
 		}
 		else {
@@ -296,12 +304,12 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) 
 {
 	static CString prev_timeStr = _T("");
-	UINT32 raw = static_cast<UINT32>(wParam);
+	UINT32 raw = static_cast<UINT32>(wParam); // NOLINT(*-use-auto)
 	float time = *reinterpret_cast<float*>(&raw);
 	float length = music_player->GetMusicTimeLength();
 	CString timeStr;
-	int min = int(time) / 60, sec = int(time) % 60;
-	timeStr.Format(_T("%02d:%02d / %02d:%02d"), min, sec, int(length) / 60, int(length) % 60);
+	int min = static_cast<int>(time) / 60, sec = static_cast<int>(time) % 60;
+	timeStr.Format(_T("%02d:%02d / %02d:%02d"), min, sec, static_cast<int>(length) / 60, static_cast<int>(length) % 60);
 	if (timeStr.Compare(prev_timeStr) != 0) {
 		m_labelTime.SetWindowText(timeStr);
 		prev_timeStr = timeStr;
@@ -309,6 +317,9 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	// set slider
 	float ratio = time / length;
 	m_sliderProgress.SetPos(static_cast<int>(ratio * 1000));
+
+	// re-post message to LrcManagerWnd
+	lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
 	return LRESULT();
 }
 
@@ -321,9 +332,7 @@ void CMFCMusicPlayerDlg::OnClose()
 void CMFCMusicPlayerDlg::DestroyMediaPlayer()
 {
 	// TODO: 在此处添加实现代码.
-	if (music_player) {
-		delete music_player;
-	}
+	delete music_player;
 }
 
 void CMFCMusicPlayerDlg::OnCancel()
@@ -339,7 +348,7 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 		// volume change event
 		int iMasterVolume = m_sliderVolumeCtrl.GetPos();
 		if (music_player) {
-			music_player->SetMasterVolume(iMasterVolume / 100.0f);
+			music_player->SetMasterVolume(static_cast<float>(iMasterVolume) / 100.0f);
 		}
 	}
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);

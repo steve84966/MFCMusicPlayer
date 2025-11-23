@@ -5,13 +5,14 @@
 #pragma once
 
 #include "MusicPlayer.h"
+#include "LrcManagerWnd.h"
 
 // CMFCMusicPlayerDlg 对话框
 class CMFCMusicPlayerDlg : public CDialogEx
 {
 // 构造
 public:
-	CMFCMusicPlayerDlg(CWnd* pParent = nullptr);	// 标准构造函数
+	explicit CMFCMusicPlayerDlg(CWnd* pParent = nullptr);	// 标准构造函数
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
@@ -19,7 +20,7 @@ public:
 #endif
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
+	void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV 支持
 
 
 // 实现
@@ -28,7 +29,7 @@ protected:
 	MusicPlayer* music_player;
 
 	// 生成的消息映射函数
-	virtual BOOL OnInitDialog();
+	BOOL OnInitDialog() override;
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
@@ -43,12 +44,14 @@ public:
 	afx_msg LRESULT OnPlayerStop(WPARAM wParam, LPARAM lParam);
 	LRESULT OnAlbumArtInit(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnClose();
+	afx_msg void OnCancel() override;
 	void DestroyMediaPlayer();
-	virtual void OnCancel();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
 	CStatic m_labelAlbumArt;
 	CSliderCtrl m_sliderProgress;
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	CSliderCtrl m_sliderVolumeCtrl;
+	CLrcManagerWnd lrc_manager_wnd;
+	CButton m_buttonTranslation;
 };

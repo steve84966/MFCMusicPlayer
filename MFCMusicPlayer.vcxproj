@@ -172,6 +172,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,6 +192,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="LrcManagerWnd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCMusicPlayer.h" />
     <ClInclude Include="MFCMusicPlayerDlg.h" />
@@ -200,6 +202,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LrcManagerWnd.cpp" />
     <ClCompile Include="MFCMusicPlayer.cpp" />
     <ClCompile Include="MFCMusicPlayerDlg.cpp" />
     <ClCompile Include="MusicPlayer.cpp" />

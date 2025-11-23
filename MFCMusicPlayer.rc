@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
+
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -53,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\MFCMusicPlayer.rc2""  // 非 Microsoft Visual C++ 编辑的资源\r\n"
-    "#include ""l.CHS\\afxres.rc""      // 标准组件\r\n"
+    "#include ""res\\MFCMusicPlayer.rc2""  // 闈?Microsoft Visual C++ 缂栬緫鐨勮祫婧?\n"
+    "#include ""l.CHS\\afxres.rc""      // 鏍囧噯缁勪欢\r\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 功能区和控制条资源\r\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 鍔熻兘鍖哄拰鎺у埗鏉¤祫婧?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -103,10 +104,13 @@ BEGIN
     PUSHBUTTON      "播放",IDC_BUTTONPLAY,7,163,30,30
     PUSHBUTTON      "停止",IDC_BUTTONSTOP,57,173,20,20
     PUSHBUTTON      "暂停",IDC_BUTTONPAUSE,37,173,20,20
-    CONTROL         "",IDC_SLIDERPROGRESS,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,148,306,15
+    CONTROL         "",IDC_SLIDERPROGRESS,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,7,148,305,15
     CONTROL         "",IDC_ALBUMART,"Static",SS_BITMAP,7,30,13,12
-    CONTROL         "",IDC_SLIDERVOLUMECTRL,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,263,173,50,20
+    CONTROL         "",IDC_SLIDERVOLUMECTRL,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,263,173,49,20
     ICON            IDI_ICONVOLUME,IDC_STATICVOLUMEICON,243,173,20,20
+    SCROLLBAR       IDC_SCROLLBARLRCVERTICAL,303,30,9,103,SBS_VERT
+    LTEXT           "",IDC_LRCDISPLAY,117,30,186,103
+    PUSHBUTTON      "译/あ",IDC_BUTTONTRANSLATION,77,173,20,20
 END
 
 
@@ -168,16 +172,19 @@ BEGIN
     IDD_MFCMUSICPLAYER_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 313
+        RIGHTMARGIN, 312
         VERTGUIDE, 37
         VERTGUIDE, 57
         VERTGUIDE, 77
         VERTGUIDE, 97
+        VERTGUIDE, 117
         VERTGUIDE, 243
         VERTGUIDE, 263
+        VERTGUIDE, 303
         TOPMARGIN, 7
         BOTTOMMARGIN, 193
         HORZGUIDE, 30
+        HORZGUIDE, 133
         HORZGUIDE, 148
         HORZGUIDE, 163
         HORZGUIDE, 173
@@ -219,7 +226,7 @@ IDB_NOIMAGE             BITMAP                  "res\\bitmap1.bmp"
 STRINGTABLE
 BEGIN
     IDS_ABOUTBOX            "关于 MFCMusicPlayer(&A)..."
-    IDS_CREDIT              "草木东"
+    IDS_CREDIT              "undefined, Zopiclone, Adam, 白菜叶_, 任行道, and anyone else who has contributed to this project / help test the program."
 END
 
 #endif    // 中文(简体，中国) resources
@@ -239,10 +246,10 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE 4, 2
-#include "res\MFCMusicPlayer.rc2"  // 非 Microsoft Visual C++ 编辑的资源
-#include "l.CHS\afxres.rc"      // 标准组件
+#include "res\MFCMusicPlayer.rc2"  // 闈?Microsoft Visual C++ 缂栬緫鐨勮祫婧?
+#include "l.CHS\afxres.rc"      // 鏍囧噯缁勪欢
 #if !defined(_AFXDLL)
-#include "l.CHS\afxribbon.rc"   // MFC 功能区和控制条资源
+#include "l.CHS\afxribbon.rc"   // MFC 鍔熻兘鍖哄拰鎺у埗鏉¤祫婧?
 #endif
 #endif
 

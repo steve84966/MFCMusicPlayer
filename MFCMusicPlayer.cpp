@@ -43,7 +43,7 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 	// Initialize COM module
 	if (FAILED(CoInitialize(nullptr)))
 	{
-		ATLTRACE("err: CoInitialize failed\n");
+		ATLTRACE("警告：COM 组件初始化失败，应用程序将意外终止。\n");
 		return FALSE;
 	}
 
@@ -66,7 +66,7 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 
 	// 创建 shell 管理器，以防对话框包含
 	// 任何 shell 树视图控件或 shell 列表视图控件。
-	CShellManager *pShellManager = new CShellManager;
+	CShellManager *pShellManager = new CShellManager; // NOLINT(*-use-auto)
 
 	// 激活“Windows Native”视觉管理器，以便在 MFC 控件中启用主题
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
@@ -82,28 +82,28 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 
 	CMFCMusicPlayerDlg dlg;
 	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
+
+	switch (INT_PTR nResponse = dlg.DoModal(); nResponse)
 	{
+	case IDOK: // NOLINT(*-branch-clone)
 		// TODO: 在此放置处理何时用
 		//  “确定”来关闭对话框的代码
-	}
-	else if (nResponse == IDCANCEL)
-	{
+		break;
+	case IDCANCEL:
 		// TODO: 在此放置处理何时用
 		//  “取消”来关闭对话框的代码
-	}
-	else if (nResponse == -1)
-	{
+		break;
+	case -1:
 		TRACE(traceAppMsg, 0, "警告: 对话框创建失败，应用程序将意外终止。\n");
 		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
+		break;
+	default:
+		break;
 	}
 
 	// 删除上面创建的 shell 管理器。
-	if (pShellManager != nullptr)
-	{
-		delete pShellManager;
-	}
+	delete pShellManager;
+
 
 #if !defined(_AFXDLL) && !defined(_AFX_NO_MFC_CONTROLS_IN_DIALOGS)
 	ControlBarCleanUp();
@@ -120,3 +120,10 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 	return FALSE;
 }
 
+float GetSystemDpiScale()
+{
+	HDC hdc = ::GetDC(nullptr);
+	int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+	::ReleaseDC(nullptr, hdc);
+	return static_cast<float>(dpiX) / 96.0f;
+}
