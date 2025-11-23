@@ -11,6 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
+#pragma warning (disable: 4996) // avoid msvc deprecated warning
 
 // CMFCMusicPlayerApp
 
@@ -21,13 +22,21 @@ END_MESSAGE_MAP()
 
 // CMFCMusicPlayerApp 构造
 
-CMFCMusicPlayerApp::CMFCMusicPlayerApp()
+CMFCMusicPlayerApp::CMFCMusicPlayerApp() : m_pRedirector(nullptr)
 {
 	// 支持重新启动管理器
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
 
 	// TODO: 在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
+	if (::AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE* unused;
+		if (freopen_s(&unused, "CONOUT$", "w", stdout)) {
+			_dup2(_fileno(stdout), 1);
+		}
+	}
+	m_pRedirector = new AtlTraceRedirect(stdout, false);
+	AtlTraceRedirect::SetAtlTraceRedirector(m_pRedirector);
 }
 
 
@@ -94,8 +103,8 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 		//  “取消”来关闭对话框的代码
 		break;
 	case -1:
-		TRACE(traceAppMsg, 0, "警告: 对话框创建失败，应用程序将意外终止。\n");
-		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
+		ATLTRACE("警告: 对话框创建失败，应用程序将意外终止。\n");
+		ATLTRACE("警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
 		break;
 	default:
 		break;
@@ -117,6 +126,7 @@ BOOL CMFCMusicPlayerApp::InitInstance()
 	// check mem leak
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	_CrtDumpMemoryLeaks();
+	delete m_pRedirector;
 	return FALSE;
 }
 

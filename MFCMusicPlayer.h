@@ -27,7 +27,7 @@ public:
 	BOOL InitInstance() override;
 
 // 实现
-
+	AtlTraceRedirect* m_pRedirector;
 	DECLARE_MESSAGE_MAP()
 };
 

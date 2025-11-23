@@ -898,7 +898,7 @@ void MusicPlayer::audio_decode_worker_thread()
 			 ? decoder_query_xaudio2_buffer_size()
 			 : 0
 			);
-		if (player_bufferes_queued < 4) {
+		if (player_bufferes_queued < 4 && *playback_state == audio_playback_state_playing) {
 			// buffer underrun, resume player thread to submit data immediately
 			ATLTRACE("info: xaudio2 buffers queued=%d, notify player thread to submit data\n", player_bufferes_queued);
 			SetEvent(frame_ready_event);

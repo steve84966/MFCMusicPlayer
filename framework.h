@@ -85,6 +85,7 @@ extern "C" {
 #include <crtdbg.h>
 #include <synchapi.h>
 #include <ShellScalingAPI.h>
+#include <io.h>
 #pragma endregion
 
 #pragma region Standard C++ Header Files
@@ -112,6 +113,10 @@ extern "C" {
 
 #pragma region DbgHelp Header
 #include <dbghelp.h>
+#pragma endregion
+
+#pragma region ATL Trace Redirect Header
+#include "AtlTraceRedirect.h"
 #pragma endregion
 
 #pragma region Modern Appearance

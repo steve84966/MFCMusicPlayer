@@ -3,6 +3,7 @@ project(MFCMusicPlayer LANGUAGES CXX)
 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_MFC_FLAG 2)
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
 
 find_package(FFMPEG REQUIRED)
 
@@ -16,6 +17,7 @@ add_executable(MFCMusicPlayer WIN32
     MFCMusicPlayerDlg.cpp
     MusicPlayer.cpp
     LrcManagerWnd.cpp
+    AtlTraceRedirect.cpp
     pch.cpp
     MFCMusicPlayer.rc
     res/MFCMusicPlayer.rc2
