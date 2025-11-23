@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\MFCMusicPlayer.rc2""  // 闈?Microsoft Visual C++ 缂栬緫鐨勮祫婧?\n"
-    "#include ""l.CHS\\afxres.rc""      // 鏍囧噯缁勪欢\r\n"
+    "#include ""res\\MFCMusicPlayer.rc2""  // 闂?Microsoft Visual C++ 缂傛牞绶惃鍕カ濠?\n"
+    "#include ""l.CHS\\afxres.rc""      // 閺嶅洤鍣紒鍕\r\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 鍔熻兘鍖哄拰鎺у埗鏉¤祫婧?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 閸旂喕鍏橀崠鍝勬嫲閹貉冨煑閺壜ょカ濠?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -89,9 +89,10 @@ CAPTION "关于 MFCMusicPlayer"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
-    LTEXT           "今日は魔法にかかったメイド",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "ささやかな晴れ舞台",IDC_STATIC,42,26,114,8
+    LTEXT           "MFCMusicPlayer (alpha build)",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "Open Source",IDC_STATIC,42,26,58,8
     DEFPUSHBUTTON   "确定",IDOK,113,41,50,14,WS_GROUP
+    CONTROL         "GitHub",IDC_MFCLINKGITHUB,"MfcLink",WS_TABSTOP,103,26,26,9
 END
 
 IDD_MFCMUSICPLAYER_DIALOG DIALOGEX 0, 0, 320, 200
@@ -167,6 +168,7 @@ BEGIN
         RIGHTMARGIN, 163
         TOPMARGIN, 7
         BOTTOMMARGIN, 55
+        HORZGUIDE, 24
     END
 
     IDD_MFCMUSICPLAYER_DIALOG, DIALOG
@@ -220,6 +222,30 @@ IDB_NOIMAGE             BITMAP                  "res\\bitmap1.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Dialog Info
+//
+
+IDD_ABOUTBOX DLGINIT
+BEGIN
+    IDC_MFCLINKGITHUB, 0x37c, 202, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
+0x2f3a, 0x672f, 0x7469, 0x7568, 0x2e62, 0x6f63, 0x2f6d, 0x756c, 0x6163, 
+0x3173, 0x3035, 0x3736, 0x2f30, 0x464d, 0x4d43, 0x7375, 0x6369, 0x6c50, 
+0x7961, 0x7265, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x3e6c, 
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 0x7869, 
+0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 
+0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 
+0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 
+0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -246,10 +272,10 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE 4, 2
-#include "res\MFCMusicPlayer.rc2"  // 闈?Microsoft Visual C++ 缂栬緫鐨勮祫婧?
-#include "l.CHS\afxres.rc"      // 鏍囧噯缁勪欢
+#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傛牞绶惃鍕カ濠?
+#include "l.CHS\afxres.rc"      // 閺嶅洤鍣紒鍕
 #if !defined(_AFXDLL)
-#include "l.CHS\afxribbon.rc"   // MFC 鍔熻兘鍖哄拰鎺у埗鏉¤祫婧?
+#include "l.CHS\afxribbon.rc"   // MFC 閸旂喕鍏橀崠鍝勬嫲閹貉冨煑閺壜ょカ濠?
 #endif
 #endif
 
