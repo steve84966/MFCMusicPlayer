@@ -27,8 +27,6 @@ class MusicPlayer
 	float elapsed_time = 0.0;
 	float length = 0.0f;
 	bool is_pause = false;
-	bool is_playing = false;
-	bool decode_in_background = false;
 	bool decoder_is_running = false;
 	int decoder_audio_channels = 0;
 	AVSampleFormat decoder_audio_sample_fmt = AV_SAMPLE_FMT_NONE;
@@ -63,10 +61,9 @@ class MusicPlayer
 	LPDWORD xaudio2_thread_task_index = nullptr;
 	HANDLE frame_ready_event = nullptr;
 	HANDLE frame_underrun_event = nullptr;
-	bool decode_lag_use_big_buffer = false;
 	double standard_frametime = 0.0, last_frametime = 0.0;
 	float message_interval = 16.67f, message_interval_timer = 0.0f;
-	int prev_decode_cycle_xaudio2_played_samples = 0;
+	size_t prev_decode_cycle_xaudio2_played_samples = 0;
 
 	// file I/O Area
 	int read_func(uint8_t* buf, int buf_size);

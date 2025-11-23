@@ -139,7 +139,11 @@ extern "C" {
 #pragma region Common Type Definition
 enum audio_playback_state: unsigned long long
 {
-	audio_playback_state_init, audio_playback_state_playing, audio_playback_state_paused, audio_playback_state_stopped
+	audio_playback_state_init,
+	audio_playback_state_playing,
+	audio_playback_state_paused,
+	audio_playback_state_decoder_exit_pre_stop,
+	audio_playback_state_stopped
 };
 
 enum class LrcMetadataType

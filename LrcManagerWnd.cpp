@@ -260,7 +260,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             end = file_content_w.GetLength();
         }
         CString line = file_content_w.Mid(start, end - start).Trim();
-        if (line[0] == '\n')
+        if (line.IsEmpty())
         {
             start = end + 1;
             continue;
@@ -310,8 +310,8 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             clear_lrc_nodes();
             return;
         }
-        CString time_tag = line.Mid(0, 11);
-        if (time_tag[0] != '[' || time_tag[3] != ':' || time_tag[6] != '.' || time_tag.Find(']') == -1) {
+        int time_tag_end_index = line.Find(']');
+        if (time_tag_end_index == -1 || line[0] != '[' || line[3] != ':' || line[6] != '.') {
             AfxMessageBox(_T("err: invalid lrc time tag, aborting!"), MB_ICONERROR);
             while (!lyrics_in_ms.empty()) {
                 delete lyrics_in_ms.top();
@@ -320,10 +320,9 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             clear_lrc_nodes();
             return;
         }
-        int time_tag_end_index = time_tag.Find(']');
-        int minutes = _ttoi(time_tag.Mid(1, 2));
-        int seconds = _ttoi(time_tag.Mid(4, 2));
-        int milliseconds = _ttoi(time_tag.Mid(7, time_tag_end_index - 7));
+        int minutes = _ttoi(line.Mid(1, 2));
+        int seconds = _ttoi(line.Mid(4, 2));
+        int milliseconds = _ttoi(line.Mid(7, time_tag_end_index - 7));
 
         switch (int total_ms = minutes * 60000 + seconds * 1000 + milliseconds + lrc_offset_ms; WAY3RES(total_ms <=> recorded_ms))
         {
@@ -345,7 +344,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
         default:
             break;
         }
-        lyrics_in_ms.push(line.Mid(11).Trim());
+        lyrics_in_ms.push(line.Mid(time_tag_end_index + 1).Trim());
         start = end + 1;
     }
     pump_stack();
@@ -370,7 +369,7 @@ void LrcFileController::set_time_stamp(int time_stamp_ms_in)
     bool found = false;
     for (size_t i = cur_lrc_node_index; i < lrc_nodes.GetCount(); i++) {
         if (lrc_nodes[i]->get_time_ms() > time_stamp_ms_in) {
-            cur_lrc_node_index = i - 1;
+            cur_lrc_node_index = i == 0 ? 0 : i - 1;
             found = true;
             break;
         }
