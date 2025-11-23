@@ -528,8 +528,10 @@ void MusicPlayer::audio_playback_worker_thread()
 	XAUDIO2_VOICE_STATE state;
 	CEvent doneEvent(false, false, nullptr, nullptr);
 	DWORD spinWaitResult;
+	double decode_time_ms = 0.0;
 
 	while (true) {
+		decode_time_ms = 0.0;
 		if (DWORD dw = WaitForSingleObject(frame_ready_event, 1);
 			dw != WAIT_OBJECT_0 && dw != WAIT_TIMEOUT) {
 			ATLTRACE("err: wait frame ready event failed, code=%lu\n", GetLastError());
@@ -548,7 +550,7 @@ void MusicPlayer::audio_playback_worker_thread()
 			else 
 				continue;
 		}
-		clock_t decode_begin_time = clock();
+		// clock_t decode_begin_time = clock();
 
 		EnterCriticalSection(audio_playback_section);
 		
@@ -743,9 +745,9 @@ void MusicPlayer::audio_playback_worker_thread()
 				ATLTRACE("info: samples played=%lld, cur played_buffers=%lld, cur samples=%lld, xaudio2 buffer arr size=%lld\n",
 					state.SamplesPlayed, played_buffers, samples_sum, xaudio2_playing_buffers.size());
 				// std::printf("info: buffer played=%zd\n", played_buffers);
+				decode_time_ms = (xaudio2_played_samples - prev_decode_cycle_xaudio2_played_samples) * 1000.0 / wfx.nSamplesPerSec;
+				prev_decode_cycle_xaudio2_played_samples = xaudio2_played_samples;
 				elapsed_time = static_cast<float>(static_cast<double>(xaudio2_played_samples) * 1.0 / wfx.nSamplesPerSec + this->pts_seconds);
-				UINT32 raw = *reinterpret_cast<UINT32*>(&elapsed_time);
-				AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, raw);
 			}
 			else if (it == xaudio2_playing_buffers.end()) {
 				// all played
@@ -755,8 +757,8 @@ void MusicPlayer::audio_playback_worker_thread()
 				continue;
 			}
 
-			clock_t decode_end_time = clock();
-			double decode_time_ms = (decode_end_time - decode_begin_time) * 1000.0 / CLOCKS_PER_SEC;
+			// clock_t decode_end_time = clock();
+			// double decode_time_ms = (decode_end_time - decode_begin_time) * 1000.0 / CLOCKS_PER_SEC;
 			// remove duplicate log
 			// ATLTRACE("info: xaudio2 cpu time %lf ms , frame time %lf ms!\n",
 			//	 decode_time_ms, standard_frametime);
@@ -765,6 +767,13 @@ void MusicPlayer::audio_playback_worker_thread()
 					decode_time_ms, standard_frametime);
 				last_frametime = decode_time_ms;
 			}
+			// limit msg freq to 60mps, avoid ui stuck
+			if (message_interval_timer > message_interval
+				|| message_interval_timer < 0.0f)
+			{
+				message_interval_timer = 0.0f;
+				AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT32*>(&elapsed_time));
+			} else { message_interval_timer += static_cast<float>(decode_time_ms); }
 			// else
 			// {
 				// std::printf("info: buffer played=%zd\n", xaudio2_played_buffers);
@@ -911,7 +920,7 @@ void MusicPlayer::init_decoder_thread() {
 			return 0;
 		},
 		this,
-		THREAD_PRIORITY_TIME_CRITICAL,
+		THREAD_PRIORITY_HIGHEST,
 		0,
 		CREATE_SUSPENDED,
 		nullptr);
@@ -933,6 +942,7 @@ inline void MusicPlayer::start_audio_playback()
 		reset_audio_context();
 	}
 	InterlockedExchange(playback_state, audio_playback_state_init);
+	message_interval_timer = -1.0f;
 	audio_player_worker_thread = AfxBeginThread(
 		[](LPVOID param) -> UINT {
 			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
@@ -942,7 +952,7 @@ inline void MusicPlayer::start_audio_playback()
 			return 0;
 		},
 		this,
-		THREAD_PRIORITY_TIME_CRITICAL,
+		THREAD_PRIORITY_HIGHEST,
 		0,
 		CREATE_SUSPENDED,
 		nullptr);

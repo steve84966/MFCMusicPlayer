@@ -65,6 +65,8 @@ class MusicPlayer
 	HANDLE frame_underrun_event = nullptr;
 	bool decode_lag_use_big_buffer = false;
 	double standard_frametime = 0.0, last_frametime = 0.0;
+	float message_interval = 16.67f, message_interval_timer = 0.0f;
+	int prev_decode_cycle_xaudio2_played_samples = 0;
 
 	// file I/O Area
 	int read_func(uint8_t* buf, int buf_size);

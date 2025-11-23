@@ -8,7 +8,7 @@ LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) { // NO
 
     int time_ms = static_cast<int>(time * 1000.0f);
     lrc_controller.set_time_stamp(time_ms);
-	PostMessage(WM_PAINT);
+	this->Invalidate(FALSE);
     return LRESULT();
 }
 
@@ -311,7 +311,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             return;
         }
         CString time_tag = line.Mid(0, 11);
-        if (time_tag[0] != '[' || time_tag[3] != ':' || time_tag[6] != '.' || time_tag[10] != ']') {
+        if (time_tag[0] != '[' || time_tag[3] != ':' || time_tag[6] != '.' || time_tag.Find(']') == -1) {
             AfxMessageBox(_T("err: invalid lrc time tag, aborting!"), MB_ICONERROR);
             while (!lyrics_in_ms.empty()) {
                 delete lyrics_in_ms.top();
@@ -320,9 +320,10 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             clear_lrc_nodes();
             return;
         }
+        int time_tag_end_index = time_tag.Find(']');
         int minutes = _ttoi(time_tag.Mid(1, 2));
         int seconds = _ttoi(time_tag.Mid(4, 2));
-        int milliseconds = _ttoi(time_tag.Mid(7, 3));
+        int milliseconds = _ttoi(time_tag.Mid(7, time_tag_end_index - 7));
 
         switch (int total_ms = minutes * 60000 + seconds * 1000 + milliseconds + lrc_offset_ms; WAY3RES(total_ms <=> recorded_ms))
         {
