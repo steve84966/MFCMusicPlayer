@@ -263,6 +263,14 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 	IWICBitmapDecoder* bitmap_decoder = nullptr;
 	UNREFERENCED_PARAMETER(imaging_factory->CreateDecoderFromStream(iwic_stream, nullptr,
 									  WICDecodeMetadataCacheOnLoad, &bitmap_decoder));
+
+	if (!bitmap_decoder)
+	{
+		ATLTRACE("err: create decoder from stream failed\n");
+		iwic_stream->Release();
+		imaging_factory->Release();
+		return nullptr;
+	}
 	IWICBitmapFrameDecode* source = nullptr;
 	UNREFERENCED_PARAMETER(bitmap_decoder->GetFrame(0, &source));
 	IWICFormatConverter* iwic_format_converter = nullptr;
@@ -296,6 +304,7 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 
 	scaler->Release();
 	iwic_format_converter->Release();
+	iwic_stream->Release();
 	imaging_factory->Release();
 
 	return bmp;
@@ -305,9 +314,11 @@ void MusicPlayer::read_metadata()
 {
 	auto convert_utf8 = [](const char* utf_8_str) {
 		int len = MultiByteToWideChar(CP_UTF8, 0, utf_8_str, -1, nullptr, 0);
-		std::wstring wtitle(len, L'\0');
-		MultiByteToWideChar(CP_UTF8, 0, utf_8_str, -1, &wtitle[0], len);
-		return CString(wtitle.c_str());
+		CStringW wtitle;
+		wchar_t* wtitle_raw_buffer = wtitle.GetBufferSetLength(len);
+		MultiByteToWideChar(CP_UTF8, 0, utf_8_str, -1, wtitle_raw_buffer, len);
+		wtitle.ReleaseBuffer();
+		return wtitle;
 		};
 	auto read_metadata_iter = [&](AVDictionaryEntry* tag, CString& title, CString& artist) {
 		CString key = convert_utf8(tag->key);
