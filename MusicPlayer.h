@@ -2,6 +2,19 @@
 
 #include "framework.h"
 
+class CriticalSectionLock
+{
+	LPCRITICAL_SECTION cs;
+public:
+	explicit CriticalSectionLock(LPCRITICAL_SECTION section) : cs(section) { EnterCriticalSection(cs); }
+	~CriticalSectionLock() { LeaveCriticalSection(cs); }
+
+	CriticalSectionLock(const CriticalSectionLock&) = delete;
+	CriticalSectionLock& operator=(const CriticalSectionLock&) = delete;
+	CriticalSectionLock(CriticalSectionLock&&) = delete;
+	CriticalSectionLock& operator=(CriticalSectionLock&&) = delete;
+};
+
 class MusicPlayer
 {
 	// 流文件解析上下文
@@ -132,7 +145,7 @@ public:
 	void Pause();
 	void Stop();
 	void SetMasterVolume(float volume);
-	// void SeekToPosition(float time, bool needStop);
+	void SeekToPosition(float time, bool need_stop);
 
 	// destructor
 	~MusicPlayer();

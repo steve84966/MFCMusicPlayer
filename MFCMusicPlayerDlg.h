@@ -7,6 +7,27 @@
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
 
+class CProgressSliderCtrl : public CSliderCtrl
+{
+protected:
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point)
+	{
+		CRect rcThumb;
+		GetThumbRect(&rcThumb);
+
+		if (rcThumb.PtInRect(point))
+		{
+			CSliderCtrl::OnLButtonDown(nFlags, point);
+		}
+		else
+		{
+			// 点击在其他区域，忽略
+		}
+	}
+
+	DECLARE_MESSAGE_MAP()
+};
+
 // CMFCMusicPlayerDlg 对话框
 class CMFCMusicPlayerDlg : public CDialogEx
 {
@@ -33,6 +54,8 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
+	float fBasePlayTime = -1.f;
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnClickedButtonOpen();
@@ -49,7 +72,7 @@ public:
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
 	CStatic m_labelAlbumArt;
-	CSliderCtrl m_sliderProgress;
+	CProgressSliderCtrl m_sliderProgress;
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	CSliderCtrl m_sliderVolumeCtrl;
 	CLrcManagerWnd lrc_manager_wnd;

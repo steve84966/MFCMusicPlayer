@@ -3,7 +3,7 @@
 
 
 int MusicPlayer::read_func(uint8_t* buf, int buf_size) {
-	ATLTRACE("info: read buf_size=%d, rest=%lld\n", buf_size, file_stream->GetLength() - file_stream->GetPosition());
+	// ATLTRACE("info: read buf_size=%d, rest=%lld\n", buf_size, file_stream->GetLength() - file_stream->GetPosition());
 	// reset file_stream_end
 	file_stream_end = false;
 	int gcount = static_cast<int>(file_stream->Read(buf, buf_size));
@@ -488,9 +488,9 @@ void MusicPlayer::audio_playback_worker_thread()
 			if (*playback_state == audio_playback_state_stopped) {
 				break;
 			}
-			else if (*playback_state == audio_playback_state_init ||
-					 *playback_state == audio_playback_state_decoder_exit_pre_stop ||
-					  cached_sample_size > xaudio2_play_frame_size * 32) {
+			if (*playback_state == audio_playback_state_init ||
+				*playback_state == audio_playback_state_decoder_exit_pre_stop ||
+				cached_sample_size > xaudio2_play_frame_size * 32) {
 				// pass
 				if (cached_sample_size < xaudio2_play_frame_size * 256) {
 					SetEvent(frame_underrun_event);
@@ -507,11 +507,11 @@ void MusicPlayer::audio_playback_worker_thread()
 		}
 		// clock_t decode_begin_time = clock();
 
-		EnterCriticalSection(audio_playback_section);
+		CriticalSectionLock lock(audio_playback_section);
 		
 		int fifo_size = get_audio_fifo_cached_samples_size();
-		if (fifo_size == 0 && decoder_is_running) {
-			LeaveCriticalSection(audio_playback_section);
+		if (fifo_size < 0 && decoder_is_running) {
+			// LeaveCriticalSection(audio_playback_section);
 			Sleep(1);
 			continue;
 		}
@@ -519,7 +519,7 @@ void MusicPlayer::audio_playback_worker_thread()
 			// bypass
 		}
 		else if (!decoder_is_running && fifo_size == 0) {
-			LeaveCriticalSection(audio_playback_section);
+			// LeaveCriticalSection(audio_playback_section);
 			// all done
 			ATLTRACE("info: decoder stopped and fifo empty, ending playback thread\n");
 			InterlockedExchange(playback_state, audio_playback_state_decoder_exit_pre_stop);
@@ -540,7 +540,6 @@ void MusicPlayer::audio_playback_worker_thread()
 			ATLTRACE("info: user request stop, do cleaning\n");
 
 			base_offset = state.SamplesPlayed;
-			LeaveCriticalSection(audio_playback_section);
 			break;
 		}
 		if (*playback_state ==
@@ -570,10 +569,9 @@ void MusicPlayer::audio_playback_worker_thread()
 				xaudio2_played_samples = 0;
 				xaudio2_played_buffers = 0;
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
-				elapsed_time = 0.0;
-				UINT32 raw = *reinterpret_cast<UINT32*>(&elapsed_time);
-				AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, raw);
-				LeaveCriticalSection(audio_playback_section);
+				// elapsed_time = 0.0;
+				// UINT32 raw = *reinterpret_cast<UINT32*>(&elapsed_time);
+				// AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, raw);
 				// EnterCriticalSection(audio_playback_section);
 				// bool need_clean = !user_request_stop;
 				// LeaveCriticalSection(audio_playback_section);
@@ -596,36 +594,53 @@ void MusicPlayer::audio_playback_worker_thread()
 		delete[] out_buffer;
 		out_buffer = DBG_NEW uint8_t[out_buffer_size];
 		memset(out_buffer, 0, out_buffer_size);
-		while (!TryEnterCriticalSection(audio_fifo_section)) {}
-		// read_samples_from_fifo((uint8_t**)out_buffer, xaudio2_play_frame_size);
-		uint8_t** fifo_buf = nullptr;
-		fifo_buf = (uint8_t**)av_calloc(decoder_audio_channels, sizeof(uint8_t*));
-		if (int alloc_ret = av_samples_alloc(fifo_buf, nullptr, decoder_audio_channels, xaudio2_play_frame_size, decoder_audio_sample_fmt, 0);
-			alloc_ret < 0) {
-			FFMPEG_CRITICAL_ERROR(alloc_ret);
-			// remove duplicate check.
-			InterlockedExchange(playback_state, audio_playback_state_stopped);
-			break;
+		uint8_t** fifo_buf = nullptr; int read_bytes = 0;
+		// while (!TryEnterCriticalSection(audio_fifo_section)) {}
+		{
+			CriticalSectionLock fifo_lock(audio_fifo_section);
+			// read_samples_from_fifo((uint8_t**)out_buffer, xaudio2_play_frame_size);
+			fifo_buf = (uint8_t**)av_calloc(decoder_audio_channels, sizeof(uint8_t*));
+			if (int alloc_ret = av_samples_alloc(fifo_buf, nullptr, decoder_audio_channels, xaudio2_play_frame_size, decoder_audio_sample_fmt, 0);
+				alloc_ret < 0) {
+				FFMPEG_CRITICAL_ERROR(alloc_ret);
+				// remove duplicate check.
+				InterlockedExchange(playback_state, audio_playback_state_stopped);
+				break;
+				}
+			read_bytes = read_samples_from_fifo(fifo_buf, xaudio2_play_frame_size);
+			if (read_bytes < 0) {
+				ATLTRACE("err: read samples from fifo failed, code=%d\n", read_bytes);
+				ATLTRACE("err: fifo size=%d", get_audio_fifo_cached_samples_size());
+				if (user_request_stop)
+				{
+					ATLTRACE("info: user request stop and fifo cleared up, exiting\n");
+					break;
+				}
+				FFMPEG_CRITICAL_ERROR(read_bytes);
+				av_freep(&fifo_buf[0]);
+				av_free(fifo_buf);
+				// LeaveCriticalSection(audio_fifo_section);
+				// LeaveCriticalSection(audio_playback_section);
+				InterlockedExchange(playback_state, audio_playback_state_stopped);
+				break;
+			}
 		}
-		int ret = read_samples_from_fifo(fifo_buf, xaudio2_play_frame_size);
-		if (ret < 0) {
-			FFMPEG_CRITICAL_ERROR(ret);
-			av_freep(&fifo_buf[0]);
-			av_free(fifo_buf);
-			LeaveCriticalSection(audio_fifo_section);
-			LeaveCriticalSection(audio_playback_section);
-			InterlockedExchange(playback_state, audio_playback_state_stopped);
-			break;
-		}
+
 		int out_samples = swr_convert(swr_ctx, &out_buffer, static_cast<int>(out_buffer_size),
-			fifo_buf, ret); // pass actual read samples
+			fifo_buf, read_bytes); // pass actual read samples
 		av_freep(&fifo_buf[0]);
 		av_free(fifo_buf);
-		LeaveCriticalSection(audio_fifo_section);
+		// LeaveCriticalSection(audio_fifo_section);
 		if (out_samples < 0) {
 			FFMPEG_CRITICAL_ERROR(out_samples);
-			LeaveCriticalSection(audio_playback_section);
+			// LeaveCriticalSection(audio_playback_section);
 			break;
+		}
+		if (out_samples == 0)
+		{
+			ATLTRACE("info: no samples read, spin wait instead\n");
+			Sleep(5); // wait for producing buffer
+			continue;
 		}
 
 		while (state.BuffersQueued >= 64)
@@ -709,7 +724,7 @@ void MusicPlayer::audio_playback_worker_thread()
 			else if (it == xaudio2_playing_buffers.end()) {
 				// all played
 				ATLTRACE("info: sum not feeding samples_played, %zu : %zu\n", samples_sum, samples_played_before);
-				LeaveCriticalSection(audio_playback_section);
+				// LeaveCriticalSection(audio_playback_section);
 				SetEvent(frame_ready_event);
 				continue;
 			}
@@ -733,8 +748,9 @@ void MusicPlayer::audio_playback_worker_thread()
 			//  (wfx.wBitsPerSample / 8) * wfx.nChannels
 		// }
 
-		LeaveCriticalSection(audio_playback_section);
-		EnterCriticalSection(audio_fifo_section);
+		// LeaveCriticalSection(audio_playback_section);
+		// EnterCriticalSection(audio_fifo_section);
+		CriticalSectionLock fifo_event_lock(audio_fifo_section);
 		if (get_audio_fifo_cached_samples_size() < xaudio2_play_frame_size * 32) {
 			// need more data
 			ATLTRACE("info: audio fifo cached samples size=%d, frame underrun!\n", get_audio_fifo_cached_samples_size());
@@ -744,7 +760,7 @@ void MusicPlayer::audio_playback_worker_thread()
 			// enough data buffered
 			SetEvent(frame_ready_event);
 		}
-		LeaveCriticalSection(audio_fifo_section);
+		// LeaveCriticalSection(audio_fifo_section);
 	}
 }
 
@@ -807,7 +823,8 @@ void MusicPlayer::audio_decode_worker_thread()
 			av_packet_unref(packet);
 			break;
 		}
-		while (true) {
+		while (true)
+		{
 			if (int res = avcodec_receive_frame(codec_context, frame); res == AVERROR(EAGAIN) || res == AVERROR_EOF) {
 				break; // 没有更多帧
 			}
@@ -816,26 +833,29 @@ void MusicPlayer::audio_decode_worker_thread()
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
 				break;
 			}
-			while (!TryEnterCriticalSection(audio_fifo_section)) {}
+			CriticalSectionLock fifo_lock(audio_fifo_section);
 			if (int ret_code = 0; (ret_code = add_samples_to_fifo(frame->extended_data, frame->nb_samples)) < 0) {
 				FFMPEG_CRITICAL_ERROR(ret_code);
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
-				LeaveCriticalSection(audio_fifo_section);
+				// LeaveCriticalSection(audio_fifo_section);
 				break;
 			}
 			ATLTRACE("info: decoded frame nb_samples=%d, pts=%lld\n", frame->nb_samples, frame->pts);
-			LeaveCriticalSection(audio_fifo_section);
+			// LeaveCriticalSection(audio_fifo_section);
 			av_frame_unref(frame);
 		}
-		EnterCriticalSection(audio_fifo_section);
-		if (get_audio_fifo_cached_samples_size() > 0) {
-			// enough data buffered
-			SetEvent(frame_ready_event);
+
+		{
+			CriticalSectionLock fifo_lock(audio_fifo_section);
+			if (get_audio_fifo_cached_samples_size() > 0) {
+				// enough data buffered
+				SetEvent(frame_ready_event);
+			}
+			if (get_audio_fifo_cached_samples_size() < xaudio2_play_frame_size * 256) {
+				SetEvent(frame_underrun_event);
+			}
 		}
-		if (get_audio_fifo_cached_samples_size() < xaudio2_play_frame_size * 256) {
-			SetEvent(frame_underrun_event);
-		}
-		LeaveCriticalSection(audio_fifo_section);
+		// LeaveCriticalSection(audio_fifo_section);
 		
 		int player_bufferes_queued = (
 			is_xaudio2_initialized()
@@ -1136,11 +1156,10 @@ void MusicPlayer::xaudio2_destroy_buffer()
 
 int MusicPlayer::decoder_query_xaudio2_buffer_size()
 {
-	EnterCriticalSection(audio_playback_section);
+	CriticalSectionLock lock(audio_playback_section);
 	XAUDIO2_VOICE_STATE state;
 	source_voice->GetState(&state);
 	int buffer_size = static_cast<int>(state.BuffersQueued);
-	LeaveCriticalSection(audio_playback_section);
 	return buffer_size;
 }
 
@@ -1206,6 +1225,7 @@ void MusicPlayer::OpenFile(const CString& fileName, const CString& file_extensio
 		AfxMessageBox(_T("err: audio engine initialize failed!"), MB_ICONERROR);
 		return;
 	};
+	AfxGetMainWnd()->PostMessage(WM_PLAYER_FILE_INIT);
 }
 
 float MusicPlayer::GetMusicTimeLength()
@@ -1259,6 +1279,30 @@ void MusicPlayer::SetMasterVolume(float volume)
 		if (volume < 0.0f) volume = 0.0f;
 		if (volume > 1.0f) volume = 1.0f;
 		UNREFERENCED_PARAMETER(mastering_voice->SetVolume(volume));
+	}
+}
+
+void MusicPlayer::SeekToPosition(float time, bool need_stop)
+{
+	if (IsInitialized()) {
+		is_pause = true;
+		pts_seconds = time;
+		if (IsInitialized())
+		{
+			if (need_stop && (IsPlaying() || audio_player_worker_thread))
+			{
+				user_request_stop = true;
+				stop_audio_playback(0);
+			}
+			else if (!IsPlaying()) {
+				if (decoder_is_running) {
+					stop_audio_decode();
+					InterlockedExchange(playback_state, audio_playback_state_init);
+					reset_audio_context();
+					AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT*>(&time));
+				}
+			}
+		}
 	}
 }
 

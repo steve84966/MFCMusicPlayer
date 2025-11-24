@@ -47,6 +47,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
+BEGIN_MESSAGE_MAP(CProgressSliderCtrl, CSliderCtrl)
+	ON_WM_LBUTTONDOWN()
+END_MESSAGE_MAP()
+
 
 // CMFCMusicPlayerDlg 对话框
 
@@ -252,6 +256,8 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
 	// TODO: 在此添加控件通知处理程序代码
+	fBasePlayTime = 0.f;
+	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	return 0;
 }
 
@@ -262,6 +268,8 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerPause(WPARAM wParam, LPARAM lParam) // NOLIN
 
 LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
+	fBasePlayTime = 0.f;
+	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	return LRESULT();
 }
 
@@ -300,12 +308,21 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 	return HRESULT();
 }
 
-LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) 
+// ReSharper disable once CppDFAConstantFunctionResult
+LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 {
 	static CString prev_timeStr = _T("");
 	UINT32 raw = static_cast<UINT32>(wParam); // NOLINT(*-use-auto)
 	float time = *reinterpret_cast<float*>(&raw);
 	float length = music_player->GetMusicTimeLength();
+	if (fBasePlayTime > 0.f)
+	{
+		if (fabs(time - fBasePlayTime) > 1.f)
+		{
+			ATLTRACE("info: abnormal time event, time=%f, base=%f", time, fBasePlayTime);
+			time = fBasePlayTime;
+		}
+	}
 	CString timeStr;
 	int min = static_cast<int>(time) / 60, sec = static_cast<int>(time) % 60;
 	timeStr.Format(_T("%02d:%02d / %02d:%02d"), min, sec, static_cast<int>(length) / 60, static_cast<int>(length) % 60);
@@ -315,10 +332,13 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	}
 	// set slider
 	float ratio = time / length;
+	// if user is controlling the slider, do not adjust
 	m_sliderProgress.SetPos(static_cast<int>(ratio * 1000));
 
 	// re-post message to LrcManagerWnd
 	lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
+	if (fBasePlayTime > 0.f)
+		fBasePlayTime = time;
 	return LRESULT();
 }
 
@@ -349,6 +369,41 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 		if (music_player) {
 			music_player->SetMasterVolume(static_cast<float>(iMasterVolume) / 100.0f);
 		}
+	}
+	if (GetDlgItem(IDC_SLIDERPROGRESS) == pScrollBar && music_player && music_player->IsInitialized())
+	{
+		// seek event
+		int iSliderPos = m_sliderProgress.GetPos();
+		switch (nSBCode)
+		{
+		case SB_THUMBTRACK:
+			if (!bIsMusicPlayingStateRecorded)
+			{
+				bIsMusicPlayingStateRecorded = true;
+				bIsMusicPlaying = music_player->IsPlaying();
+				if (music_player->IsPlaying())
+					music_player->Pause();
+			}
+			break;
+		case SB_THUMBPOSITION:
+			bIsMusicPlayingStateRecorded = false;
+			if (music_player && music_player->IsInitialized()) {
+				float fCurSelectedTime = static_cast<float>(iSliderPos) / 1000.0f * music_player->GetMusicTimeLength();
+				bool is_music_playing = bIsMusicPlaying;
+				music_player->SeekToPosition(fCurSelectedTime, true);
+				if (is_music_playing) {
+					ATLTRACE("info: music is playing, resume from seek point\n");
+					Sleep(5);
+					music_player->Start();
+					fBasePlayTime = fCurSelectedTime;
+				}
+			}
+			break;
+		default:
+			return;
+		}
+
+
 	}
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
