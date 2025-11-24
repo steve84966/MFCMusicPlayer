@@ -252,109 +252,53 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 	if (!format_context) return nullptr;
 
 	// stream_index = attached pic
+	// 一坨屎这个com，很想写IUnknown你知道吗
 	AVPacket pkt = format_context->streams[stream_index]->attached_pic;
-	AVCodecParameters* codecpar = format_context->streams[stream_index]->codecpar;
-	const AVCodec* codec_id3_art = avcodec_find_decoder(codecpar->codec_id);
-	if (!codec_id3_art) return nullptr;
+	IWICImagingFactory* imaging_factory = nullptr;
+	UNREFERENCED_PARAMETER(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+					 IID_PPV_ARGS(&imaging_factory)));
+	IWICStream* iwic_stream = nullptr;
+	UNREFERENCED_PARAMETER(imaging_factory->CreateStream(&iwic_stream));
+	UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pkt.data, (DWORD)pkt.size));
+	IWICBitmapDecoder* bitmap_decoder = nullptr;
+	UNREFERENCED_PARAMETER(imaging_factory->CreateDecoderFromStream(iwic_stream, nullptr,
+									  WICDecodeMetadataCacheOnLoad, &bitmap_decoder));
+	IWICBitmapFrameDecode* source = nullptr;
+	UNREFERENCED_PARAMETER(bitmap_decoder->GetFrame(0, &source));
+	IWICFormatConverter* iwic_format_converter = nullptr;
+	UNREFERENCED_PARAMETER(imaging_factory->CreateFormatConverter(&iwic_format_converter));
+	UNREFERENCED_PARAMETER(iwic_format_converter->Initialize(source, GUID_WICPixelFormat32bppBGRA,
+						   WICBitmapDitherTypeNone, nullptr, 0.f,
+						   WICBitmapPaletteTypeCustom));
 
-	AVCodecContext* codec_ctx = avcodec_alloc_context3(codec_id3_art);
-	if (!codec_ctx) return nullptr;
+	UINT width, height;
+	UNREFERENCED_PARAMETER(source->GetSize(&width, &height));
 
-	// 
-	if (avcodec_parameters_to_context(codec_ctx, codecpar) < 0) {
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	if (avcodec_open2(codec_ctx, codec_id3_art, nullptr) < 0) {
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	// decode pipeline
-	if (avcodec_send_packet(codec_ctx, &pkt) < 0) {
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	AVFrame* frame_id3_art = av_frame_alloc();
-	if (!frame_id3_art) {
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	if (int ret = avcodec_receive_frame(codec_ctx, frame_id3_art); ret < 0) {
-		av_frame_free(&frame_id3_art);
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	// bgr24 format (windows bmp use this), allow ui to select output size
-	SwsContext* sws_ctx = sws_getContext(
-		frame_id3_art->width, frame_id3_art->height, (AVPixelFormat)frame_id3_art->format,
-		scale_size, scale_size, AV_PIX_FMT_BGR24, // for display
-		SWS_BILINEAR, nullptr, nullptr, nullptr
-	);
-	if (!sws_ctx) {
-		av_frame_free(&frame_id3_art);
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	AVFrame* rgb_frame = av_frame_alloc();
-	if (!rgb_frame) {
-		sws_freeContext(sws_ctx);
-		av_frame_free(&frame_id3_art);
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	int num_bytes = av_image_get_buffer_size(AV_PIX_FMT_BGR24, scale_size, scale_size, 1);
-	uint8_t* buffer_src = (uint8_t*)av_malloc(num_bytes); // NOLINT(*-use-auto)
-	if (!buffer_src) {
-		av_frame_free(&rgb_frame);
-		sws_freeContext(sws_ctx);
-		av_frame_free(&frame_id3_art);
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-	rgb_frame->width = rgb_frame->height = scale_size;
-	memcpy(rgb_frame->linesize, frame_id3_art->linesize, sizeof(frame_id3_art->linesize));
-	av_image_fill_arrays(rgb_frame->data, rgb_frame->linesize, buffer_src, AV_PIX_FMT_BGR24, scale_size, scale_size, 1);
-	sws_scale(sws_ctx, frame_id3_art->data, frame_id3_art->linesize, 0, frame_id3_art->height, rgb_frame->data, rgb_frame->linesize);
+	IWICBitmapScaler* scaler = nullptr;
+	UNREFERENCED_PARAMETER(imaging_factory->CreateBitmapScaler(&scaler));
+	UNREFERENCED_PARAMETER(scaler->Initialize(iwic_format_converter, scale_size, scale_size, WICBitmapInterpolationModeFant));
 
-	// negative avoid flip
 	BITMAPINFO bmi = {};
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = rgb_frame->width;
-	bmi.bmiHeader.biHeight = -static_cast<LONG>(rgb_frame->height); // top-down
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 24;
+	bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth       = scale_size;
+	bmi.bmiHeader.biHeight      = -scale_size; // top-down
+	bmi.bmiHeader.biPlanes      = 1;
+	bmi.bmiHeader.biBitCount    = 32;
 	bmi.bmiHeader.biCompression = BI_RGB;
+	const UINT stride = scale_size * 4;
+	const UINT buffer_size = stride * scale_size;
+	BYTE* image_bits = nullptr;
+	HDC hdc_screen = GetDC(nullptr);
+	HBITMAP bmp = CreateDIBSection(hdc_screen, &bmi, DIB_RGB_COLORS,
+									reinterpret_cast<void**>(&image_bits), nullptr, 0);
+	ReleaseDC(nullptr, hdc_screen);
+	UNREFERENCED_PARAMETER(scaler->CopyPixels(nullptr, stride, buffer_size, image_bits));
 
-	// copy
-	void* bits = nullptr;
-	HDC hdc = GetDC(nullptr);
-	HBITMAP bitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
-	ReleaseDC(nullptr, hdc);
+	scaler->Release();
+	iwic_format_converter->Release();
+	imaging_factory->Release();
 
-	if (!bitmap || !bits) {
-		if (bitmap) DeleteObject(bitmap);
-		av_free(buffer_src);
-		av_frame_free(&rgb_frame);
-		sws_freeContext(sws_ctx);
-		av_frame_free(&frame_id3_art);
-		avcodec_free_context(&codec_ctx);
-		return nullptr;
-	}
-
-	int height = rgb_frame->height;
-	int width = rgb_frame->width;
-	int rowSize = width * 3; // 24bpp
-	for (int y = 0; y < height; y++) {
-		memcpy(reinterpret_cast<BYTE*>(bits) + y * rowSize, rgb_frame->data[0] + y * rgb_frame->linesize[0], rowSize);
-	}
-
-	av_free(buffer_src);
-	av_frame_free(&rgb_frame);
-	sws_freeContext(sws_ctx);
-	av_frame_free(&frame_id3_art);
-	avcodec_free_context(&codec_ctx);
-
-	return bitmap;
+	return bmp;
 }
 
 void MusicPlayer::read_metadata()
@@ -1136,7 +1080,7 @@ void MusicPlayer::xaudio2_init_buffer(XAUDIO2_BUFFER* dest_buffer, int size) // 
 XAUDIO2_BUFFER* MusicPlayer::xaudio2_allocate_buffer(int size)
 {
 	if (size < 8192) size = 8192;
-	std::printf("info: xaudio2_allocate_buffer, allocate_size=%d\n", size);
+	ATLTRACE("info: xaudio2_allocate_buffer, allocate_size=%d\n", size);
 	XAUDIO2_BUFFER* dest_buffer = DBG_NEW XAUDIO2_BUFFER{}; // NOLINT(*-use-auto)
 	dest_buffer->pAudioData = DBG_NEW BYTE[size];
 	dest_buffer->pContext = DBG_NEW int(size);

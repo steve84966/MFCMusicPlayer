@@ -86,6 +86,7 @@ extern "C" {
 #include <synchapi.h>
 #include <ShellScalingAPI.h>
 #include <io.h>
+#include <wincodec.h>
 #pragma endregion
 
 #pragma region Standard C++ Header Files

@@ -50,7 +50,7 @@ CMFCMusicPlayerApp theApp;
 BOOL CMFCMusicPlayerApp::InitInstance()
 {
 	// Initialize COM module
-	if (FAILED(CoInitialize(nullptr)))
+	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 	{
 		ATLTRACE("警告：COM 组件初始化失败，应用程序将意外终止。\n");
 		return FALSE;

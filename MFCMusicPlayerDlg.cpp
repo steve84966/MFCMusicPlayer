@@ -191,7 +191,6 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 		CString path = dlg.GetPathName();   // Full path
 		CString file = dlg.GetFileName();   // File name only
 		CString ext = dlg.GetFileExt();    // Extension
-		CString dir = dlg.GetFolderPath(); // Directory
 
 		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
 		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());

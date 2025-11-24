@@ -29,3 +29,6 @@
 
 // DbgHelp
 #pragma comment(lib, "dbghelp.lib")
+
+// Windows Image Component
+#pragma comment(lib, "windowscodecs.lib")
