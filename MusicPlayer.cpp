@@ -579,6 +579,8 @@ void MusicPlayer::audio_playback_worker_thread()
 				base_offset = state.SamplesPlayed;
 				xaudio2_played_samples = 0;
 				xaudio2_played_buffers = 0;
+				// fix pts_seconds not clear up -> ui thread time error & resume failed
+				pts_seconds = 0.0;
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
 				// elapsed_time = 0.0;
 				// UINT32 raw = *reinterpret_cast<UINT32*>(&elapsed_time);
