@@ -110,6 +110,7 @@ extern "C" {
 #pragma region Direct2D Header
 #include <d2d1.h>
 #include <dwrite.h>
+#include <WRL/client.h>
 #pragma endregion
 
 #pragma region DbgHelp Header
@@ -160,6 +161,14 @@ enum class LrcMetadataType
 enum class ThreeWayCompareResult
 {
 	Less = -1, Equal = 0, Greater = 1
+};
+
+enum class LrcAuxiliaryInfo
+{
+	None,
+	Translation,
+	Romanization,
+	Ignored
 };
 #pragma endregion
 

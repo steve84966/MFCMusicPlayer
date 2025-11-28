@@ -1,4 +1,6 @@
-﻿#include "pch.h"
+﻿#include "LrcManagerWnd.h"
+
+#include "pch.h"
 #include "LrcManagerWnd.h"
 
 LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) { // NOLINT(*-convert-member-functions-to-static) 服了clang-tidy又xjb乱报
@@ -64,12 +66,29 @@ int CLrcManagerWnd::InitDirect2D()
                 20.0f * GetSystemDpiScale(),
                 _T("zh-CN"),
                 &text_format)
-            );
+                );
+        UNREFERENCED_PARAMETER(
+            write_factory->CreateTextFormat(
+                    _T(""), // TODO: customizable text format
+                    nullptr,
+                    DWRITE_FONT_WEIGHT_NORMAL,
+                    DWRITE_FONT_STYLE_NORMAL,
+                    DWRITE_FONT_STRETCH_NORMAL,
+                    16.0f * GetSystemDpiScale(),
+                    _T("zh-CN"),
+                    &text_format_translation)
+                );
         UNREFERENCED_PARAMETER(
             text_format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER)
             );
         UNREFERENCED_PARAMETER(
             text_format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)
+            );
+        UNREFERENCED_PARAMETER(
+            text_format_translation->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER)
+            );
+        UNREFERENCED_PARAMETER(
+            text_format_translation->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
             );
     }
 	ATLTRACE("info: Lrc Direct2D surface created.\n");
@@ -91,18 +110,42 @@ void CLrcManagerWnd::UpdateLyric()
 
         CString lyric_main_text;
         int lrc_text_count = lrc_controller.get_current_lrc_lines_count();
-        lrc_controller.get_current_lrc_line_at(0, lyric_main_text);
+        assert(lrc_text_count > 0);
+        lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::None), lyric_main_text);
 
-        D2D1_RECT_F layoutRect = D2D1::RectF(
-            (FLOAT)rc.left, (FLOAT)rc.top,
-            (FLOAT)rc.right, (FLOAT)rc.bottom);
+        float lyric_main_metrics_width, lyric_main_metrics_height;
+        MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width, &lyric_main_metrics_height);
+
+        float center_x = (rc.Width() - lyric_main_metrics_width) / 2,
+              center_y = (rc.Height() - lyric_main_metrics_height) / 2;
+
+        D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width, center_y + lyric_main_metrics_height);
 
         render_target->DrawText(
             lyric_main_text.GetString(),
             lyric_main_text.GetLength(),
             text_format,
-            &layoutRect,
-            brush_unplay_text);
+            &center_lyric_layout,
+            brush_played_text);
+
+        if (lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation)) // TODO: switch between translation enabled, test only
+        {
+            if (int lrc_translation_index; (lrc_translation_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation)) != -1)
+            {
+                CString translation_text;
+                lrc_controller.get_current_lrc_line_at(lrc_translation_index, translation_text);
+                float lyric_translation_metrics_width, lyric_translation_metrics_height;
+                MeasureTextMetrics(translation_text, rc.right - rc.left, &lyric_translation_metrics_width, &lyric_translation_metrics_height, LrcAuxiliaryInfo::Translation);
+
+                D2D1_RECT_F translation_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height, rc.right, center_y + lyric_main_metrics_height + lyric_translation_metrics_height);
+                render_target->DrawText(
+                    translation_text.GetString(),
+                    translation_text.GetLength(),
+                    text_format_translation,
+                    &translation_layout,
+                    brush_unplay_text);
+            }
+        }
 
     } else
     {
@@ -118,6 +161,25 @@ void CLrcManagerWnd::UpdateLyric()
             &layoutRect,
             brush_unplay_text);
     }
+}
+
+void CLrcManagerWnd::MeasureTextMetrics(const CString& str,  float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info)
+{
+    Microsoft::WRL::ComPtr<IDWriteTextLayout> layout_ptr;
+    IDWriteTextFormat* text_format_1 = aux_info == LrcAuxiliaryInfo::Translation ? text_format_translation : text_format;
+    if (FAILED(write_factory->CreateTextLayout(str, str.GetLength(), text_format_1, max_width, FLT_MAX, &layout_ptr)))
+    {
+        ATLTRACE(_T("err: CreateTextLayout failed!\n"));
+        return;
+    }
+    DWRITE_TEXT_METRICS metrics{};
+    if (FAILED(layout_ptr->GetMetrics(&metrics)))
+    {
+        ATLTRACE(_T("err: GetMetrics failed!\n"));
+        return;
+    }
+    *width_out = metrics.widthIncludingTrailingWhitespace;
+    *height_out = metrics.height;
 }
 
 void CLrcManagerWnd::OnPaint()
@@ -180,6 +242,164 @@ void CLrcManagerWnd::DiscardDeviceResources()
     if (brush_unplay_text) { brush_unplay_text->Release(); brush_unplay_text = nullptr; }
     if (brush_played_text) { brush_played_text->Release(); brush_played_text = nullptr; }
     if (render_target) { render_target->Release(); render_target = nullptr; }
+}
+
+LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
+LrcAbstractNode(t), str_count(texts.GetSize()), lrc_texts(texts)
+{
+    for (int i = 0; i < str_count; ++i) {
+        lang_types.Add(LrcLanguageHelper::detect_language_type(texts[i]));
+        aux_infos.Add(LrcAuxiliaryInfo::None);
+    }
+    int jp_index = lang_types.Find(LrcLanguageHelper::LanguageType::jp), kr_index = lang_types.Find(LrcLanguageHelper::LanguageType::kr);
+    if (jp_index != -1)
+    {
+        aux_infos[jp_index] = LrcAuxiliaryInfo::None;
+        if (kr_index != -1)
+        {
+            ATLTRACE(_T("warn: jp & kr mix, ignoring kr line"));
+            aux_infos[kr_index] = LrcAuxiliaryInfo::Ignored;
+        }
+    }
+    if (jp_index == -1 && kr_index != -1)
+    {
+        aux_infos[kr_index] = LrcAuxiliaryInfo::None;
+    }
+    int eng_index;
+
+    if ((eng_index = lang_types.Find(LrcLanguageHelper::LanguageType::en)) != -1)
+    {
+        float eng_prob, romaji_prob;
+        LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(texts[eng_index], &eng_prob, &romaji_prob);
+        if (eng_prob > romaji_prob)
+        {
+            aux_infos[eng_index] = LrcAuxiliaryInfo::None;
+        }
+        else if (eng_prob < romaji_prob && (jp_index != -1 || kr_index != -1))
+        {
+            ATLTRACE(_T("info: romanization hit, line %s\n"), texts[eng_index].GetString());
+            aux_infos[eng_index] = LrcAuxiliaryInfo::Romanization;
+        }
+        else if (jp_index != -1 && kr_index != -1)
+        {
+            ATLTRACE(_T("warn: unknown romaji, ignoring eng line: %s\n"), texts[eng_index].GetString());
+            aux_infos[eng_index] = LrcAuxiliaryInfo::Ignored;
+        }
+    }
+    if (int zh_index = lang_types.Find(LrcLanguageHelper::LanguageType::zh); zh_index != -1)
+    {
+        if (jp_index != -1 || kr_index != -1 || eng_index != -1)
+        {
+            ATLTRACE(_T("info: translation hit, line %s\n"), texts[zh_index].GetString());
+            aux_infos[zh_index] = LrcAuxiliaryInfo::Translation;
+        }
+        else
+        {
+            aux_infos[zh_index] = LrcAuxiliaryInfo::None;
+        }
+    }
+}
+
+void LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(const CString& input, float* eng_prob, float* jpn_romaji_prob)
+{
+    CString lower = input;
+    lower.MakeLower();
+    CStringA str{CT2A(lower)};
+    std::initializer_list<CStringA> romaji_syllables = { // 五十音图（去掉单元音，因为也同时包含在英语中）
+        "ka","ki","ku","ke","ko","sa","shi","su","se","so",
+        "ta","chi","tsu","te","to","na","ni","nu","ne","no",
+        "ha","hi","fu","he","ho","ma","mi","mu","me","mo",
+        "ya","yu","yo","ra","ri","ru","re","ro","wa","wo","n"
+    };
+    std::initializer_list<CStringA> english_clusters = { // 常见英语辅音组合
+        "th","sh","ph","bl","cl","str","spr","pr","tr","dr"
+    };
+
+    int romaji_score = 0;
+    int english_score = 0;
+    float romaji_prob_out, eng_prob_out;
+
+    for (auto& syl : romaji_syllables)
+        if (str.Find(syl) != -1) romaji_score++;
+    for (auto& cl : english_clusters)
+        if (str.Find(cl) != -1) english_score++;
+
+    int vowels = 0, consonants = 0;
+    for (int i = 0; i < str.GetLength(); i++) {
+        if (unsigned char c = str[i]; isalpha(c)) {
+            if (c=='a'||c=='e'||c=='i'||c=='o'||c=='u')
+                vowels++;
+            else
+                consonants++;
+        }
+    }
+    double vowel_ratio = vowels + consonants > 0 ?
+                        (double)vowels / (vowels+consonants) : 0.0;
+    if (vowel_ratio > 0.45) romaji_score++;
+    else english_score++;
+
+    if (float total = static_cast<float>(romaji_score + english_score); total == 0) { // NOLINT(*-use-auto)
+        eng_prob_out = 0.5f;
+        romaji_prob_out = 0.5f;
+    } else {
+        eng_prob_out = (float)english_score / total;
+        romaji_prob_out = (float)romaji_score / total;
+    }
+    *eng_prob = eng_prob_out; *jpn_romaji_prob = romaji_prob_out;
+}
+
+LrcLanguageHelper::LanguageType
+LrcLanguageHelper::detect_language_type(const CString& input, float* probability)
+{
+    int zh = 0, jp = 0, kr = 0, en = 0;
+    for (int i = 0; i < input.GetLength(); ++i) {
+        if (wchar_t ch = input[i]; ch >= 0x4E00 && ch <= 0x9FFF)          // zh character
+            zh++;
+        else if ((ch >= 0x3040 && ch <= 0x309F) || // hiragana
+            (ch >= 0x30A0 && ch <= 0x30FF))        // katakana
+            jp++;
+        else if (ch >= 0xAC00 && ch <=0xD7AF)      // korean
+            kr++;
+        else if (ch <= 0x007F)                     // ANSI character, english
+            en++;
+    }
+
+    float length = static_cast<float>(zh + jp + kr + en); // NOLINT(*-use-auto)
+    if (length == 0) return LanguageType::others;
+
+    float zh_score = static_cast<float>(zh); // NOLINT(*-use-auto)
+    float jp_score = static_cast<float>(jp) * 2.f + static_cast<float>(zh) * 0.5f;  // 日语中包含部分汉字，对假名进行加权
+    float kr_score = static_cast<float>(kr); // NOLINT(*-use-auto)
+    float en_score = static_cast<float>(en); // NOLINT(*-use-auto)
+
+    auto write_prob = [&input, probability](const CString& out_type, float out_prob) {
+        if (probability) *probability = out_prob;
+        ATLTRACE(_T("info: line %s, type = %s, max prob = %f"),
+                 input.GetString(), out_type.GetString(), out_prob);
+    };
+
+    if (zh > 0 && jp > 0 && jp_score >= zh_score) {
+        write_prob(_T("jp"), jp_score / length);
+        return LanguageType::jp;
+    }
+
+    if (zh_score > jp_score && zh_score > en_score && zh_score > kr_score) {
+        write_prob(_T("zh"), zh_score / length);
+        return LanguageType::zh;
+    }
+    if (jp_score > zh_score && jp_score > en_score && jp_score > kr_score) {
+        write_prob(_T("jp"), jp_score / length);
+        return LanguageType::jp;
+    }
+    if (en_score > jp_score && en_score > kr_score && en_score > zh_score) {
+        write_prob(_T("en"), en_score / length);
+        return LanguageType::en;
+    }
+    if (kr_score > zh_score && kr_score > en_score && kr_score > jp_score) {
+        write_prob(_T("kr"), kr_score / length);
+        return LanguageType::kr;
+    }
+    return LanguageType::others;
 }
 
 LrcFileController::~LrcFileController()
@@ -246,8 +466,12 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             std::reverse(lrc_texts.GetData(), lrc_texts.GetData() + lrc_texts.GetSize());
         if (lrc_texts.GetSize() == 0)
 			return;
-        if (LrcNodeBase* node = LrcNodeFactory::CreateLrcNode(recorded_ms, lrc_texts)) {
+        if (LrcAbstractNode* node = LrcNodeFactory::CreateLrcNode(recorded_ms, lrc_texts)) {
             lrc_nodes.Add(node);
+            if (node->is_translation_enabled())
+                this->set_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation);
+            if (node->is_romanization_enabled())
+                this->set_auxiliary_info_enabled(LrcAuxiliaryInfo::Romanization);
         }
         else {
             AfxMessageBox(_T("err: create lrc node failed, aborting!"), MB_ICONERROR);
@@ -400,6 +624,11 @@ int LrcFileController::get_current_lrc_lines_count() const
 int LrcFileController::get_current_lrc_line_at(int index, CString& out_str) const
 {
     return lrc_nodes[cur_lrc_node_index]->get_lrc_str_at(index, out_str);
+}
+
+int LrcFileController::get_current_lrc_line_aux_index(LrcAuxiliaryInfo info) const
+{
+    return lrc_nodes[cur_lrc_node_index]->get_auxiliary_info_at(info);
 }
 
 LrcMetadataType LrcFileController::get_metadata_type(const CString& str)

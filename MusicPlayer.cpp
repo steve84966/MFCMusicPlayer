@@ -924,6 +924,11 @@ inline void MusicPlayer::start_audio_playback()
 	if (*playback_state == audio_playback_state_stopped) {
 		reset_audio_context();
 	}
+	if (source_voice) {
+		XAUDIO2_VOICE_STATE state;
+		source_voice->GetState(&state);
+		base_offset = state.SamplesPlayed;
+	}
 	InterlockedExchange(playback_state, audio_playback_state_init);
 	message_interval_timer = -1.0f;
 	audio_player_worker_thread = AfxBeginThread(

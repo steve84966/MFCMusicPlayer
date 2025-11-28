@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\MFCMusicPlayer.rc2""  // 闂?Microsoft Visual C++ 缂傚倹鐗炵欢顐︽儍閸曨喚銈繝?\n"
-    "#include ""l.CHS\\afxres.rc""      // 闁哄秴娲ら崳顖滅磼閸曨亝顐?\n"
+    "#include ""res\\MFCMusicPlayer.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹瑜版帗鍋嬮柣鎰仛椤愯姤銇勯幇鍫曟闁稿骸绉归弻娑㈠即閵娿儲鐏撻梺闈涚墱閸嬪懐鎹?\n"
+    "#include ""l.CHS\\afxres.rc""      // 闂傚倷绀侀幖顐ょ矓閺夋嚚娲Χ婢跺﹪妫峰銈嗙墬缁海澹曟總鍛婄厱闁哄洢鍔嬬花鍏笺亜?\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 闁告梻鍠曢崗姗€宕犻崫鍕闁硅矇鍐ㄧ厬闁哄銈囥偒婵?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂傚倷绀侀幉鈥愁潖婵犳艾绐楅柡鍥ュ灩缁€鍌涙叏濡炶浜鹃悗瑙勬礈婵炩偓鐎规洦鍋婂畷鐔碱敆閳ь剟顢旈鐐粹拺缁绢厼鎳愰悞浠嬫煕閹扳晛濡块柛姗嗗墴濮婃椽宕崟鍨紖闂侀潧鐗嗗ú銏ゅ磻閹烘垟鏀?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -112,6 +112,47 @@ BEGIN
     SCROLLBAR       IDC_SCROLLBARLRCVERTICAL,303,30,9,103,SBS_VERT
     LTEXT           "",IDC_LRCDISPLAY,117,30,186,103
     PUSHBUTTON      "译/あ",IDC_BUTTONTRANSLATION,77,173,20,20
+END
+
+IDD_MUSICPLAYERSETTINGDLG DIALOGEX 0, 0, 271, 211
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "设置"
+FONT 9, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,160,190,50,14
+    PUSHBUTTON      "取消",IDCANCEL,214,190,50,14
+    CONTROL         "",IDC_TABSETTINGS,"SysTabControl32",0x0,7,7,257,178
+END
+
+IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "音频后端",IDC_STATIC,37,31,51,9
+    COMBOBOX        IDC_COMBOAUDIOBACKENDSELECT,88,31,129,12,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "音频采样率",IDC_STATIC,37,49,51,9
+    EDITTEXT        IDC_EDITSAMPLERATE,88,49,98,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "kHz",IDC_STATIC,203,52,13,10
+    LTEXT           "声道数",IDC_STATIC,37,67,43,11
+    COMBOBOX        IDC_COMBOCHANNELCOUNT,88,67,129,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SETTINGS_CHILDPAGE_EQUALIZER DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_SLIDER_31HZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,46,26,21,100
+    CONTROL         "",IDC_SLIDER_62HZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,67,26,20,100
+    CONTROL         "",IDC_SLIDER_125HZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,87,26,20,100
+    CONTROL         "",IDC_SLIDER_250HZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,107,26,20,100
+    CONTROL         "",IDC_SLIDER_500HZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,127,26,20,100
+    CONTROL         "",IDC_SLIDER_1KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,147,26,20,100
+    CONTROL         "",IDC_SLIDER_2KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,166,26,21,100
+    CONTROL         "",IDC_SLIDER_4KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,187,26,21,100
+    CONTROL         "",IDC_SLIDER_8KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,207,26,21,100
+    CONTROL         "",IDC_SLIDER_16KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,227,26,21,100
+    LTEXT           "   31       62    125     250    500     1k      2k      4k       8k     16k  ",IDC_STATIC,46,135,201,8
 END
 
 
@@ -192,6 +233,62 @@ BEGIN
         HORZGUIDE, 173
         HORZGUIDE, 193
     END
+
+    IDD_MUSICPLAYERSETTINGDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 264
+        VERTGUIDE, 15
+        VERTGUIDE, 59
+        VERTGUIDE, 143
+        VERTGUIDE, 160
+        VERTGUIDE, 170
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
+        HORZGUIDE, 22
+        HORZGUIDE, 44
+        HORZGUIDE, 58
+        HORZGUIDE, 68
+        HORZGUIDE, 88
+        HORZGUIDE, 127
+        HORZGUIDE, 185
+    END
+
+    IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        VERTGUIDE, 37
+        VERTGUIDE, 88
+        VERTGUIDE, 217
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+        HORZGUIDE, 31
+        HORZGUIDE, 49
+        HORZGUIDE, 67
+    END
+
+    IDD_SETTINGS_CHILDPAGE_EQUALIZER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        VERTGUIDE, 27
+        VERTGUIDE, 46
+        VERTGUIDE, 67
+        VERTGUIDE, 87
+        VERTGUIDE, 107
+        VERTGUIDE, 127
+        VERTGUIDE, 147
+        VERTGUIDE, 167
+        VERTGUIDE, 187
+        VERTGUIDE, 207
+        VERTGUIDE, 227
+        VERTGUIDE, 247
+        VERTGUIDE, 267
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+        HORZGUIDE, 26
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -207,6 +304,21 @@ BEGIN
 END
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_MUSICPLAYERSETTINGDLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SETTINGS_CHILDPAGE_EQUALIZER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -243,6 +355,19 @@ BEGIN
     0
 END
 
+IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT DLGINIT
+BEGIN
+    IDC_COMBOAUDIOBACKENDSELECT, 0x403, 17, 0
+0x4158, 0x6475, 0x6f69, 0x2032, 0xb2b9, 0xedcf, 0xa3c4, 0xbdca, "\000" 
+    IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
+0xa5b5, 0xa8cd, 0xc0b5, "\000" 
+    IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
+0xa2c1, 0xe5cc, 0xf9c9, "\000" 
+    IDC_COMBOCHANNELCOUNT, 0x403, 13, 0
+0xc4cb, 0xa8cd, 0xc0b5, 0xb7bb, 0xc6c8, 0xf9c9, "\000" 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -272,10 +397,10 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE 4, 2
-#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傛牞绶惃鍕カ濠?
-#include "l.CHS\afxres.rc"      // 閺嶅洤鍣紒鍕
+#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹瑜版帗鍋嬮柣鎰仛椤愯姤銇勯幇鍫曟闁稿骸绉归弻娑㈠即閵娿儲鐏撻梺闈涚墱閸嬪懐鎹?
+#include "l.CHS\afxres.rc"      // 闂傚倷绀侀幖顐ょ矓閺夋嚚娲Χ婢跺﹪妫峰銈嗙墬缁海澹曟總鍛婄厱闁哄洢鍔嬬花鍏笺亜?
 #if !defined(_AFXDLL)
-#include "l.CHS\afxribbon.rc"   // MFC 閸旂喕鍏橀崠鍝勬嫲閹貉冨煑閺壜ょカ濠?
+#include "l.CHS\afxribbon.rc"   // MFC 闂傚倷绀侀幉鈥愁潖婵犳艾绐楅柡鍥ュ灩缁€鍌涙叏濡炶浜鹃悗瑙勬礈婵炩偓鐎规洦鍋婂畷鐔碱敆閳ь剟顢旈鐐粹拺缁绢厼鎳愰悞浠嬫煕閹扳晛濡块柛姗嗗墴濮婃椽宕崟鍨紖闂侀潧鐗嗗ú銏ゅ磻閹烘垟鏀?
 #endif
 #endif
 

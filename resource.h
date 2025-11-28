@@ -7,9 +7,12 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_MFCMUSICPLAYER_DIALOG       102
 #define IDS_CREDIT                      102
+#define IDD_MUSICPLAYERSETTINGDLG       103
 #define IDR_MAINFRAME                   128
 #define IDI_ICON1                       131
 #define IDI_ICONVOLUME                  131
+#define IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT 135
+#define IDD_SETTINGS_CHILDPAGE_EQUALIZER 138
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
@@ -20,21 +23,37 @@
 #define IDC_BUTTONPAUSE                 1006
 #define IDC_SLIDER1                     1007
 #define IDC_SLIDERVOLUMECTRL            1007
+#define IDC_SLIDER_31HZ                 1007
 #define IDC_STATICVOLUMEICON            1008
+#define IDC_SLIDER_62HZ                 1008
 #define IDC_SCROLLBARLRCVERTICAL        1009
+#define IDC_SLIDER_125HZ                1009
+#define IDC_SLIDER_250HZ                1010
 #define IDC_LRCDISPLAY                  1011
+#define IDC_SLIDER_500HZ                1011
 #define IDC_BUTTONTRANSLATION           1012
+#define IDC_SLIDER_1KHZ                 1012
 #define IDC_BUTTON2                     1013
+#define IDC_SLIDER_2KHZ                 1013
 #define IDC_MFCLINK1                    1014
 #define IDC_MFCLINKGITHUB               1014
+#define IDC_SLIDER_4KHZ                 1014
+#define IDC_COMBOAUDIOBACKENDSELECT     1015
+#define IDC_SLIDER_8KHZ                 1015
+#define IDC_EDITSAMPLERATE              1016
+#define IDC_SLIDER_31HZ2                1016
+#define IDC_SLIDER_16KHZ                1016
+#define IDC_COMBO2                      1017
+#define IDC_COMBOCHANNELCOUNT           1017
+#define IDC_TABSETTINGS                 1018
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1015
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

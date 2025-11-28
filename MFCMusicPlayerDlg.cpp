@@ -268,6 +268,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerPause(WPARAM wParam, LPARAM lParam) // NOLIN
 
 LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
 {
+	ATLTRACE("info: player notify stop, reset fBasePlayTime\n");
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	return LRESULT();

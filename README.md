@@ -24,7 +24,9 @@ Features:
 - lyric display support
 - translation / romanization support
 
+Screenshot:
 
+![Screenshot](res/screenshot-1.png)
 
 Depends: FFmpeg, XAudio2
 
