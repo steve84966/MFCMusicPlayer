@@ -80,6 +80,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONPLAY, &CMFCMusicPlayerDlg::OnClickedButtonPlay)
 	ON_BN_CLICKED(IDC_BUTTONSTOP, &CMFCMusicPlayerDlg::OnClickedButtonStop)
 	ON_BN_CLICKED(IDC_BUTTONPAUSE, &CMFCMusicPlayerDlg::OnClickedButtonPause)
+	ON_BN_CLICKED(IDC_BUTTONTRANSLATION, &CMFCMusicPlayerDlg::OnClickedButtonTranslation)
 	ON_MESSAGE(WM_PLAYER_FILE_INIT, &CMFCMusicPlayerDlg::OnPlayerFileInit)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_PAUSE, &CMFCMusicPlayerDlg::OnPlayerPause)
@@ -243,6 +244,13 @@ void CMFCMusicPlayerDlg::OnClickedButtonPause()
 	if (music_player) {
 		music_player->Pause();
 	}
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonTranslation()
+{
+	// get button check state
+	BOOL bChecked = m_buttonTranslation.GetCheck() == BST_CHECKED;
+	lrc_manager_wnd.SetTranslationEnabled(bChecked);
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonStop()

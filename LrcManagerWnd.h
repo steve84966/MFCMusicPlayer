@@ -174,6 +174,9 @@ public:
 	int InitLrcControllerWithFile(const CString& file_path);
 	void UpdateLyric();
 
+	void SetTranslationEnabled(bool enable) { enable_translation = enable; }
+	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
+
 	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::None);
 	// note: passing static control via SubclassDlgItem, no OnCreate call
 	afx_msg void OnPaint();
@@ -190,6 +193,7 @@ protected:
 	D2D1::ColorF default_dialog_color{0};
 
 	LrcFileController lrc_controller;
+	bool enable_translation = false;
 
 	DECLARE_DYNAMIC(CLrcManagerWnd)
 	DECLARE_MESSAGE_MAP()

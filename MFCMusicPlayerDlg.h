@@ -61,6 +61,7 @@ public:
 	afx_msg void OnClickedButtonOpen();
 	afx_msg void OnClickedButtonPlay();
 	afx_msg void OnClickedButtonPause();
+	afx_msg void OnClickedButtonTranslation();
 	afx_msg LRESULT OnPlayerFileInit(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerTimeChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerPause(WPARAM wParam, LPARAM lParam);

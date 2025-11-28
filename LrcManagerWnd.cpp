@@ -128,7 +128,7 @@ void CLrcManagerWnd::UpdateLyric()
             &center_lyric_layout,
             brush_played_text);
 
-        if (lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation)) // TODO: switch between translation enabled, test only
+        if (IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation)) // TODO: switch between translation enabled, test only
         {
             if (int lrc_translation_index; (lrc_translation_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation)) != -1)
             {
