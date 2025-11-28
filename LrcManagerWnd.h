@@ -9,7 +9,7 @@ public:
 		zh, en, jp, kr, others
 	};
 	static void detect_eng_vs_jpn_romaji_prob(const CString& input, float* eng_prob, float* jpn_romaji_prob);
-	static LanguageType detect_language_type(const CString& input, float* probability = nullptr);
+	static LanguageType detect_language_type(const CString& input_trimmed, float* probability = nullptr);
 };
 
 class LrcAbstractNode {

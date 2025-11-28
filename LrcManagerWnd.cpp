@@ -39,6 +39,7 @@ CLrcManagerWnd::CLrcManagerWnd() :
 CLrcManagerWnd::~CLrcManagerWnd() { 
     DiscardDeviceResources();
     if (text_format) text_format->Release();
+    if (text_format_translation) text_format_translation->Release();
     if (write_factory) write_factory->Release();
     if (d2d1_factory) d2d1_factory->Release(); 
 }
@@ -378,9 +379,15 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
                  input.GetString(), out_type.GetString(), out_prob);
     };
 
-    if (zh > 0 && jp > 0 && jp_score >= zh_score) {
+    if (zh > 0 && jp > 0 && jp_score > zh_score) {
         write_prob(_T("jp"), jp_score / length);
         return LanguageType::jp;
+    }
+
+    if (zh > 0 && en > 0 && en_score > zh_score)
+    {
+        write_prob(_T("zh"), zh_score / length);
+        return LanguageType::zh;
     }
 
     if (zh_score > jp_score && zh_score > en_score && zh_score > kr_score) {
