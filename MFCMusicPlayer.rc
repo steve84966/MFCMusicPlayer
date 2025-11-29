@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\MFCMusicPlayer.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹瑜版帗鍋嬮柣鎰仛椤愯姤銇勯幇鍫曟闁稿骸绉归弻娑㈠即閵娿儲鐏撻梺闈涚墱閸嬪懐鎹?\n"
-    "#include ""l.CHS\\afxres.rc""      // 闂傚倷绀侀幖顐ょ矓閺夋嚚娲Χ婢跺﹪妫峰銈嗙墬缁海澹曟總鍛婄厱闁哄洢鍔嬬花鍏笺亜?\n"
+    "#include ""res\\MFCMusicPlayer.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹閹间礁纾圭憸鐗堝笚閸嬪鏌ｉ幇顒備粵妞ゆ劘濮ら妵鍕箛閸洘顎嶉梺绋块缁夊綊寮诲☉銏犲嵆闁靛鍎查悘鎾绘⒑闂堟稓澧遍柛瀣噽閹?\n"
+    "#include ""l.CHS\\afxres.rc""      // 闂傚倸鍊风粈渚€骞栭銈囩煋闁哄鍤氬ú顏勎у璺猴躬濡嘲顪冮妶鍡欏缂侇喖娴锋竟鏇熺附閸涘﹦鍘遍梺鍝勬储閸斿鑺遍崗绗轰簻?\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂傚倷绀侀幉鈥愁潖婵犳艾绐楅柡鍥ュ灩缁€鍌涙叏濡炶浜鹃悗瑙勬礈婵炩偓鐎规洦鍋婂畷鐔碱敆閳ь剟顢旈鐐粹拺缁绢厼鎳愰悞浠嬫煕閹扳晛濡块柛姗嗗墴濮婃椽宕崟鍨紖闂侀潧鐗嗗ú銏ゅ磻閹烘垟鏀?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂傚倸鍊风粈渚€骞夐垾鎰佹綎濠电姵鑹剧粣妤呮煛閸ャ儱鐏╃紒鈧崒娑欏弿婵＄偠顕ф禍楣冩倵鐟欏嫭绀堝┑鐐╁亾閻庤娲﹂崑濠傜暦閻旂⒈鏁嗛柍褜鍓熼、鏃堫敍閻愮补鎷虹紒缁㈠幖閹虫劙鎮炴禒瀣厱闁规壋鏅涙俊鍧楁煕濮楀棗澧存慨濠冩そ瀹曨偊宕熼崹顐礀闂備線娼ч悧鍡椕洪姀銈呯；闁圭儤鍨熼弨?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -371,6 +371,32 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MENULYRICCONTROL MENU
+BEGIN
+    POPUP " "
+    BEGIN
+        MENUITEM "加载自定义歌词...",                  ID__32771
+        POPUP "歌词字体设置"
+        BEGIN
+            MENUITEM "正文",                          ID_32773
+            MENUITEM "翻译",                          ID_32774
+            MENUITEM "罗马音",                         ID_32775
+        END
+        POPUP "歌词颜色设置"
+        BEGIN
+            MENUITEM "正在播放",                        ID_32777
+            MENUITEM "未播放/已播放",                     ID_32778
+            MENUITEM "辅助信息显示",                      ID_32779
+        END
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -397,10 +423,10 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE 4, 2
-#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹瑜版帗鍋嬮柣鎰仛椤愯姤銇勯幇鍫曟闁稿骸绉归弻娑㈠即閵娿儲鐏撻梺闈涚墱閸嬪懐鎹?
-#include "l.CHS\afxres.rc"      // 闂傚倷绀侀幖顐ょ矓閺夋嚚娲Χ婢跺﹪妫峰銈嗙墬缁海澹曟總鍛婄厱闁哄洢鍔嬬花鍏笺亜?
+#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹閹间礁纾圭憸鐗堝笚閸嬪鏌ｉ幇顒備粵妞ゆ劘濮ら妵鍕箛閸洘顎嶉梺绋块缁夊綊寮诲☉銏犲嵆闁靛鍎查悘鎾绘⒑闂堟稓澧遍柛瀣噽閹?
+#include "l.CHS\afxres.rc"      // 闂傚倸鍊风粈渚€骞栭銈囩煋闁哄鍤氬ú顏勎у璺猴躬濡嘲顪冮妶鍡欏缂侇喖娴锋竟鏇熺附閸涘﹦鍘遍梺鍝勬储閸斿鑺遍崗绗轰簻?
 #if !defined(_AFXDLL)
-#include "l.CHS\afxribbon.rc"   // MFC 闂傚倷绀侀幉鈥愁潖婵犳艾绐楅柡鍥ュ灩缁€鍌涙叏濡炶浜鹃悗瑙勬礈婵炩偓鐎规洦鍋婂畷鐔碱敆閳ь剟顢旈鐐粹拺缁绢厼鎳愰悞浠嬫煕閹扳晛濡块柛姗嗗墴濮婃椽宕崟鍨紖闂侀潧鐗嗗ú銏ゅ磻閹烘垟鏀?
+#include "l.CHS\afxribbon.rc"   // MFC 闂傚倸鍊风粈渚€骞夐垾鎰佹綎濠电姵鑹剧粣妤呮煛閸ャ儱鐏╃紒鈧崒娑欏弿婵＄偠顕ф禍楣冩倵鐟欏嫭绀堝┑鐐╁亾閻庤娲﹂崑濠傜暦閻旂⒈鏁嗛柍褜鍓熼、鏃堫敍閻愮补鎷虹紒缁㈠幖閹虫劙鎮炴禒瀣厱闁规壋鏅涙俊鍧楁煕濮楀棗澧存慨濠冩そ瀹曨偊宕熼崹顐礀闂備線娼ч悧鍡椕洪姀銈呯；闁圭儤鍨熼弨?
 #endif
 #endif
 

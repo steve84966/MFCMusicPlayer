@@ -1,7 +1,6 @@
-﻿#include "LrcManagerWnd.h"
-
-#include "pch.h"
+﻿#include "pch.h"
 #include "LrcManagerWnd.h"
+// #include "Resource.h"
 
 LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) { // NOLINT(*-convert-member-functions-to-static) 服了clang-tidy又xjb乱报
     // TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -9,8 +8,11 @@ LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) { // NO
     float time = *reinterpret_cast<float*>(&raw);
 
     int time_ms = static_cast<int>(time * 1000.0f);
-    lrc_controller.set_time_stamp(time_ms);
-	this->Invalidate(FALSE);
+    if (lrc_controller.valid())
+    {
+        lrc_controller.set_time_stamp(time_ms);
+        this->Invalidate(FALSE);
+    }
     return LRESULT();
 }
 
@@ -18,13 +20,14 @@ IMPLEMENT_DYNAMIC(CLrcManagerWnd, CWnd)
 BEGIN_MESSAGE_MAP(CLrcManagerWnd, CWnd)
     ON_WM_PAINT()
     ON_WM_SIZE()
+    ON_WM_CONTEXTMENU()
     ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CLrcManagerWnd::OnPlayerTimeChange)
 END_MESSAGE_MAP()
 
-CLrcManagerWnd::CLrcManagerWnd() : 
-    d2d1_factory(nullptr), render_target(nullptr), 
+CLrcManagerWnd::CLrcManagerWnd() :
+    d2d1_factory(nullptr), render_target(nullptr),
     brush_unplay_text(nullptr), brush_played_text(nullptr),
-    write_factory(nullptr), text_format(nullptr)
+    write_factory(nullptr), text_format(nullptr), text_format_translation(nullptr)
 {
     COLORREF cr = ::GetSysColor(COLOR_BTNFACE);
     FLOAT r = GetRValue(cr) / 255.0f;
@@ -36,12 +39,12 @@ CLrcManagerWnd::CLrcManagerWnd() :
     InitDirect2D();
 }
 
-CLrcManagerWnd::~CLrcManagerWnd() { 
+CLrcManagerWnd::~CLrcManagerWnd() {
     DiscardDeviceResources();
     if (text_format) text_format->Release();
     if (text_format_translation) text_format_translation->Release();
     if (write_factory) write_factory->Release();
-    if (d2d1_factory) d2d1_factory->Release(); 
+    if (d2d1_factory) d2d1_factory->Release();
 }
 
 int CLrcManagerWnd::InitDirect2D()
@@ -99,6 +102,7 @@ int CLrcManagerWnd::InitDirect2D()
 int CLrcManagerWnd::InitLrcControllerWithFile(const CString& file_path)
 {
     lrc_controller.parse_lrc_file(file_path);
+    Invalidate(FALSE);
     return lrc_controller.valid();
 }
 
@@ -110,15 +114,13 @@ void CLrcManagerWnd::UpdateLyric()
     {
 
         CString lyric_main_text;
-        int lrc_text_count = lrc_controller.get_current_lrc_lines_count();
-        assert(lrc_text_count > 0);
         lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::None), lyric_main_text);
 
         float lyric_main_metrics_width, lyric_main_metrics_height;
         MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width, &lyric_main_metrics_height);
 
         float center_x = (rc.Width() - lyric_main_metrics_width) / 2,
-              center_y = (rc.Height() - lyric_main_metrics_height) / 2;
+              center_y = (rc.Height() - lyric_main_metrics_height) / 2 - 20;
 
         D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width, center_y + lyric_main_metrics_height);
 
@@ -129,13 +131,51 @@ void CLrcManagerWnd::UpdateLyric()
             &center_lyric_layout,
             brush_played_text);
 
+        int lrc_prev_node_index, lrc_next_node_index;
+        float lyric_prev_metrics_width, lyric_prev_metrics_height;
+        float lyric_next_metrics_width, lyric_next_metrics_height;
+        lrc_prev_node_index = lrc_controller.get_current_lrc_node_index() - 1;
+        lrc_next_node_index = lrc_controller.get_current_lrc_node_index() + 1;
+        if (lrc_prev_node_index >= 0)
+        {
+            CString lyric_prev_text;
+            lrc_controller.get_lrc_line_at(lrc_prev_node_index,
+                lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::None),
+                lyric_prev_text);
+            MeasureTextMetrics(lyric_prev_text, rc.right - rc.left, &lyric_prev_metrics_width, &lyric_prev_metrics_height);
+            D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 40, rc.right, center_y - 40);
+            render_target->DrawText(
+                lyric_prev_text.GetString(),
+                lyric_prev_text.GetLength(),
+                text_format,
+                &prev_layout,
+                brush_unplay_text);
+        }
+
+        if (lrc_next_node_index < lrc_controller.get_lrc_node_count())
+        {
+            CString lyric_next_text;
+            lrc_controller.get_lrc_line_at(lrc_next_node_index,
+                lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::None),
+                lyric_next_text);
+            MeasureTextMetrics(lyric_next_text, rc.right - rc.left, &lyric_next_metrics_width, &lyric_next_metrics_height);
+            D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 40, rc.right, center_y + lyric_main_metrics_height + lyric_next_metrics_height + 40);
+            render_target->DrawText(
+                lyric_next_text.GetString(),
+                lyric_next_text.GetLength(),
+                text_format,
+                &next_layout,
+                brush_unplay_text
+            );
+        }
+
         if (IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation)) // TODO: switch between translation enabled, test only
         {
+            float lyric_translation_metrics_width, lyric_translation_metrics_height;
             if (int lrc_translation_index; (lrc_translation_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation)) != -1)
             {
                 CString translation_text;
                 lrc_controller.get_current_lrc_line_at(lrc_translation_index, translation_text);
-                float lyric_translation_metrics_width, lyric_translation_metrics_height;
                 MeasureTextMetrics(translation_text, rc.right - rc.left, &lyric_translation_metrics_width, &lyric_translation_metrics_height, LrcAuxiliaryInfo::Translation);
 
                 D2D1_RECT_F translation_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height, rc.right, center_y + lyric_main_metrics_height + lyric_translation_metrics_height);
@@ -144,7 +184,42 @@ void CLrcManagerWnd::UpdateLyric()
                     translation_text.GetLength(),
                     text_format_translation,
                     &translation_layout,
-                    brush_unplay_text);
+                    brush_played_text);
+            }
+
+            // prev&next
+            int lrc_translation_prev_index, lrc_translation_next_index;
+            lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
+            lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::Translation);
+            if (lrc_translation_prev_index >= 0)
+            {
+                CString translation_prev_text;
+                lrc_controller.get_lrc_line_at(lrc_prev_node_index, lrc_translation_prev_index, translation_prev_text);
+                float translation_prev_metrics_width, translation_prev_metrics_height;
+                MeasureTextMetrics(translation_prev_text, rc.right - rc.left, &translation_prev_metrics_width, &translation_prev_metrics_height, LrcAuxiliaryInfo::Translation);
+                D2D1_RECT_F translation_prev_layout_rect = D2D1::RectF(rc.left, center_y - 40, rc.right, center_y);
+                render_target->DrawText(
+                    translation_prev_text.GetString(),
+                    translation_prev_text.GetLength(),
+                    text_format_translation,
+                    &translation_prev_layout_rect,
+                    brush_unplay_text
+                    );
+            }
+            if (lrc_translation_next_index >= 0)
+            {
+                CString translation_next_text;
+                lrc_controller.get_lrc_line_at(lrc_next_node_index, lrc_translation_next_index, translation_next_text);
+                float translation_next_metrics_width, translation_next_metrics_height;
+                MeasureTextMetrics(translation_next_text, rc.right - rc.left, &translation_next_metrics_width, &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
+                D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10, rc.right, center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10);
+                render_target->DrawText(
+                    translation_next_text.GetString(),
+                    translation_next_text.GetLength(),
+                    text_format_translation,
+                    &translation_next_layout_rect,
+                    brush_unplay_text
+                );
             }
         }
 
@@ -206,6 +281,21 @@ void CLrcManagerWnd::OnSize(UINT nType, int cx, int cy)
     if (render_target)
     {
         UNREFERENCED_PARAMETER(render_target->Resize(D2D1::SizeU(cx, cy)));
+    }
+}
+
+void CLrcManagerWnd::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	CWnd::OnContextMenu(pWnd, point);
+    CMenu menu;
+    if (menu.LoadMenu(IDR_MENULYRICCONTROL))
+    {
+        CMenu* pPopup = menu.GetSubMenu(0);
+        ASSERT(pPopup != nullptr);
+
+        // 显示菜单
+        pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+            point.x, point.y, this);
     }
 }
 
@@ -296,6 +386,14 @@ LrcAbstractNode(t), str_count(texts.GetSize()), lrc_texts(texts)
         }
         else
         {
+            for (int i = zh_index + 1; i < str_count; ++i)
+            {
+                if (lang_types[i] == LrcLanguageHelper::LanguageType::zh)
+                {
+                    aux_infos[i] = LrcAuxiliaryInfo::Translation; // 无法判断中文和日文，假定后出现的为翻译
+                    break;
+                }
+            }
             aux_infos[zh_index] = LrcAuxiliaryInfo::None;
         }
     }
@@ -633,9 +731,21 @@ int LrcFileController::get_current_lrc_line_at(int index, CString& out_str) cons
     return lrc_nodes[cur_lrc_node_index]->get_lrc_str_at(index, out_str);
 }
 
+int LrcFileController::get_lrc_line_at(int lrc_node_index, int index, CString& out_str) const
+{
+    assert(lrc_node_index >= 0 && lrc_node_index < lrc_nodes.GetCount() && index >= 0 && index < lrc_nodes[lrc_node_index]->get_lrc_str_count());
+    return lrc_nodes[lrc_node_index]->get_lrc_str_at(index, out_str);
+}
+
 int LrcFileController::get_current_lrc_line_aux_index(LrcAuxiliaryInfo info) const
 {
     return lrc_nodes[cur_lrc_node_index]->get_auxiliary_info_at(info);
+}
+
+int LrcFileController::get_lrc_line_aux_index(int lrc_node_index, LrcAuxiliaryInfo info) const
+{
+    assert(lrc_node_index >= 0 && lrc_node_index < lrc_nodes.GetCount());
+    return lrc_nodes[lrc_node_index]->get_auxiliary_info_at(info);
 }
 
 LrcMetadataType LrcFileController::get_metadata_type(const CString& str)

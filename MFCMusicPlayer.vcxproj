@@ -199,6 +199,7 @@
     <ClInclude Include="MFCMusicPlayerDlg.h" />
     <ClInclude Include="MusicPlayer.h" />
     <ClInclude Include="MusicPlayerSettingDlg.h" />
+    <ClInclude Include="MusicPlayerSettingsManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="MFCMusicPlayerDlg.cpp" />
     <ClCompile Include="MusicPlayer.cpp" />
     <ClCompile Include="MusicPlayerSettingDlg.cpp" />
+    <ClCompile Include="MusicPlayerSettingsManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

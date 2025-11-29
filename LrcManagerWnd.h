@@ -1,5 +1,7 @@
 #pragma once
 #include "framework.h"
+#include "resource.h"
+
 
 class LrcLanguageHelper
 {
@@ -137,10 +139,12 @@ public:
 	[[nodiscard]] bool valid() const;
 	[[nodiscard]] int get_current_time_stamp() const { return time_stamp_ms; }
 	[[nodiscard]] int get_current_lrc_lines_count() const;
-	[[nodiscard]] int get_current_lrc_line_index() const { return static_cast<int>(cur_lrc_node_index); }
+	[[nodiscard]] int get_current_lrc_node_index() const { return static_cast<int>(cur_lrc_node_index); }
 	[[nodiscard]] int get_lrc_node_count() const { return static_cast<int>(lrc_nodes.GetCount()); }
 	int get_current_lrc_line_at(int index, CString& out_str) const;
+	int get_lrc_line_at(int lrc_node_index, int index, CString& out_str) const;
 	[[nodiscard]] int get_current_lrc_line_aux_index(LrcAuxiliaryInfo info) const;
+	[[nodiscard]] int get_lrc_line_aux_index(int lrc_node_index, LrcAuxiliaryInfo info) const;
 
 	[[nodiscard]] int is_auxiliary_info_enabled(LrcAuxiliaryInfo enable_info) const
 	{
@@ -174,13 +178,14 @@ public:
 	int InitLrcControllerWithFile(const CString& file_path);
 	void UpdateLyric();
 
-	void SetTranslationEnabled(bool enable) { enable_translation = enable; }
+	void SetTranslationEnabled(bool enable) { enable_translation = enable; Invalidate(FALSE); }
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
 
 	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::None);
 	// note: passing static control via SubclassDlgItem, no OnCreate call
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 
 protected:
 	ID2D1Factory* d2d1_factory;
