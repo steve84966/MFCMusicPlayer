@@ -259,6 +259,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 	if (music_player) {
 		music_player->Stop();
 	}
+	fBasePlayTime = 0.f;
 }
 
 LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
@@ -324,7 +325,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	UINT32 raw = static_cast<UINT32>(wParam); // NOLINT(*-use-auto)
 	float time = *reinterpret_cast<float*>(&raw);
 	float length = music_player->GetMusicTimeLength();
-	if (fBasePlayTime > 0.f)
+	if (!(fBasePlayTime < 0.f))
 	{
 		if (fabs(time - fBasePlayTime) > 1.f)
 		{
@@ -332,6 +333,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 			time = fBasePlayTime;
 		}
 	}
+	fBasePlayTime = time;
 	CString timeStr;
 	int min = static_cast<int>(time) / 60, sec = static_cast<int>(time) % 60;
 	timeStr.Format(_T("%02d:%02d / %02d:%02d"), min, sec, static_cast<int>(length) / 60, static_cast<int>(length) % 60);
@@ -346,8 +348,6 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 
 	// re-post message to LrcManagerWnd
 	lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
-	if (fBasePlayTime > 0.f)
-		fBasePlayTime = time;
 	return LRESULT();
 }
 
@@ -404,8 +404,8 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 					ATLTRACE("info: music is playing, resume from seek point\n");
 					Sleep(5);
 					music_player->Start();
-					fBasePlayTime = fCurSelectedTime;
 				}
+				fBasePlayTime = fCurSelectedTime;
 			}
 			break;
 		default:

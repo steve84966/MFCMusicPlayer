@@ -189,38 +189,47 @@ void CLrcManagerWnd::UpdateLyric()
 
             // prev&next
             int lrc_translation_prev_index, lrc_translation_next_index;
-            lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
-            lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::Translation);
-            if (lrc_translation_prev_index >= 0)
+            if (lrc_prev_node_index >= 0)
             {
-                CString translation_prev_text;
-                lrc_controller.get_lrc_line_at(lrc_prev_node_index, lrc_translation_prev_index, translation_prev_text);
-                float translation_prev_metrics_width, translation_prev_metrics_height;
-                MeasureTextMetrics(translation_prev_text, rc.right - rc.left, &translation_prev_metrics_width, &translation_prev_metrics_height, LrcAuxiliaryInfo::Translation);
-                D2D1_RECT_F translation_prev_layout_rect = D2D1::RectF(rc.left, center_y - 40, rc.right, center_y);
-                render_target->DrawText(
-                    translation_prev_text.GetString(),
-                    translation_prev_text.GetLength(),
-                    text_format_translation,
-                    &translation_prev_layout_rect,
-                    brush_unplay_text
+                lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
+                if (lrc_translation_prev_index >= 0)
+                {
+                    CString translation_prev_text;
+                    lrc_controller.get_lrc_line_at(lrc_prev_node_index, lrc_translation_prev_index, translation_prev_text);
+                    float translation_prev_metrics_width, translation_prev_metrics_height;
+                    MeasureTextMetrics(translation_prev_text, rc.right - rc.left, &translation_prev_metrics_width, &translation_prev_metrics_height, LrcAuxiliaryInfo::Translation);
+                    D2D1_RECT_F translation_prev_layout_rect = D2D1::RectF(rc.left, center_y - 40, rc.right, center_y);
+                    render_target->DrawText(
+                        translation_prev_text.GetString(),
+                        translation_prev_text.GetLength(),
+                        text_format_translation,
+                        &translation_prev_layout_rect,
+                        brush_unplay_text
+                        );
+                }
+            }
+
+            if (lrc_next_node_index < lrc_controller.get_lrc_node_count())
+            {
+                lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::Translation);
+                if (lrc_translation_next_index >= 0)
+                {
+                    CString translation_next_text;
+                    lrc_controller.get_lrc_line_at(lrc_next_node_index, lrc_translation_next_index, translation_next_text);
+                    float translation_next_metrics_width, translation_next_metrics_height;
+                    MeasureTextMetrics(translation_next_text, rc.right - rc.left, &translation_next_metrics_width, &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
+                    D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10, rc.right, center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10);
+                    render_target->DrawText(
+                        translation_next_text.GetString(),
+                        translation_next_text.GetLength(),
+                        text_format_translation,
+                        &translation_next_layout_rect,
+                        brush_unplay_text
                     );
+                }
             }
-            if (lrc_translation_next_index >= 0)
-            {
-                CString translation_next_text;
-                lrc_controller.get_lrc_line_at(lrc_next_node_index, lrc_translation_next_index, translation_next_text);
-                float translation_next_metrics_width, translation_next_metrics_height;
-                MeasureTextMetrics(translation_next_text, rc.right - rc.left, &translation_next_metrics_width, &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
-                D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10, rc.right, center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10);
-                render_target->DrawText(
-                    translation_next_text.GetString(),
-                    translation_next_text.GetLength(),
-                    text_format_translation,
-                    &translation_next_layout_rect,
-                    brush_unplay_text
-                );
-            }
+
+
         }
 
     } else
