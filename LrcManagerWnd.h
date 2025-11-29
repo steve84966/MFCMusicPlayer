@@ -178,6 +178,10 @@ public:
 	int InitLrcControllerWithFile(const CString& file_path);
 	void UpdateLyric();
 
+	[[nodiscard]] int GetCurrentLrcNodeIndex() const { return lrc_controller.get_current_lrc_node_index(); }
+	[[nodiscard]] int GetLrcNodeCount() const { return lrc_controller.get_lrc_node_count(); }
+	[[nodiscard]] bool IsValid() const { return lrc_controller.valid(); }
+
 	void SetTranslationEnabled(bool enable) { enable_translation = enable; Invalidate(FALSE); }
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
 

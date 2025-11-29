@@ -70,6 +70,7 @@ void CMFCMusicPlayerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLIDERPROGRESS, m_sliderProgress);
 	DDX_Control(pDX, IDC_SLIDERVOLUMECTRL, m_sliderVolumeCtrl);
 	DDX_Control(pDX, IDC_BUTTONTRANSLATION, m_buttonTranslation);
+	DDX_Control(pDX, IDC_SCROLLBARLRCVERTICAL, m_scrollBarLrcVertical);
 }
 
 BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
@@ -127,6 +128,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_sliderProgress.SetRangeMax(1000);
 	m_sliderVolumeCtrl.SetRangeMax(100);
 	m_sliderVolumeCtrl.SetPos(100);
+	m_scrollBarLrcVertical.SetScrollRange(0, 1000, TRUE);
 
 	lrc_manager_wnd.SubclassDlgItem(IDC_LRCDISPLAY, this);
 
@@ -280,6 +282,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	ATLTRACE("info: player notify stop, reset fBasePlayTime\n");
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
+	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	return LRESULT();
 }
 
@@ -345,6 +348,14 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	float ratio = time / length;
 	// if user is controlling the slider, do not adjust
 	m_sliderProgress.SetPos(static_cast<int>(ratio * 1000));
+
+	if (lrc_manager_wnd.IsValid())
+	{
+		int current_lrc_node_index = lrc_manager_wnd.GetCurrentLrcNodeIndex();
+		int lrc_node_count = lrc_manager_wnd.GetLrcNodeCount();
+		int iCurVerticalPos = static_cast<int>(static_cast<float>(current_lrc_node_index) * 1000.0f / static_cast<float>(lrc_node_count));
+	    m_scrollBarLrcVertical.SetScrollPos(iCurVerticalPos, TRUE);
+	}
 
 	// re-post message to LrcManagerWnd
 	lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
