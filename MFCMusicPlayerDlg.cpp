@@ -70,6 +70,7 @@ void CMFCMusicPlayerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLIDERPROGRESS, m_sliderProgress);
 	DDX_Control(pDX, IDC_SLIDERVOLUMECTRL, m_sliderVolumeCtrl);
 	DDX_Control(pDX, IDC_BUTTONTRANSLATION, m_buttonTranslation);
+	DDX_Control(pDX, IDC_BUTTONROMANIZATION, m_buttonRomanization);
 	DDX_Control(pDX, IDC_SCROLLBARLRCVERTICAL, m_scrollBarLrcVertical);
 }
 
@@ -129,10 +130,14 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_sliderVolumeCtrl.SetRangeMax(100);
 	m_sliderVolumeCtrl.SetPos(100);
 	m_scrollBarLrcVertical.SetScrollRange(0, 1000, TRUE);
+	m_scrollBarLrcVertical.EnableWindow(FALSE);
+	m_buttonTranslation.EnableWindow(FALSE);
+	m_buttonRomanization.EnableWindow(FALSE);
 
 	lrc_manager_wnd.SubclassDlgItem(IDC_LRCDISPLAY, this);
 
 	m_buttonTranslation.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
+	m_buttonRomanization.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -199,11 +204,6 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 		CString file = dlg.GetFileName();   // File name only
 		CString ext = dlg.GetFileExt();    // Extension
 
-		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
-		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
-		int result = lrc_manager_wnd.InitLrcControllerWithFile(lrc_file);
-		ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
-
 		if (music_player) {
 			// immediate stop playing
 			delete music_player;
@@ -228,6 +228,31 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 			CString windowTitle;
 			windowTitle.Format(_T("%s - %s"), artist.GetString(), title.GetString());
 			this->SetWindowText(windowTitle);
+		}
+
+		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
+		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
+		int result = lrc_manager_wnd.InitLrcControllerWithFile(lrc_file);
+		ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
+		if (lrc_manager_wnd.IsValid())
+		{
+			m_scrollBarLrcVertical.EnableWindow(TRUE);
+			if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Translation))
+			{
+				m_buttonTranslation.EnableWindow(TRUE);
+				m_buttonTranslation.SetCheck(BST_CHECKED);
+				lrc_manager_wnd.SetTranslationEnabled(true);
+			}
+			if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Romanization))
+			{
+				m_buttonRomanization.EnableWindow(TRUE);
+			}
+		} else
+		{
+			m_scrollBarLrcVertical.EnableWindow(FALSE);
+			m_buttonTranslation.SetCheck(BST_UNCHECKED);
+			m_buttonTranslation.EnableWindow(FALSE);
+			m_buttonRomanization.EnableWindow(FALSE);
 		}
 	}
 }

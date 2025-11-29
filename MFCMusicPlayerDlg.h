@@ -78,5 +78,6 @@ public:
 	CSliderCtrl m_sliderVolumeCtrl;
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;
+	CButton m_buttonRomanization;
 	CScrollBar m_scrollBarLrcVertical;
 };

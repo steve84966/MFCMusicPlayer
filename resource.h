@@ -13,7 +13,6 @@
 #define IDI_ICONVOLUME                  131
 #define IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT 135
 #define IDD_SETTINGS_CHILDPAGE_EQUALIZER 138
-#define IDR_MENU1                       140
 #define IDR_MENULYRICCONTROL            140
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
@@ -48,6 +47,8 @@
 #define IDC_COMBO2                      1017
 #define IDC_COMBOCHANNELCOUNT           1017
 #define IDC_TABSETTINGS                 1018
+#define IDC_BUTTON1                     1019
+#define IDC_BUTTONROMANIZATION          1019
 #define ID__32771                       32771
 #define ID__32772                       32772
 #define ID_32773                        32773
@@ -64,7 +65,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

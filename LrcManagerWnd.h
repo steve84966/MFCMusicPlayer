@@ -184,6 +184,7 @@ public:
 
 	void SetTranslationEnabled(bool enable) { enable_translation = enable; Invalidate(FALSE); }
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
+	bool IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo info) const { return lrc_controller.is_auxiliary_info_enabled(info); }
 
 	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::None);
 	// note: passing static control via SubclassDlgItem, no OnCreate call

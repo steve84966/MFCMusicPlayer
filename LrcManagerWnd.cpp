@@ -2,7 +2,8 @@
 #include "LrcManagerWnd.h"
 // #include "Resource.h"
 
-LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam) { // NOLINT(*-convert-member-functions-to-static) 服了clang-tidy又xjb乱报
+LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
+{ // NOLINT(*-convert-member-functions-to-static) 服了clang-tidy又xjb乱报
     // TODO: 在此添加消息处理程序代码和/或调用默认值
     UINT32 raw = static_cast<UINT32>(wParam); // NOLINT(*-use-auto)
     float time = *reinterpret_cast<float*>(&raw);
@@ -34,12 +35,13 @@ CLrcManagerWnd::CLrcManagerWnd() :
     FLOAT g = GetGValue(cr) / 255.0f;
     FLOAT b = GetBValue(cr) / 255.0f;
 
-	default_dialog_color = D2D1::ColorF(r, g, b);
+    default_dialog_color = D2D1::ColorF(r, g, b);
 
     InitDirect2D();
 }
 
-CLrcManagerWnd::~CLrcManagerWnd() {
+CLrcManagerWnd::~CLrcManagerWnd()
+{
     DiscardDeviceResources();
     if (text_format) text_format->Release();
     if (text_format_translation) text_format_translation->Release();
@@ -51,12 +53,12 @@ int CLrcManagerWnd::InitDirect2D()
 {
     UNREFERENCED_PARAMETER(
         D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d1_factory)
-        );
+    );
 
     UNREFERENCED_PARAMETER(
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
             reinterpret_cast<IUnknown**>(&write_factory))
-        );
+    );
 
     if (write_factory)
     {
@@ -70,32 +72,32 @@ int CLrcManagerWnd::InitDirect2D()
                 20.0f * GetSystemDpiScale(),
                 _T("zh-CN"),
                 &text_format)
-                );
+        );
         UNREFERENCED_PARAMETER(
             write_factory->CreateTextFormat(
-                    _T(""), // TODO: customizable text format
-                    nullptr,
-                    DWRITE_FONT_WEIGHT_NORMAL,
-                    DWRITE_FONT_STYLE_NORMAL,
-                    DWRITE_FONT_STRETCH_NORMAL,
-                    16.0f * GetSystemDpiScale(),
-                    _T("zh-CN"),
-                    &text_format_translation)
-                );
+                _T(""), // TODO: customizable text format
+                nullptr,
+                DWRITE_FONT_WEIGHT_NORMAL,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                16.0f * GetSystemDpiScale(),
+                _T("zh-CN"),
+                &text_format_translation)
+        );
         UNREFERENCED_PARAMETER(
             text_format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER)
-            );
+        );
         UNREFERENCED_PARAMETER(
             text_format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER)
-            );
+        );
         UNREFERENCED_PARAMETER(
             text_format_translation->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER)
-            );
+        );
         UNREFERENCED_PARAMETER(
             text_format_translation->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR)
-            );
+        );
     }
-	ATLTRACE("info: Lrc Direct2D surface created.\n");
+    ATLTRACE("info: Lrc Direct2D surface created.\n");
     return 0;
 }
 
@@ -113,15 +115,18 @@ void CLrcManagerWnd::UpdateLyric()
     if (lrc_controller.valid() && render_target && brush_unplay_text && brush_played_text && text_format)
     {
         CString lyric_main_text;
-        lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::None), lyric_main_text);
+        lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::None),
+                                               lyric_main_text);
 
         float lyric_main_metrics_width, lyric_main_metrics_height;
-        MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width, &lyric_main_metrics_height);
+        MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width,
+                           &lyric_main_metrics_height);
 
         float center_x = (rc.Width() - lyric_main_metrics_width) / 2,
               center_y = (rc.Height() - lyric_main_metrics_height) / 2 - 20;
 
-        D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width, center_y + lyric_main_metrics_height);
+        D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width,
+                                                      center_y + lyric_main_metrics_height);
 
         render_target->DrawText(
             lyric_main_text.GetString(),
@@ -131,15 +136,20 @@ void CLrcManagerWnd::UpdateLyric()
             brush_played_text);
 
         float lyric_translation_metrics_width, lyric_translation_metrics_height;
-        if (IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation)) // TODO: switch between translation enabled, test only
+        if (IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation))
+        // TODO: switch between translation enabled, test only
         {
-            if (int lrc_translation_index; (lrc_translation_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation)) != -1)
+            if (int lrc_translation_index; (lrc_translation_index = lrc_controller.get_current_lrc_line_aux_index(
+                LrcAuxiliaryInfo::Translation)) != -1)
             {
                 CString translation_text;
                 lrc_controller.get_current_lrc_line_at(lrc_translation_index, translation_text);
-                MeasureTextMetrics(translation_text, rc.right - rc.left, &lyric_translation_metrics_width, &lyric_translation_metrics_height, LrcAuxiliaryInfo::Translation);
+                MeasureTextMetrics(translation_text, rc.right - rc.left, &lyric_translation_metrics_width,
+                                   &lyric_translation_metrics_height, LrcAuxiliaryInfo::Translation);
 
-                D2D1_RECT_F translation_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height, rc.right, center_y + lyric_main_metrics_height + lyric_translation_metrics_height);
+                D2D1_RECT_F translation_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height, rc.right,
+                                                             center_y + lyric_main_metrics_height +
+                                                             lyric_translation_metrics_height);
                 render_target->DrawText(
                     translation_text.GetString(),
                     translation_text.GetLength(),
@@ -159,10 +169,14 @@ void CLrcManagerWnd::UpdateLyric()
         {
             CString lyric_next_text;
             lrc_controller.get_lrc_line_at(lrc_next_node_index,
-                lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::None),
-                lyric_next_text);
-            MeasureTextMetrics(lyric_next_text, rc.right - rc.left, &lyric_next_metrics_width, &lyric_next_metrics_height);
-            D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 40, rc.right, center_y + lyric_main_metrics_height + lyric_next_metrics_height + 40);
+                                           lrc_controller.get_lrc_line_aux_index(
+                                               lrc_next_node_index, LrcAuxiliaryInfo::None),
+                                           lyric_next_text);
+            MeasureTextMetrics(lyric_next_text, rc.right - rc.left, &lyric_next_metrics_width,
+                               &lyric_next_metrics_height);
+            D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 40, rc.right,
+                                                  center_y + lyric_main_metrics_height + lyric_next_metrics_height +
+                                                  40);
             if (IsTranslationEnabled())
             {
                 next_layout.top += lyric_translation_metrics_height - 30;
@@ -176,37 +190,43 @@ void CLrcManagerWnd::UpdateLyric()
                 brush_unplay_text
             );
         }
-            // prev&next
-            int lrc_translation_prev_index, lrc_translation_next_index;
-            float translation_prev_metrics_width, translation_prev_metrics_height;
-            if (lrc_prev_node_index >= 0)
+        // prev&next
+        int lrc_translation_prev_index, lrc_translation_next_index;
+        float translation_prev_metrics_width, translation_prev_metrics_height;
+        if (lrc_prev_node_index >= 0)
+        {
+            lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(
+                lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
+            if (IsTranslationEnabled() && lrc_translation_prev_index >= 0)
             {
-                lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
-                if (IsTranslationEnabled() && lrc_translation_prev_index >= 0)
-                {
-                    CString translation_prev_text;
-                    lrc_controller.get_lrc_line_at(lrc_prev_node_index, lrc_translation_prev_index, translation_prev_text);
-                    MeasureTextMetrics(translation_prev_text, rc.right - rc.left, &translation_prev_metrics_width, &translation_prev_metrics_height, LrcAuxiliaryInfo::Translation);
-                    D2D1_RECT_F translation_prev_layout_rect = D2D1::RectF(rc.left, center_y - translation_prev_metrics_height - 10, rc.right, center_y - 10);
+                CString translation_prev_text;
+                lrc_controller.get_lrc_line_at(lrc_prev_node_index, lrc_translation_prev_index, translation_prev_text);
+                MeasureTextMetrics(translation_prev_text, rc.right - rc.left, &translation_prev_metrics_width,
+                                   &translation_prev_metrics_height, LrcAuxiliaryInfo::Translation);
+                D2D1_RECT_F translation_prev_layout_rect = D2D1::RectF(
+                    rc.left, center_y - translation_prev_metrics_height - 10, rc.right, center_y - 10);
 
-                    render_target->DrawText(
-                        translation_prev_text.GetString(),
-                        translation_prev_text.GetLength(),
-                        text_format_translation,
-                        &translation_prev_layout_rect,
-                        brush_unplay_text
-                        );
-                }
+                render_target->DrawText(
+                    translation_prev_text.GetString(),
+                    translation_prev_text.GetLength(),
+                    text_format_translation,
+                    &translation_prev_layout_rect,
+                    brush_unplay_text
+                );
             }
+        }
 
         if (lrc_prev_node_index >= 0)
         {
             CString lyric_prev_text;
             lrc_controller.get_lrc_line_at(lrc_prev_node_index,
-                lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::None),
-                lyric_prev_text);
-            MeasureTextMetrics(lyric_prev_text, rc.right - rc.left, &lyric_prev_metrics_width, &lyric_prev_metrics_height);
-            D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 40, rc.right, center_y - 40);
+                                           lrc_controller.get_lrc_line_aux_index(
+                                               lrc_prev_node_index, LrcAuxiliaryInfo::None),
+                                           lyric_prev_text);
+            MeasureTextMetrics(lyric_prev_text, rc.right - rc.left, &lyric_prev_metrics_width,
+                               &lyric_prev_metrics_height);
+            D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 40, rc.right,
+                                                  center_y - 40);
             if (IsTranslationEnabled())
             {
                 prev_layout.top += 30 - translation_prev_metrics_height;
@@ -220,31 +240,35 @@ void CLrcManagerWnd::UpdateLyric()
                 brush_unplay_text);
         }
 
-            if (lrc_next_node_index < lrc_controller.get_lrc_node_count())
+        if (lrc_next_node_index < lrc_controller.get_lrc_node_count())
+        {
+            lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(
+                lrc_next_node_index, LrcAuxiliaryInfo::Translation);
+            if (IsTranslationEnabled() && lrc_translation_next_index >= 0)
             {
-                lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(lrc_next_node_index, LrcAuxiliaryInfo::Translation);
-                if (IsTranslationEnabled() && lrc_translation_next_index >= 0)
-                {
-                    CString translation_next_text;
-                    lrc_controller.get_lrc_line_at(lrc_next_node_index, lrc_translation_next_index, translation_next_text);
-                    float translation_next_metrics_width, translation_next_metrics_height;
-                    MeasureTextMetrics(translation_next_text, rc.right - rc.left, &translation_next_metrics_width, &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
-                    D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10, rc.right, center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height + 10);
-                    render_target->DrawText(
-                        translation_next_text.GetString(),
-                        translation_next_text.GetLength(),
-                        text_format_translation,
-                        &translation_next_layout_rect,
-                        brush_unplay_text
-                    );
-                }
+                CString translation_next_text;
+                lrc_controller.get_lrc_line_at(lrc_next_node_index, lrc_translation_next_index, translation_next_text);
+                float translation_next_metrics_width, translation_next_metrics_height;
+                MeasureTextMetrics(translation_next_text, rc.right - rc.left, &translation_next_metrics_width,
+                                   &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
+                D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(
+                    rc.left,
+                    center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height
+                    + 10, rc.right,
+                    center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height +
+                    lyric_translation_metrics_height + 10);
+                render_target->DrawText(
+                    translation_next_text.GetString(),
+                    translation_next_text.GetLength(),
+                    text_format_translation,
+                    &translation_next_layout_rect,
+                    brush_unplay_text
+                );
             }
-
-
-
-    } else
+        }
+    }
+    else
     {
-
         D2D1_RECT_F layoutRect = D2D1::RectF(
             (FLOAT)rc.left, (FLOAT)rc.top,
             (FLOAT)rc.right, (FLOAT)rc.bottom);
@@ -258,10 +282,12 @@ void CLrcManagerWnd::UpdateLyric()
     }
 }
 
-void CLrcManagerWnd::MeasureTextMetrics(const CString& str,  float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info)
+void CLrcManagerWnd::MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out,
+                                        LrcAuxiliaryInfo aux_info)
 {
     Microsoft::WRL::ComPtr<IDWriteTextLayout> layout_ptr;
-    IDWriteTextFormat* text_format_1 = aux_info == LrcAuxiliaryInfo::Translation ? text_format_translation : text_format;
+    IDWriteTextFormat* text_format_1 =
+        aux_info == LrcAuxiliaryInfo::Translation ? text_format_translation : text_format;
     if (FAILED(write_factory->CreateTextLayout(str, str.GetLength(), text_format_1, max_width, FLT_MAX, &layout_ptr)))
     {
         ATLTRACE(_T("err: CreateTextLayout failed!\n"));
@@ -280,7 +306,7 @@ void CLrcManagerWnd::MeasureTextMetrics(const CString& str,  float max_width, fl
 void CLrcManagerWnd::OnPaint()
 {
     CPaintDC dc(this);
-	assert(d2d1_factory != nullptr);
+    assert(d2d1_factory != nullptr);
     CreateDeviceResources();
 
     render_target->BeginDraw();
@@ -305,7 +331,7 @@ void CLrcManagerWnd::OnSize(UINT nType, int cx, int cy)
 
 void CLrcManagerWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	CWnd::OnContextMenu(pWnd, point);
+    CWnd::OnContextMenu(pWnd, point);
     CMenu menu;
     if (menu.LoadMenu(IDR_MENULYRICCONTROL))
     {
@@ -314,7 +340,7 @@ void CLrcManagerWnd::OnContextMenu(CWnd* pWnd, CPoint point)
 
         // 显示菜单
         pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,
-            point.x, point.y, this);
+                               point.x, point.y, this);
     }
 }
 
@@ -327,8 +353,8 @@ void CLrcManagerWnd::CreateDeviceResources()
 
         D2D1_SIZE_U size = D2D1::SizeU(
             rc.Width(), rc.Height());
-            // static_cast<int>(static_cast<float>(rc.Width()) * GetSystemDpiScale()),
-            // static_cast<int>(static_cast<float>(rc.Height()) * GetSystemDpiScale()));
+        // static_cast<int>(static_cast<float>(rc.Width()) * GetSystemDpiScale()),
+        // static_cast<int>(static_cast<float>(rc.Height()) * GetSystemDpiScale()));
 
         UNREFERENCED_PARAMETER(d2d1_factory->CreateHwndRenderTarget(
             D2D1::RenderTargetProperties(),
@@ -338,10 +364,13 @@ void CLrcManagerWnd::CreateDeviceResources()
         if (render_target)
         {
             render_target->SetDpi(96.0f, 96.0f); // process is dpi aware, do not use dip scale
-            UNREFERENCED_PARAMETER(render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkGray), &brush_unplay_text));
-            UNREFERENCED_PARAMETER(render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush_played_text));
+            UNREFERENCED_PARAMETER(
+                render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkGray), &brush_unplay_text));
+            UNREFERENCED_PARAMETER(
+                render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush_played_text));
         }
-        else {
+        else
+        {
             AfxMessageBox(_T("err: direct2d initialization error!"), MB_ICONERROR);
         }
     }
@@ -349,19 +378,33 @@ void CLrcManagerWnd::CreateDeviceResources()
 
 void CLrcManagerWnd::DiscardDeviceResources()
 {
-    if (brush_unplay_text) { brush_unplay_text->Release(); brush_unplay_text = nullptr; }
-    if (brush_played_text) { brush_played_text->Release(); brush_played_text = nullptr; }
-    if (render_target) { render_target->Release(); render_target = nullptr; }
+    if (brush_unplay_text)
+    {
+        brush_unplay_text->Release();
+        brush_unplay_text = nullptr;
+    }
+    if (brush_played_text)
+    {
+        brush_played_text->Release();
+        brush_played_text = nullptr;
+    }
+    if (render_target)
+    {
+        render_target->Release();
+        render_target = nullptr;
+    }
 }
 
 LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
-LrcAbstractNode(t), str_count(texts.GetSize()), lrc_texts(texts)
+    LrcAbstractNode(t), str_count(texts.GetSize()), lrc_texts(texts)
 {
-    for (int i = 0; i < str_count; ++i) {
+    for (int i = 0; i < str_count; ++i)
+    {
         lang_types.Add(LrcLanguageHelper::detect_language_type(texts[i]));
         aux_infos.Add(LrcAuxiliaryInfo::None);
     }
-    int jp_index = lang_types.Find(LrcLanguageHelper::LanguageType::jp), kr_index = lang_types.Find(LrcLanguageHelper::LanguageType::kr);
+    int jp_index = lang_types.Find(LrcLanguageHelper::LanguageType::jp), kr_index = lang_types.Find(
+            LrcLanguageHelper::LanguageType::kr);
     if (jp_index != -1)
     {
         aux_infos[jp_index] = LrcAuxiliaryInfo::None;
@@ -423,14 +466,16 @@ void LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(const CString& input, floa
     CString lower = input;
     lower.MakeLower();
     CStringA str{CT2A(lower)};
-    std::initializer_list<CStringA> romaji_syllables = { // 五十音图（去掉单元音，因为也同时包含在英语中）
-        "ka","ki","ku","ke","ko","sa","shi","su","se","so",
-        "ta","chi","tsu","te","to","na","ni","nu","ne","no",
-        "ha","hi","fu","he","ho","ma","mi","mu","me","mo",
-        "ya","yu","yo","ra","ri","ru","re","ro","wa","wo","n"
+    std::initializer_list<CStringA> romaji_syllables = {
+        // 五十音图（去掉单元音，因为也同时包含在英语中）
+        "ka", "ki", "ku", "ke", "ko", "sa", "shi", "su", "se", "so",
+        "ta", "chi", "tsu", "te", "to", "na", "ni", "nu", "ne", "no",
+        "ha", "hi", "fu", "he", "ho", "ma", "mi", "mu", "me", "mo",
+        "ya", "yu", "yo", "ra", "ri", "ru", "re", "ro", "wa", "wo", "n"
     };
-    std::initializer_list<CStringA> english_clusters = { // 常见英语辅音组合
-        "th","sh","ph","bl","cl","str","spr","pr","tr","dr"
+    std::initializer_list<CStringA> english_clusters = {
+        // 常见英语辅音组合
+        "th", "sh", "ph", "bl", "cl", "str", "spr", "pr", "tr", "dr"
     };
 
     int romaji_score = 0;
@@ -443,42 +488,48 @@ void LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(const CString& input, floa
         if (str.Find(cl) != -1) english_score++;
 
     int vowels = 0, consonants = 0;
-    for (int i = 0; i < str.GetLength(); i++) {
-        if (unsigned char c = str[i]; isalpha(c)) {
-            if (c=='a'||c=='e'||c=='i'||c=='o'||c=='u')
+    for (int i = 0; i < str.GetLength(); i++)
+    {
+        if (unsigned char c = str[i]; isalpha(c))
+        {
+            if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
                 vowels++;
             else
                 consonants++;
         }
     }
-    double vowel_ratio = vowels + consonants > 0 ?
-                        (double)vowels / (vowels+consonants) : 0.0;
+    double vowel_ratio = vowels + consonants > 0 ? (double)vowels / (vowels + consonants) : 0.0;
     if (vowel_ratio > 0.45) romaji_score++;
     else english_score++;
 
-    if (float total = static_cast<float>(romaji_score + english_score); total == 0) { // NOLINT(*-use-auto)
+    if (float total = static_cast<float>(romaji_score + english_score); total == 0)
+    { // NOLINT(*-use-auto)
         eng_prob_out = 0.5f;
         romaji_prob_out = 0.5f;
-    } else {
+    }
+    else
+    {
         eng_prob_out = (float)english_score / total;
         romaji_prob_out = (float)romaji_score / total;
     }
-    *eng_prob = eng_prob_out; *jpn_romaji_prob = romaji_prob_out;
+    *eng_prob = eng_prob_out;
+    *jpn_romaji_prob = romaji_prob_out;
 }
 
 LrcLanguageHelper::LanguageType
 LrcLanguageHelper::detect_language_type(const CString& input, float* probability)
 {
     int zh = 0, jp = 0, kr = 0, en = 0;
-    for (int i = 0; i < input.GetLength(); ++i) {
-        if (wchar_t ch = input[i]; ch >= 0x4E00 && ch <= 0x9FFF)          // zh character
+    for (int i = 0; i < input.GetLength(); ++i)
+    {
+        if (wchar_t ch = input[i]; ch >= 0x4E00 && ch <= 0x9FFF) // zh character
             zh++;
         else if ((ch >= 0x3040 && ch <= 0x309F) || // hiragana
-            (ch >= 0x30A0 && ch <= 0x30FF))        // katakana
+            (ch >= 0x30A0 && ch <= 0x30FF)) // katakana
             jp++;
-        else if (ch >= 0xAC00 && ch <=0xD7AF)      // korean
+        else if (ch >= 0xAC00 && ch <= 0xD7AF) // korean
             kr++;
-        else if (ch <= 0x007F)                     // ANSI character, english
+        else if (ch <= 0x007F) // ANSI character, english
             en++;
     }
 
@@ -486,17 +537,19 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
     if (length == 0) return LanguageType::others;
 
     float zh_score = static_cast<float>(zh); // NOLINT(*-use-auto)
-    float jp_score = static_cast<float>(jp) * 2.f + static_cast<float>(zh) * 0.5f;  // 日语中包含部分汉字，对假名进行加权
+    float jp_score = static_cast<float>(jp) * 2.f + static_cast<float>(zh) * 0.5f; // 日语中包含部分汉字，对假名进行加权
     float kr_score = static_cast<float>(kr); // NOLINT(*-use-auto)
     float en_score = static_cast<float>(en); // NOLINT(*-use-auto)
 
-    auto write_prob = [&input, probability](const CString& out_type, float out_prob) {
+    auto write_prob = [&input, probability](const CString& out_type, float out_prob)
+    {
         if (probability) *probability = out_prob;
         ATLTRACE(_T("info: line %s, type = %s, max prob = %f"),
                  input.GetString(), out_type.GetString(), out_prob);
     };
 
-    if (zh > 0 && jp > 0 && jp_score > zh_score) {
+    if (zh > 0 && jp > 0 && jp_score > zh_score)
+    {
         write_prob(_T("jp"), jp_score / length);
         return LanguageType::jp;
     }
@@ -507,19 +560,23 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
         return LanguageType::zh;
     }
 
-    if (zh_score > jp_score && zh_score > en_score && zh_score > kr_score) {
+    if (zh_score > jp_score && zh_score > en_score && zh_score > kr_score)
+    {
         write_prob(_T("zh"), zh_score / length);
         return LanguageType::zh;
     }
-    if (jp_score > zh_score && jp_score > en_score && jp_score > kr_score) {
+    if (jp_score > zh_score && jp_score > en_score && jp_score > kr_score)
+    {
         write_prob(_T("jp"), jp_score / length);
         return LanguageType::jp;
     }
-    if (en_score > jp_score && en_score > kr_score && en_score > zh_score) {
+    if (en_score > jp_score && en_score > kr_score && en_score > zh_score)
+    {
         write_prob(_T("en"), en_score / length);
         return LanguageType::en;
     }
-    if (kr_score > zh_score && kr_score > en_score && kr_score > jp_score) {
+    if (kr_score > zh_score && kr_score > en_score && kr_score > jp_score)
+    {
         write_prob(_T("kr"), kr_score / length);
         return LanguageType::kr;
     }
@@ -543,7 +600,8 @@ void LrcFileController::parse_lrc_file(const CString& file_path)
     {
         CFile file(file_path, CFile::modeRead | CFile::typeBinary);
         parse_lrc_file_stream(&file);
-    } catch (const CFileException*& ex)
+    }
+    catch (const CFileException*& ex)
     {
         CString err_msg;
         LPTSTR err_msg_buf = err_msg.GetBufferSetLength(1024);
@@ -556,7 +614,8 @@ void LrcFileController::parse_lrc_file(const CString& file_path)
 void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
 {
     // 目前仅支持逐行lrc解析
-    if (file_stream == nullptr) {
+    if (file_stream == nullptr)
+    {
         return;
     }
     clear_lrc_nodes();
@@ -564,11 +623,13 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
     const int buf_size = 4096;
     char buffer[buf_size];
     UINT bytes_read = 0;
-    do {
+    do
+    {
         bytes_read = file_stream->Read(buffer, buf_size - 1);
         buffer[bytes_read] = '\0';
         file_content_a += buffer;
-    } while (bytes_read > 0);
+    }
+    while (bytes_read > 0);
 
     // 转换为宽字符
     int wide_len = MultiByteToWideChar(CP_UTF8, 0, file_content_a, -1, nullptr, 0);
@@ -580,31 +641,37 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
     std::stack<CString> lyrics_in_ms;
     int recorded_ms = 0;
 
-    auto pump_stack = [&]() {
+    auto pump_stack = [&]()
+    {
         CSimpleArray<CString> lrc_texts;
-        while (!lyrics_in_ms.empty()) {
+        while (!lyrics_in_ms.empty())
+        {
             lrc_texts.Add(lyrics_in_ms.top());
             lyrics_in_ms.pop();
         }
         if (lrc_texts.GetSize() > 1)
             std::reverse(lrc_texts.GetData(), lrc_texts.GetData() + lrc_texts.GetSize());
         if (lrc_texts.GetSize() == 0)
-			return;
-        if (LrcAbstractNode* node = LrcNodeFactory::CreateLrcNode(recorded_ms, lrc_texts)) {
+            return;
+        if (LrcAbstractNode* node = LrcNodeFactory::CreateLrcNode(recorded_ms, lrc_texts))
+        {
             lrc_nodes.Add(node);
             if (node->is_translation_enabled())
                 this->set_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation);
             if (node->is_romanization_enabled())
                 this->set_auxiliary_info_enabled(LrcAuxiliaryInfo::Romanization);
         }
-        else {
+        else
+        {
             AfxMessageBox(_T("err: create lrc node failed, aborting!"), MB_ICONERROR);
         }
     };
 
-    while (start < file_content_w.GetLength()) {
+    while (start < file_content_w.GetLength())
+    {
         int end = file_content_w.Find('\n', start);
-        if (end == -1) {
+        if (end == -1)
+        {
             end = file_content_w.GetLength();
         }
         CString line = file_content_w.Mid(start, end - start).Trim();
@@ -642,16 +709,19 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
                 flag_decoding_metadata = 0;
                 break;
             }
-            if (flag_decoding_metadata) {
+            if (flag_decoding_metadata)
+            {
                 start = end + 1;
                 continue;
             }
         }
         // 解析时间tag
-        if (line.GetLength() <= 10) {
+        if (line.GetLength() <= 10)
+        {
             AfxMessageBox(_T("err: invalid lrc line, aborting!"), MB_ICONERROR);
             // clear stack
-            while (!lyrics_in_ms.empty()) {
+            while (!lyrics_in_ms.empty())
+            {
                 delete lyrics_in_ms.top();
                 lyrics_in_ms.pop();
             }
@@ -659,9 +729,11 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             return;
         }
         int time_tag_end_index = line.Find(']');
-        if (time_tag_end_index == -1 || line[0] != '[' || line[3] != ':' || line[6] != '.') {
+        if (time_tag_end_index == -1 || line[0] != '[' || line[3] != ':' || line[6] != '.')
+        {
             AfxMessageBox(_T("err: invalid lrc time tag, aborting!"), MB_ICONERROR);
-            while (!lyrics_in_ms.empty()) {
+            while (!lyrics_in_ms.empty())
+            {
                 delete lyrics_in_ms.top();
                 lyrics_in_ms.pop();
             }
@@ -672,11 +744,13 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
         int seconds = _ttoi(line.Mid(4, 2));
         int milliseconds = _ttoi(line.Mid(7, time_tag_end_index - 7));
 
-        switch (int total_ms = minutes * 60000 + seconds * 1000 + milliseconds + lrc_offset_ms; WAY3RES(total_ms <=> recorded_ms))
+        switch (int total_ms = minutes * 60000 + seconds * 1000 + milliseconds + lrc_offset_ms; WAY3RES(
+            total_ms <=> recorded_ms))
         {
         case ThreeWayCompareResult::Less: // 歌词时间戳一定有序
             AfxMessageBox(_T("err: invalid time stamp order!"), MB_ICONERROR);
-            while (!lyrics_in_ms.empty()) {
+            while (!lyrics_in_ms.empty())
+            {
                 delete lyrics_in_ms.top();
                 lyrics_in_ms.pop();
             }
@@ -701,7 +775,8 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
 
 void LrcFileController::clear_lrc_nodes()
 {
-    for (size_t i = 0; i < lrc_nodes.GetCount(); i++) {
+    for (size_t i = 0; i < lrc_nodes.GetCount(); i++)
+    {
         delete lrc_nodes[i];
     }
     lrc_nodes.RemoveAll();
@@ -715,8 +790,10 @@ void LrcFileController::set_time_stamp(int time_stamp_ms_in)
         cur_lrc_node_index = 0;
     }
     bool found = false;
-    for (size_t i = cur_lrc_node_index; i < lrc_nodes.GetCount(); i++) {
-        if (lrc_nodes[i]->get_time_ms() > time_stamp_ms_in) {
+    for (size_t i = cur_lrc_node_index; i < lrc_nodes.GetCount(); i++)
+    {
+        if (lrc_nodes[i]->get_time_ms() > time_stamp_ms_in)
+        {
             cur_lrc_node_index = i == 0 ? 0 : i - 1;
             found = true;
             break;
@@ -752,7 +829,9 @@ int LrcFileController::get_current_lrc_line_at(int index, CString& out_str) cons
 
 int LrcFileController::get_lrc_line_at(int lrc_node_index, int index, CString& out_str) const
 {
-    assert(lrc_node_index >= 0 && lrc_node_index < lrc_nodes.GetCount() && index >= 0 && index < lrc_nodes[lrc_node_index]->get_lrc_str_count());
+    assert(
+        lrc_node_index >= 0 && lrc_node_index < lrc_nodes.GetCount() && index >= 0 && index < lrc_nodes[lrc_node_index]
+        ->get_lrc_str_count());
     return lrc_nodes[lrc_node_index]->get_lrc_str_at(index, out_str);
 }
 
@@ -778,7 +857,7 @@ LrcMetadataType LrcFileController::get_metadata_type(const CString& str)
         return LrcMetadataType::Error;
 
     switch (CString metadata_type_str = str.Left(metadata_end_index).Mid(1);
-            cstring_hash_fnv_64bit_int(metadata_type_str))
+        cstring_hash_fnv_64bit_int(metadata_type_str))
     {
     case 0x645d220c: return LrcMetadataType::Artist;
     case 0x63d58dce: return LrcMetadataType::Album;
@@ -786,7 +865,7 @@ LrcMetadataType LrcFileController::get_metadata_type(const CString& str)
     case 0x27a9be4e: return LrcMetadataType::By;
     case 0x4f6518ce: return LrcMetadataType::Offset;
     case 0x642cb63f: return LrcMetadataType::Author;
-    default:         return LrcMetadataType::Ignored;
+    default: return LrcMetadataType::Ignored;
     }
 }
 
@@ -797,7 +876,8 @@ int LrcFileController::cstring_hash_fnv_64bit_int(const CString& str)
     unsigned long long h = 14695981039346656037ull; // fnv offset basis
     const unsigned char* bytes = reinterpret_cast<const unsigned char*>(p); // NOLINT(*-use-auto)
     const size_t count = static_cast<size_t>(len) * sizeof(TCHAR);
-    for (size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i)
+    {
         h ^= bytes[i];
         h *= 1099511628211ull; // fnv prime
     }
