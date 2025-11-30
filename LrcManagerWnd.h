@@ -154,6 +154,11 @@ public:
 	{
 		aux_enable_info |= (1 << static_cast<int>(enable_info));
 	}
+	void clear_auxiliary_info_enabled(LrcAuxiliaryInfo enable_info)
+	{
+		aux_enable_info &= ~(1 << static_cast<int>(enable_info));
+	}
+	void reset_auxiliary_info_enabled() { aux_enable_info = 0; }
 
 	// static helpers
 	static LrcMetadataType get_metadata_type(const CString& str);
@@ -176,6 +181,7 @@ public:
 
 	int InitDirect2D();
 	int InitLrcControllerWithFile(const CString& file_path);
+	void DestroyLrcController();
 	void UpdateLyric();
 
 	[[nodiscard]] int GetCurrentLrcNodeIndex() const { return lrc_controller.get_current_lrc_node_index(); }
@@ -184,13 +190,12 @@ public:
 
 	void SetTranslationEnabled(bool enable) { enable_translation = enable; Invalidate(FALSE); }
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
-	bool IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo info) const { return lrc_controller.is_auxiliary_info_enabled(info); }
+	[[nodiscard]] bool IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo info) const { return lrc_controller.is_auxiliary_info_enabled(info); }
 
 	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::None);
 	// note: passing static control via SubclassDlgItem, no OnCreate call
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 
 protected:
 	ID2D1Factory* d2d1_factory;

@@ -6,8 +6,6 @@
 #include "framework.h"
 #include "MFCMusicPlayer.h"
 #include "MFCMusicPlayerDlg.h"
-#include "afxdialogex.h"
-#include <afxdlgs.h>
 
 
 #ifdef _DEBUG
@@ -51,6 +49,10 @@ BEGIN_MESSAGE_MAP(CProgressSliderCtrl, CSliderCtrl)
 	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
+BEGIN_MESSAGE_MAP(CProgressScrollBar, CScrollBar)
+	ON_WM_HSCROLL()
+	ON_WM_VSCROLL()
+END_MESSAGE_MAP()
 
 // CMFCMusicPlayerDlg 对话框
 
@@ -91,6 +93,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_MESSAGE(WM_PLAYER_ALBUM_ART_INIT, &CMFCMusicPlayerDlg::OnAlbumArtInit)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
+	ON_WM_CONTEXTMENU()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -232,6 +236,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 
 		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
 		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
+		lrc_manager_wnd.DestroyLrcController();
 		int result = lrc_manager_wnd.InitLrcControllerWithFile(lrc_file);
 		ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
 		if (lrc_manager_wnd.IsValid())
@@ -242,10 +247,18 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 				m_buttonTranslation.EnableWindow(TRUE);
 				m_buttonTranslation.SetCheck(BST_CHECKED);
 				lrc_manager_wnd.SetTranslationEnabled(true);
+			} else
+			{
+				m_buttonTranslation.SetCheck(BST_UNCHECKED);
+				m_buttonTranslation.EnableWindow(FALSE);
+				lrc_manager_wnd.SetTranslationEnabled(false);
 			}
 			if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Romanization))
 			{
 				m_buttonRomanization.EnableWindow(TRUE);
+			} else
+			{
+				m_buttonRomanization.EnableWindow(FALSE);
 			}
 		} else
 		{
@@ -359,9 +372,11 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 		{
 			ATLTRACE("info: abnormal time event, time=%f, base=%f", time, fBasePlayTime);
 			time = fBasePlayTime;
+		} else
+		{
+			fBasePlayTime = time;
 		}
 	}
-	fBasePlayTime = time;
 	CString timeStr;
 	int min = static_cast<int>(time) / 60, sec = static_cast<int>(time) % 60;
 	timeStr.Format(_T("%02d:%02d / %02d:%02d"), min, sec, static_cast<int>(length) / 60, static_cast<int>(length) % 60);
@@ -397,6 +412,33 @@ void CMFCMusicPlayerDlg::DestroyMediaPlayer()
 {
 	// TODO: 在此处添加实现代码.
 	delete music_player;
+	music_player = nullptr;
+}
+
+void CMFCMusicPlayerDlg::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	auto trackPopupMenu = [](UINT32 nIDResource, CWnd* pWnd, CPoint point)
+	{
+
+		CMenu menu;
+		if (menu.LoadMenu(nIDResource))
+		{
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ASSERT(pPopup != nullptr);
+
+			pWnd->ClientToScreen(&point);
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+								   point.x, point.y, AfxGetMainWnd());
+		}
+	};
+	CRect rect;
+	lrc_manager_wnd.GetClientRect(&rect);
+	lrc_manager_wnd.ScreenToClient(&point);
+	if (rect.PtInRect(point))
+	{
+		trackPopupMenu(IDR_MENULYRICCONTROL, &lrc_manager_wnd, point);
+	}
+	CDialogEx::OnContextMenu(pWnd, point);
 }
 
 void CMFCMusicPlayerDlg::OnCancel()
@@ -405,6 +447,17 @@ void CMFCMusicPlayerDlg::OnCancel()
 	DestroyMediaPlayer();
 	CDialogEx::OnCancel();
 }
+
+void CMFCMusicPlayerDlg::OnSize(UINT nType, int cx, int cy)
+{
+	if (nType == SIZE_MAXIMIZED)
+    {
+        ShowWindow(SW_RESTORE);
+        return;
+    }
+	CDialogEx::OnSize(nType, cx, cy);
+}
+
 void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -447,7 +500,10 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 		default:
 			return;
 		}
-
+	}
+	if (GetDlgItem(IDC_SCROLLBARLRCVERTICAL) == pScrollBar && music_player && music_player->IsInitialized()
+		&& lrc_manager_wnd.IsValid())
+	{
 
 	}
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);

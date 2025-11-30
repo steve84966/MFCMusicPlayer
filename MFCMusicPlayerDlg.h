@@ -28,6 +28,25 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
+class CProgressScrollBar : public CScrollBar
+{
+protected:
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+	{
+		if (nSBCode == SB_THUMBTRACK || nSBCode == SB_THUMBPOSITION)
+			CScrollBar::OnHScroll(nSBCode, nPos, pScrollBar);
+	}
+
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+	{
+		if (nSBCode == SB_THUMBTRACK || nSBCode == SB_THUMBPOSITION)
+			CScrollBar::OnVScroll(nSBCode, nPos, pScrollBar);
+	}
+
+	DECLARE_MESSAGE_MAP()
+};
+
+
 // CMFCMusicPlayerDlg 对话框
 class CMFCMusicPlayerDlg : public CDialogEx
 {
@@ -69,6 +88,8 @@ public:
 	LRESULT OnAlbumArtInit(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnClose();
 	afx_msg void OnCancel() override;
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	void DestroyMediaPlayer();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
@@ -79,5 +100,5 @@ public:
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;
 	CButton m_buttonRomanization;
-	CScrollBar m_scrollBarLrcVertical;
+	CProgressScrollBar m_scrollBarLrcVertical;
 };

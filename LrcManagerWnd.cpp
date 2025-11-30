@@ -21,7 +21,6 @@ IMPLEMENT_DYNAMIC(CLrcManagerWnd, CWnd)
 BEGIN_MESSAGE_MAP(CLrcManagerWnd, CWnd)
     ON_WM_PAINT()
     ON_WM_SIZE()
-    ON_WM_CONTEXTMENU()
     ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CLrcManagerWnd::OnPlayerTimeChange)
 END_MESSAGE_MAP()
 
@@ -108,6 +107,12 @@ int CLrcManagerWnd::InitLrcControllerWithFile(const CString& file_path)
     return lrc_controller.valid();
 }
 
+void CLrcManagerWnd::DestroyLrcController()
+{
+    lrc_controller.clear_lrc_nodes();
+    lrc_controller.reset_auxiliary_info_enabled();
+}
+
 void CLrcManagerWnd::UpdateLyric()
 {
     CRect rc;
@@ -174,13 +179,13 @@ void CLrcManagerWnd::UpdateLyric()
                                            lyric_next_text);
             MeasureTextMetrics(lyric_next_text, rc.right - rc.left, &lyric_next_metrics_width,
                                &lyric_next_metrics_height);
-            D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 40, rc.right,
+            D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 30, rc.right,
                                                   center_y + lyric_main_metrics_height + lyric_next_metrics_height +
-                                                  40);
+                                                  30);
             if (IsTranslationEnabled())
             {
-                next_layout.top += lyric_translation_metrics_height - 30;
-                next_layout.bottom += lyric_translation_metrics_height - 30;
+                next_layout.top += lyric_translation_metrics_height - 20;
+                next_layout.bottom += lyric_translation_metrics_height - 20;
             }
             render_target->DrawText(
                 lyric_next_text.GetString(),
@@ -191,11 +196,10 @@ void CLrcManagerWnd::UpdateLyric()
             );
         }
         // prev&next
-        int lrc_translation_prev_index, lrc_translation_next_index;
         float translation_prev_metrics_width, translation_prev_metrics_height;
         if (lrc_prev_node_index >= 0)
         {
-            lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(
+            int lrc_translation_prev_index = lrc_controller.get_lrc_line_aux_index(
                 lrc_prev_node_index, LrcAuxiliaryInfo::Translation);
             if (IsTranslationEnabled() && lrc_translation_prev_index >= 0)
             {
@@ -225,12 +229,12 @@ void CLrcManagerWnd::UpdateLyric()
                                            lyric_prev_text);
             MeasureTextMetrics(lyric_prev_text, rc.right - rc.left, &lyric_prev_metrics_width,
                                &lyric_prev_metrics_height);
-            D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 40, rc.right,
-                                                  center_y - 40);
+            D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 30, rc.right,
+                                                  center_y - 30);
             if (IsTranslationEnabled())
             {
-                prev_layout.top += 30 - translation_prev_metrics_height;
-                prev_layout.bottom += 30 - translation_prev_metrics_height;
+                prev_layout.top += 20 - translation_prev_metrics_height;
+                prev_layout.bottom += 20 - translation_prev_metrics_height;
             }
             render_target->DrawText(
                 lyric_prev_text.GetString(),
@@ -242,7 +246,7 @@ void CLrcManagerWnd::UpdateLyric()
 
         if (lrc_next_node_index < lrc_controller.get_lrc_node_count())
         {
-            lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(
+            int lrc_translation_next_index = lrc_controller.get_lrc_line_aux_index(
                 lrc_next_node_index, LrcAuxiliaryInfo::Translation);
             if (IsTranslationEnabled() && lrc_translation_next_index >= 0)
             {
@@ -329,20 +333,6 @@ void CLrcManagerWnd::OnSize(UINT nType, int cx, int cy)
     }
 }
 
-void CLrcManagerWnd::OnContextMenu(CWnd* pWnd, CPoint point)
-{
-    CWnd::OnContextMenu(pWnd, point);
-    CMenu menu;
-    if (menu.LoadMenu(IDR_MENULYRICCONTROL))
-    {
-        CMenu* pPopup = menu.GetSubMenu(0);
-        ASSERT(pPopup != nullptr);
-
-        // 显示菜单
-        pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,
-                               point.x, point.y, this);
-    }
-}
 
 void CLrcManagerWnd::CreateDeviceResources()
 {
