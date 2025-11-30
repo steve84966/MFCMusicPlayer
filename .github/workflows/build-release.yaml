@@ -25,6 +25,17 @@ jobs:
             artifact: windows-build-with-ffmpeg-ARM64
 
     steps:
+
+    - name: Print runner hardware info (PowerShell)
+      run: |
+        $cpu = Get-CimInstance Win32_Processor
+        Write-Output "Hosted Runner Information:"
+        Write-Output "CPU Model: $($cpu.Name)"
+        Write-Output "Logical Processors: $($cpu.NumberOfLogicalProcessors)"
+        Write-Output "Physical Processors: $($cpu.NumberOfCores)"
+        $mem = Get-CimInstance Win32_ComputerSystem
+        Write-Output ("Memory Size (GB): {0:N2}" -f ($mem.TotalPhysicalMemory/1GB))
+
     - name: Checkout source
       uses: actions/checkout@v4
 
