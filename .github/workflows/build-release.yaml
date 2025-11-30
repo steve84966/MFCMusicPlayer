@@ -7,12 +7,22 @@ on:
     branches: [ "master" ]
 
 env:
-  BUILD_TYPE: Release
+  BUILD_TYPE: RelWithDebInfo
   VCPKG_DEFAULT_TRIPLET: x64-windows
 
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x64, ARM64]
+        include:
+          - arch: x64
+            triplet: x64-windows
+            artifact: windows-build-with-ffmpeg
+          - arch: ARM64
+            triplet: arm64-windows
+            artifact: windows-build-with-ffmpeg-ARM64
 
     steps:
     - name: Checkout source
@@ -23,9 +33,9 @@ jobs:
       with:
         path: |
           ${{ github.workspace }}/vcpkg/
-        key: vcpkg-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-${{ runner.os }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
-          vcpkg-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-
+          vcpkg-${{ runner.os }}-${{ matrix.triplet }}-
 
     - name: Clone vcpkg
       run: |
@@ -37,7 +47,7 @@ jobs:
       uses: lukka/run-vcpkg@v7.6
       with:
         vcpkgArguments: 'ffmpeg'
-        vcpkgTriplet: ${{ env.VCPKG_DEFAULT_TRIPLET }} 
+        vcpkgTriplet: ${{ matrix.triplet }}
         vcpkgGitCommitId: '195276f71622bc41392db5c5c5c5141c95ff9a36' 
         vcpkgDirectory: ${{ github.workspace }}/vcpkg  
         doNotCache: true
@@ -46,7 +56,7 @@ jobs:
       run: >
         cmake -B build -S . 
         -G "Visual Studio 17 2022"
-        -A x64
+        -A ${{ matrix.arch }}
         -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake 
         -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
         -Wno-dev
@@ -58,7 +68,7 @@ jobs:
       run: | 
         mkdir package
         Copy-Item "build\${{ env.BUILD_TYPE }}\*.exe" -Destination package
-        Get-ChildItem "${{ github.workspace }}\vcpkg\installed\${{ env.VCPKG_DEFAULT_TRIPLET }}\bin" -Recurse -Filter *.dll |
+        Get-ChildItem "${{ github.workspace }}\vcpkg\installed\${{ matrix.triplet }}\bin" -Recurse -Filter *.dll |
         Copy-Item -Destination package
 
     - name: Compress package to ZIP
@@ -68,5 +78,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: windows-build-with-ffmpeg
+        name: ${{ matrix.artifact }}
         path: build_output.zip

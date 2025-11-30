@@ -49,11 +49,13 @@ target_compile_definitions(MFCMusicPlayer
         $<$<CONFIG:Debug>:_DEBUG>
         $<$<CONFIG:Release>:NDEBUG>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},X86>:WIN32>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>:ARM64>
 )
 
 target_link_libraries(MFCMusicPlayer
     PUBLIC
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},x64>:Avrt.lib>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>:Avrt.lib>
 )
 
 target_compile_options(MFCMusicPlayer
