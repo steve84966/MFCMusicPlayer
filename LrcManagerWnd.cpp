@@ -182,7 +182,7 @@ void CLrcManagerWnd::UpdateLyric()
             D2D1_RECT_F next_layout = D2D1::RectF(rc.left, center_y + lyric_main_metrics_height + 30, rc.right,
                                                   center_y + lyric_main_metrics_height + lyric_next_metrics_height +
                                                   30);
-            if (IsTranslationEnabled())
+            if (IsTranslationEnabled() && lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation) != -1)
             {
                 next_layout.top += lyric_translation_metrics_height - 20;
                 next_layout.bottom += lyric_translation_metrics_height - 20;
@@ -231,7 +231,7 @@ void CLrcManagerWnd::UpdateLyric()
                                &lyric_prev_metrics_height);
             D2D1_RECT_F prev_layout = D2D1::RectF(rc.left, center_y - lyric_prev_metrics_height - 30, rc.right,
                                                   center_y - 30);
-            if (IsTranslationEnabled())
+            if (IsTranslationEnabled() && lrc_controller.get_lrc_line_aux_index(lrc_prev_node_index, LrcAuxiliaryInfo::Translation) != -1)
             {
                 prev_layout.top += 20 - translation_prev_metrics_height;
                 prev_layout.bottom += 20 - translation_prev_metrics_height;
@@ -257,10 +257,12 @@ void CLrcManagerWnd::UpdateLyric()
                                    &translation_next_metrics_height, LrcAuxiliaryInfo::Translation);
                 D2D1_RECT_F translation_next_layout_rect = D2D1::RectF(
                     rc.left,
-                    center_y + lyric_main_metrics_height + lyric_next_metrics_height + lyric_translation_metrics_height
-                    + 10, rc.right,
-                    center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height +
-                    lyric_translation_metrics_height + 10);
+                    center_y + lyric_main_metrics_height + lyric_next_metrics_height + 30, rc.right,
+                    center_y + lyric_main_metrics_height + translation_next_metrics_height + lyric_next_metrics_height + 30);
+                if (lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation) != -1) {
+                    translation_next_layout_rect.top -= 20 - lyric_translation_metrics_height;
+                    translation_next_layout_rect.bottom -= 20 - lyric_translation_metrics_height;
+                }
                 render_target->DrawText(
                     translation_next_text.GetString(),
                     translation_next_text.GetLength(),
