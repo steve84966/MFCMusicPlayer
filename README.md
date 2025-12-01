@@ -23,6 +23,7 @@ Features:
 - simple gui
 - lyric display support
 - translation / romanization support
+- ARM64 Native Binary in CI build, tested on Qualcomm Snapdragon 845 (XIAOMI MIX 2S)
 
 Screenshot:
 
