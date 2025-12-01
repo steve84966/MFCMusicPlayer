@@ -167,7 +167,7 @@ enum class ThreeWayCompareResult
 
 enum class LrcAuxiliaryInfo
 {
-	None,
+	Lyric,
 	Translation,
 	Romanization,
 	Ignored

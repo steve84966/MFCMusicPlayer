@@ -120,7 +120,7 @@ void CLrcManagerWnd::UpdateLyric()
     if (lrc_controller.valid() && render_target && brush_unplay_text && brush_played_text && text_format)
     {
         CString lyric_main_text;
-        lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::None),
+        lrc_controller.get_current_lrc_line_at(lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Lyric),
                                                lyric_main_text);
 
         float lyric_main_metrics_width, lyric_main_metrics_height;
@@ -175,7 +175,7 @@ void CLrcManagerWnd::UpdateLyric()
             CString lyric_next_text;
             lrc_controller.get_lrc_line_at(lrc_next_node_index,
                                            lrc_controller.get_lrc_line_aux_index(
-                                               lrc_next_node_index, LrcAuxiliaryInfo::None),
+                                               lrc_next_node_index, LrcAuxiliaryInfo::Lyric),
                                            lyric_next_text);
             MeasureTextMetrics(lyric_next_text, rc.right - rc.left, &lyric_next_metrics_width,
                                &lyric_next_metrics_height);
@@ -225,7 +225,7 @@ void CLrcManagerWnd::UpdateLyric()
             CString lyric_prev_text;
             lrc_controller.get_lrc_line_at(lrc_prev_node_index,
                                            lrc_controller.get_lrc_line_aux_index(
-                                               lrc_prev_node_index, LrcAuxiliaryInfo::None),
+                                               lrc_prev_node_index, LrcAuxiliaryInfo::Lyric),
                                            lyric_prev_text);
             MeasureTextMetrics(lyric_prev_text, rc.right - rc.left, &lyric_prev_metrics_width,
                                &lyric_prev_metrics_height);
@@ -393,32 +393,59 @@ LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
     for (int i = 0; i < str_count; ++i)
     {
         lang_types.Add(LrcLanguageHelper::detect_language_type(texts[i]));
-        aux_infos.Add(LrcAuxiliaryInfo::None);
+        aux_infos.Add(LrcAuxiliaryInfo::Lyric);
     }
-    int jp_index = lang_types.Find(LrcLanguageHelper::LanguageType::jp), kr_index = lang_types.Find(
-            LrcLanguageHelper::LanguageType::kr);
+    int jp_index = lang_types.Find(LrcLanguageHelper::LanguageType::jp), 
+        kr_index = lang_types.Find(LrcLanguageHelper::LanguageType::kr),
+        eng_index = lang_types.Find(LrcLanguageHelper::LanguageType::en),
+        zh_index = lang_types.Find(LrcLanguageHelper::LanguageType::zh);
     if (jp_index != -1)
     {
-        aux_infos[jp_index] = LrcAuxiliaryInfo::None;
+        aux_infos[jp_index] = LrcAuxiliaryInfo::Lyric;
         if (kr_index != -1)
         {
-            ATLTRACE(_T("warn: jp & kr mix, ignoring kr line"));
+            ATLTRACE(_T("warn: jp & kr mix, ignoring kr line\n"));
             aux_infos[kr_index] = LrcAuxiliaryInfo::Ignored;
         }
     }
     if (jp_index == -1 && kr_index != -1)
     {
-        aux_infos[kr_index] = LrcAuxiliaryInfo::None;
+        aux_infos[kr_index] = LrcAuxiliaryInfo::Lyric;
     }
-    int eng_index;
 
-    if ((eng_index = lang_types.Find(LrcLanguageHelper::LanguageType::en)) != -1)
+
+    if (zh_index != -1)
+    {
+        for (int i = zh_index + 1; i < str_count; ++i)
+        {
+            if (lang_types[i] == LrcLanguageHelper::LanguageType::zh)
+            {
+                aux_infos[i] = LrcAuxiliaryInfo::Translation; // 无法判断中文和日文，假定后出现的为翻译
+                lang_types[zh_index] = LrcLanguageHelper::LanguageType::jp;
+				aux_infos[zh_index] = LrcAuxiliaryInfo::Lyric;
+				jp_index = zh_index;
+				zh_index = i;
+                break;
+            }
+        }
+        if (jp_index != -1 || kr_index != -1 || eng_index != -1 && lang_types[zh_index] == LrcLanguageHelper::LanguageType::zh)
+        {
+            ATLTRACE(_T("info: translation hit, line %s\n"), texts[zh_index].GetString());
+            aux_infos[zh_index] = LrcAuxiliaryInfo::Translation;
+        }
+        else
+        {
+            aux_infos[zh_index] = LrcAuxiliaryInfo::Lyric;
+        }
+    }
+
+    if (eng_index != -1)
     {
         float eng_prob, romaji_prob;
         LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(texts[eng_index], &eng_prob, &romaji_prob);
         if (eng_prob > romaji_prob)
         {
-            aux_infos[eng_index] = LrcAuxiliaryInfo::None;
+            aux_infos[eng_index] = LrcAuxiliaryInfo::Lyric;
         }
         else if (eng_prob < romaji_prob && (jp_index != -1 || kr_index != -1))
         {
@@ -429,26 +456,6 @@ LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
         {
             ATLTRACE(_T("warn: unknown romaji, ignoring eng line: %s\n"), texts[eng_index].GetString());
             aux_infos[eng_index] = LrcAuxiliaryInfo::Ignored;
-        }
-    }
-    if (int zh_index = lang_types.Find(LrcLanguageHelper::LanguageType::zh); zh_index != -1)
-    {
-        if (jp_index != -1 || kr_index != -1 || eng_index != -1)
-        {
-            ATLTRACE(_T("info: translation hit, line %s\n"), texts[zh_index].GetString());
-            aux_infos[zh_index] = LrcAuxiliaryInfo::Translation;
-        }
-        else
-        {
-            for (int i = zh_index + 1; i < str_count; ++i)
-            {
-                if (lang_types[i] == LrcLanguageHelper::LanguageType::zh)
-                {
-                    aux_infos[i] = LrcAuxiliaryInfo::Translation; // 无法判断中文和日文，假定后出现的为翻译
-                    break;
-                }
-            }
-            aux_infos[zh_index] = LrcAuxiliaryInfo::None;
         }
     }
 }
@@ -504,6 +511,11 @@ void LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(const CString& input, floa
         eng_prob_out = (float)english_score / total;
         romaji_prob_out = (float)romaji_score / total;
     }
+    if (fabs(eng_prob_out - romaji_prob_out) < 1e-6) 
+    {
+        eng_prob_out = 0.f;
+        romaji_prob_out = 1.f;
+    }
     *eng_prob = eng_prob_out;
     *jpn_romaji_prob = romaji_prob_out;
 }
@@ -536,20 +548,31 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
     auto write_prob = [&input, probability](const CString& out_type, float out_prob)
     {
         if (probability) *probability = out_prob;
-        ATLTRACE(_T("info: line %s, type = %s, max prob = %f"),
+        ATLTRACE(_T("info: line %s, type = %s, max prob = %f\n"),
                  input.GetString(), out_type.GetString(), out_prob);
     };
 
-    if (zh > 0 && jp > 0 && jp_score > zh_score)
+    if (zh > 0 && jp > 0)
     {
         write_prob(_T("jp"), jp_score / length);
         return LanguageType::jp;
     }
 
-    if (zh > 0 && en > 0 && en_score > zh_score)
+    if (zh > 0 && en > 0)
     {
         write_prob(_T("zh"), zh_score / length);
         return LanguageType::zh;
+    }
+
+	if (kr > 0 && en > 0)
+    {
+        write_prob(_T("kr"), kr_score / length);
+        return LanguageType::kr;
+    }
+
+    if (jp > 0 && en > 0) {
+        write_prob(_T("jp"), jp_score / length);
+        return LanguageType::jp;
     }
 
     if (zh_score > jp_score && zh_score > en_score && zh_score > kr_score)
@@ -599,7 +622,7 @@ void LrcFileController::parse_lrc_file(const CString& file_path)
         LPTSTR err_msg_buf = err_msg.GetBufferSetLength(1024);
         ex->GetErrorMessage(err_msg_buf, 1024);
         err_msg.ReleaseBuffer();
-        ATLTRACE(_T("err: err in file open:%s"), err_msg.GetString());
+        ATLTRACE(_T("err: err in file open:%s\n"), err_msg.GetString());
     } // nothing happened, LrcFileController remains invalid
 }
 

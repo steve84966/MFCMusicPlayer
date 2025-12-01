@@ -51,12 +51,12 @@ public:
 
 	[[nodiscard]] LrcAuxiliaryInfo get_auxiliary_info(int index) const override {
 		if (index == 0)
-			return LrcAuxiliaryInfo::None;
+			return LrcAuxiliaryInfo::Lyric;
 		return LrcAuxiliaryInfo::Ignored;
 	}
 
 	[[nodiscard]] int get_auxiliary_info_at(LrcAuxiliaryInfo info) const override {
-		if (info == LrcAuxiliaryInfo::None) return 0;
+		if (info == LrcAuxiliaryInfo::Lyric) return 0;
 		return -1;
 	}
 };
@@ -192,7 +192,7 @@ public:
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
 	[[nodiscard]] bool IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo info) const { return lrc_controller.is_auxiliary_info_enabled(info); }
 
-	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::None);
+	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::Lyric);
 	// note: passing static control via SubclassDlgItem, no OnCreate call
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
