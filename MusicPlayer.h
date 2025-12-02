@@ -99,7 +99,7 @@ class MusicPlayer
 	// todo: separate audio decode & buffer submission
 	void audio_decode_worker_thread();
 	void start_audio_playback();
-	void stop_audio_decode();
+	void stop_audio_decode(int mode = 0);
 	void stop_audio_playback(int mode);
 
 	int initialize_audio_fifo(AVSampleFormat sample_fmt, int channels, int nb_samples);

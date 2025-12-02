@@ -232,8 +232,11 @@ void MusicPlayer::release_audio_context()
 
 void MusicPlayer::reset_audio_context()
 {
-	release_audio_context();
+	// release_audio_context();
 	file_stream_end = false;
+	if (is_audio_context_initialized()) {
+		av_seek_frame(format_context, static_cast<int>(audio_stream_index), 0, AVSEEK_FLAG_BACKWARD);
+	}
 	InterlockedExchange(playback_state, audio_playback_state_init);
 	reset_audio_fifo();
 	load_audio_context_stream(file_stream);
@@ -951,7 +954,7 @@ inline void MusicPlayer::start_audio_playback()
 	user_request_stop = false;
 }
 
-void MusicPlayer::stop_audio_decode()
+void MusicPlayer::stop_audio_decode(int mode)
 {
 	if (audio_decoder_worker_thread
 		&& audio_decoder_worker_thread->m_hThread != INVALID_HANDLE_VALUE)
@@ -967,13 +970,16 @@ void MusicPlayer::stop_audio_decode()
 		delete audio_decoder_worker_thread;
 		audio_decoder_worker_thread = nullptr;
 	}
-	release_audio_context();
+	if (mode == 0)
+		release_audio_context();
+	else
+		init_decoder_thread();
 }
 
 void MusicPlayer::stop_audio_playback(int mode)
 {
 	// if decoder thread is running, stop decoder thread
-	stop_audio_decode();
+	stop_audio_decode(is_pause ? 1 : 0);
 	if (audio_player_worker_thread
 		&& audio_player_worker_thread->m_hThread != INVALID_HANDLE_VALUE) {
 		while (!TryEnterCriticalSection(audio_playback_section));
@@ -985,7 +991,7 @@ void MusicPlayer::stop_audio_playback(int mode)
 
 		UNREFERENCED_PARAMETER(source_voice->Stop(0));
 		UNREFERENCED_PARAMETER(source_voice->FlushSourceBuffers());
-		uninitialize_audio_fifo();
+		// uninitialize_audio_fifo();
 		// wait for thread to terminate
 		WaitForSingleObject(audio_player_worker_thread->m_hThread, INFINITE);
 		// managed by mfc
