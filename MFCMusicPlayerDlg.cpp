@@ -267,6 +267,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 			m_scrollBarLrcVertical.EnableWindow(FALSE);
 			m_buttonTranslation.SetCheck(BST_UNCHECKED);
 			m_buttonTranslation.EnableWindow(FALSE);
+			m_buttonRomanization.SetCheck(BST_UNCHECKED);
 			m_buttonRomanization.EnableWindow(FALSE);
 		}
 	}
