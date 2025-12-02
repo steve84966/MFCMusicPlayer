@@ -123,6 +123,8 @@ extern "C" {
 #include "AtlTraceRedirect.h"
 #pragma endregion
 
+// Modern Appearance is disabled by default. You can enable by uncomment following lines.
+/*
 #pragma region Modern Appearance
 #ifdef _UNICODE
 #if defined _M_IX86
@@ -134,6 +136,7 @@ extern "C" {
 #endif
 #endif
 #pragma endregion
+*/
 
 #pragma region User-defined Message
 #define WM_PLAYER_FILE_INIT		  (WM_USER + 100)
