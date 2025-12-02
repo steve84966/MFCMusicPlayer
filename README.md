@@ -48,13 +48,15 @@ Contact: lucas150670@petalmail.com
 ### for mainland china users:
 - you can access this project from [GitCode Mirror](https://gitcode.com/lucas150670/MFCMusicPlayer).
 
-### credit:
-- 白菜叶_ (logo artist)
-- undefined
-- Zopiclone
+### credit (no particular order):
+- [白菜叶_](https://space.bilibili.com/1954890407) (logo artist)
+- [undefined](https://github.com/steve84966)
+- [Zopiclone](https://github.com/Zopiclone-Main)
 - Adam
 - 任行道
-- Xx_Dark_D_xX
+- [Xx_Dark_D_xX](https://github.com/mizu-mio)
+- [xuezhaju](https://github.com/xuezhaju)
+- [Vladimir15963](https://github.com/Vladimir15963)
 - and anyone else who has contributed to this project / help test the program.
 
 ### ingredient of the project!

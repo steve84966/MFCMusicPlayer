@@ -85,6 +85,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONSTOP, &CMFCMusicPlayerDlg::OnClickedButtonStop)
 	ON_BN_CLICKED(IDC_BUTTONPAUSE, &CMFCMusicPlayerDlg::OnClickedButtonPause)
 	ON_BN_CLICKED(IDC_BUTTONTRANSLATION, &CMFCMusicPlayerDlg::OnClickedButtonTranslation)
+	ON_BN_CLICKED(IDC_BUTTONROMANIZATION, &CMFCMusicPlayerDlg::OnClickedButtonRomanization)
 	ON_MESSAGE(WM_PLAYER_FILE_INIT, &CMFCMusicPlayerDlg::OnPlayerFileInit)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_PAUSE, &CMFCMusicPlayerDlg::OnPlayerPause)
@@ -246,6 +247,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 			{
 				m_buttonTranslation.EnableWindow(TRUE);
 				m_buttonTranslation.SetCheck(BST_CHECKED);
+				m_buttonRomanization.SetCheck(BST_UNCHECKED);
 				lrc_manager_wnd.SetTranslationEnabled(true);
 			} else
 			{
@@ -289,8 +291,22 @@ void CMFCMusicPlayerDlg::OnClickedButtonPause()
 void CMFCMusicPlayerDlg::OnClickedButtonTranslation()
 {
 	// get button check state
-	BOOL bChecked = m_buttonTranslation.GetCheck() == BST_CHECKED;
-	lrc_manager_wnd.SetTranslationEnabled(bChecked);
+	BOOL bCheckedTranslation = m_buttonTranslation.GetCheck() == BST_CHECKED;
+	if (BOOL bCheckedRomanization = m_buttonRomanization.GetCheck(); bCheckedRomanization == BST_CHECKED) {
+		m_buttonRomanization.SetCheck(BST_UNCHECKED);
+		lrc_manager_wnd.SetRomanizationEnabled(false);
+	}
+	lrc_manager_wnd.SetTranslationEnabled(bCheckedTranslation);
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonRomanization() {
+	// TODO: 在此添加控件通知处理程序代码
+	BOOL bCheckedRomanization = m_buttonRomanization.GetCheck() == BST_CHECKED;
+	if (BOOL bCheckedTranslation = m_buttonTranslation.GetCheck(); bCheckedTranslation == BST_CHECKED) {
+		m_buttonTranslation.SetCheck(BST_UNCHECKED);
+		lrc_manager_wnd.SetTranslationEnabled(false);
+	}
+	lrc_manager_wnd.SetRomanizationEnabled(bCheckedRomanization);
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonStop()

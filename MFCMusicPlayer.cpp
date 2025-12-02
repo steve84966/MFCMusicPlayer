@@ -49,14 +49,21 @@ CMFCMusicPlayerApp theApp;
 
 BOOL CMFCMusicPlayerApp::InitInstance()
 {
+	CString arch = GetSystemArchitecture();
+	ATLTRACE(_T("info: system arch=%s\n"), arch.GetString());
+	if (arch.CompareNoCase(_T("arm64")) == 0) {
+		ATLTRACE(_T("info: you are running the app on ARM64 architecture.\n"));
+		ATLTRACE(_T("info: if you find bugs, please report them to issues.\n"));
+		ATLTRACE(_T("info: thanks for your support!\n"));
+	}
 	// Initialize COM module
-	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+	if (FAILED(CoInitialize(nullptr)))
 	{
 		ATLTRACE("警告：COM 组件初始化失败，应用程序将意外终止。\n");
 		return FALSE;
 	}
 
-	SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	UNREFERENCED_PARAMETER(SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE));
 
 	// 如果应用程序存在以下情况，Windows XP 上需要 InitCommonControlsEx()
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
@@ -136,4 +143,15 @@ float GetSystemDpiScale()
 	int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
 	::ReleaseDC(nullptr, hdc);
 	return static_cast<float>(dpiX) / 96.0f;
+}
+
+CString GetSystemArchitecture() {
+	SYSTEM_INFO si;
+	GetSystemInfo(&si);
+	switch (si.wProcessorArchitecture) {
+		case PROCESSOR_ARCHITECTURE_AMD64: return _T("x64");
+		case PROCESSOR_ARCHITECTURE_INTEL: return _T("x86");
+		case PROCESSOR_ARCHITECTURE_ARM64: return _T("arm64");
+		default: return _T("unknown");
+	}
 }

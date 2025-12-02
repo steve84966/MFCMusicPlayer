@@ -191,4 +191,5 @@ enum class LrcAuxiliaryInfo
 
 #pragma region Global Tool Function
 float GetSystemDpiScale();
+CString GetSystemArchitecture();
 #pragma endregion

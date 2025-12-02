@@ -188,8 +188,22 @@ public:
 	[[nodiscard]] int GetLrcNodeCount() const { return lrc_controller.get_lrc_node_count(); }
 	[[nodiscard]] bool IsValid() const { return lrc_controller.valid(); }
 
-	void SetTranslationEnabled(bool enable) { enable_translation = enable; Invalidate(FALSE); }
+	void SetTranslationEnabled(bool enable) {
+		enable_translation = enable;
+		if (enable_translation && enable_romanization) {
+			enable_romanization = false;
+		}
+		Invalidate(FALSE);
+	}
 	[[nodiscard]] bool IsTranslationEnabled() const { return enable_translation; }
+	void SetRomanizationEnabled(bool enable) {
+		enable_romanization = enable;
+		if (enable_romanization && enable_translation) {
+			enable_romanization = false;
+		}
+		Invalidate(FALSE);
+	}
+	[[nodiscard]] bool IsRomanizationEnabled() const { return enable_romanization; }
 	[[nodiscard]] bool IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo info) const { return lrc_controller.is_auxiliary_info_enabled(info); }
 
 	void MeasureTextMetrics(const CString& str, float max_width, float* width_out, float* height_out, LrcAuxiliaryInfo aux_info = LrcAuxiliaryInfo::Lyric);
@@ -209,6 +223,7 @@ protected:
 
 	LrcFileController lrc_controller;
 	bool enable_translation = false;
+	bool enable_romanization = false;
 
 	DECLARE_DYNAMIC(CLrcManagerWnd)
 	DECLARE_MESSAGE_MAP()

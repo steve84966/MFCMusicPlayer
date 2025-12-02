@@ -68,7 +68,7 @@ protected:
 	HICON m_hIcon;
 	MusicPlayer* music_player;
 
-	// 生成的消息映射函数
+// 生成的消息映射函数
 	BOOL OnInitDialog() override;
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
@@ -81,6 +81,7 @@ public:
 	afx_msg void OnClickedButtonPlay();
 	afx_msg void OnClickedButtonPause();
 	afx_msg void OnClickedButtonTranslation();
+	afx_msg void OnClickedButtonRomanization();
 	afx_msg LRESULT OnPlayerFileInit(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerTimeChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerPause(WPARAM wParam, LPARAM lParam);

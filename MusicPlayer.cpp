@@ -971,8 +971,6 @@ void MusicPlayer::stop_audio_decode(int mode)
 		delete audio_decoder_worker_thread;
 		audio_decoder_worker_thread = nullptr;
 	}
-	if (mode == 0)
-		release_audio_context();
 }
 
 void MusicPlayer::stop_audio_playback(int mode)
