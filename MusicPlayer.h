@@ -6,7 +6,12 @@ class CriticalSectionLock
 {
 	LPCRITICAL_SECTION cs;
 public:
-	explicit CriticalSectionLock(LPCRITICAL_SECTION section) : cs(section) { EnterCriticalSection(cs); }
+	explicit CriticalSectionLock(LPCRITICAL_SECTION section, bool spinwait = false) : cs(section) {
+		if (spinwait) 
+			while (!TryEnterCriticalSection(cs)) {}
+		else 
+			EnterCriticalSection(cs);
+	}
 	~CriticalSectionLock() { LeaveCriticalSection(cs); }
 
 	CriticalSectionLock(const CriticalSectionLock&) = delete;

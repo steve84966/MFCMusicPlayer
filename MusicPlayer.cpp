@@ -239,7 +239,8 @@ void MusicPlayer::reset_audio_context()
 	}
 	InterlockedExchange(playback_state, audio_playback_state_init);
 	reset_audio_fifo();
-	load_audio_context_stream(file_stream);
+	init_decoder_thread();
+	// load_audio_context_stream(file_stream);
 }
 
 bool MusicPlayer::is_audio_context_initialized()
@@ -972,8 +973,6 @@ void MusicPlayer::stop_audio_decode(int mode)
 	}
 	if (mode == 0)
 		release_audio_context();
-	else
-		init_decoder_thread();
 }
 
 void MusicPlayer::stop_audio_playback(int mode)
@@ -982,12 +981,13 @@ void MusicPlayer::stop_audio_playback(int mode)
 	stop_audio_decode(is_pause ? 1 : 0);
 	if (audio_player_worker_thread
 		&& audio_player_worker_thread->m_hThread != INVALID_HANDLE_VALUE) {
-		while (!TryEnterCriticalSection(audio_playback_section));
-		// EnterCriticalSection(audio_playback_section); <- this cause delay, spin wait instead
-		user_request_stop = true;
-		InterlockedExchange(playback_state, audio_playback_state_stopped);
-		SetEvent(frame_ready_event);
-		LeaveCriticalSection(audio_playback_section);
+		{
+			CriticalSectionLock lock(audio_playback_section, true);
+			// EnterCriticalSection(audio_playback_section); <- this cause delay, spin wait instead
+			user_request_stop = true;
+			InterlockedExchange(playback_state, audio_playback_state_stopped);
+			SetEvent(frame_ready_event);
+		}
 
 		UNREFERENCED_PARAMETER(source_voice->Stop(0));
 		UNREFERENCED_PARAMETER(source_voice->FlushSourceBuffers());
@@ -997,9 +997,11 @@ void MusicPlayer::stop_audio_playback(int mode)
 		// managed by mfc
 		delete audio_player_worker_thread;
 		audio_player_worker_thread = nullptr;
-		DeleteCriticalSection(audio_playback_section);
-		delete audio_playback_section;
-		audio_playback_section = nullptr;
+		if (!is_pause) {
+			DeleteCriticalSection(audio_playback_section);
+			delete audio_playback_section;
+			audio_playback_section = nullptr;
+		}
 	}
 	// terminated xaudio and ffmpeg, do cleanup
 	xaudio2_free_buffer();
@@ -1320,7 +1322,7 @@ void MusicPlayer::SeekToPosition(float time, bool need_stop)
 			}
 			else if (!IsPlaying()) {
 				if (decoder_is_running) {
-					stop_audio_decode();
+					stop_audio_decode(1);
 					InterlockedExchange(playback_state, audio_playback_state_init);
 					reset_audio_context();
 					AfxGetMainWnd()->PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT*>(&time));
