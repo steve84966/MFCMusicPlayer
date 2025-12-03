@@ -81,6 +81,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTONOPEN, &CMFCMusicPlayerDlg::OnClickedButtonOpen)
+	ON_COMMAND(ID_MENU_OPENFILE, &CMFCMusicPlayerDlg::OnClickedButtonOpen)
 	ON_BN_CLICKED(IDC_BUTTONPLAY, &CMFCMusicPlayerDlg::OnClickedButtonPlay)
 	ON_BN_CLICKED(IDC_BUTTONSTOP, &CMFCMusicPlayerDlg::OnClickedButtonStop)
 	ON_BN_CLICKED(IDC_BUTTONPAUSE, &CMFCMusicPlayerDlg::OnClickedButtonPause)
@@ -92,6 +93,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_MESSAGE(WM_PLAYER_STOP, &CMFCMusicPlayerDlg::OnPlayerStop)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_ALBUM_ART_INIT, &CMFCMusicPlayerDlg::OnAlbumArtInit)
+	ON_COMMAND(ID_MENU_ABOUT, &CMFCMusicPlayerDlg::OnMenuAbout)
+	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
 	ON_WM_CONTEXTMENU()
@@ -144,12 +147,38 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_buttonTranslation.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 	m_buttonRomanization.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 
+	HICON hIcon = AfxGetApp()->LoadIcon(IDI_ICONFILEOPEN);
+	CButton* pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONOPEN));
+	pBtn->ModifyStyle(0, BS_ICON);
+	pBtn->SetIcon(hIcon);
+
+	// attach IDR_MENUMAIN to main window
+	{
+		CMenu menu;
+		if (menu.LoadMenu(IDR_MENUMAIN))
+		{
+			CRect client_prev, wnd_prev;
+			GetClientRect(&client_prev);
+			GetWindowRect(&wnd_prev);
+			HMENU h_menu = menu.Detach();
+			this->SetMenu(CMenu::FromHandle(h_menu));
+			CRect client_next;
+			GetClientRect(&client_next);
+			int delta = client_prev.Height() - client_next.Height();
+			if (delta > 0)
+			{
+				// fix: client area delta
+				SetWindowPos(nullptr, 0, 0, wnd_prev.Width(), wnd_prev.Height() + delta, SWP_NOMOVE | SWP_NOZORDER);
+			}
+		}
+	}
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
 void CMFCMusicPlayerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+	if (UINT command_item = (nID & 0xFFF0); command_item == IDM_ABOUTBOX)
 	{
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
@@ -508,8 +537,9 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 				music_player->SeekToPosition(fCurSelectedTime, true);
 				if (is_music_playing) {
 					ATLTRACE("info: music is playing, resume from seek point\n");
-					Sleep(5);
-					music_player->Start();
+					CEvent doneEvent;
+					if (WaitForSingleObject(doneEvent, 5) == WAIT_TIMEOUT)
+						music_player->Start();
 				}
 				fBasePlayTime = fCurSelectedTime;
 			}
@@ -524,4 +554,14 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 
 	}
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CMFCMusicPlayerDlg::OnMenuAbout() {
+	CAboutDlg dlg;
+	dlg.DoModal();
+}
+
+[[noreturn]]
+void CMFCMusicPlayerDlg::OnMenuExit() {
+	ExitProcess(0);
 }

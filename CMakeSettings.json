@@ -18,8 +18,7 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "cmakeToolchain": "C:/Users/madoka/.vcpkg-clion/vcpkg/scripts/buildsystems/vcpkg.cmake",
-      "inheritEnvironments": [ "msvc_x64" ],
-      "variables": []
+      "inheritEnvironments": [ "msvc_x64" ]
     }
   ]
 }

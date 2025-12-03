@@ -102,4 +102,6 @@ public:
 	CButton m_buttonTranslation;
 	CButton m_buttonRomanization;
 	CProgressScrollBar m_scrollBarLrcVertical;
+	afx_msg void OnMenuAbout();
+	[[noreturn]] afx_msg void OnMenuExit();
 };
