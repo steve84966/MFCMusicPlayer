@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_MESSAGE(WM_PLAYER_ALBUM_ART_INIT, &CMFCMusicPlayerDlg::OnAlbumArtInit)
 	ON_COMMAND(ID_MENU_ABOUT, &CMFCMusicPlayerDlg::OnMenuAbout)
 	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
+	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
 	ON_WM_CONTEXTMENU()
@@ -266,39 +267,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 
 		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
 		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
-		lrc_manager_wnd.DestroyLrcController();
-		int result = lrc_manager_wnd.InitLrcControllerWithFile(lrc_file);
-		ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
-		if (lrc_manager_wnd.IsValid())
-		{
-			m_scrollBarLrcVertical.EnableWindow(TRUE);
-			if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Translation))
-			{
-				m_buttonTranslation.EnableWindow(TRUE);
-				m_buttonTranslation.SetCheck(BST_CHECKED);
-				m_buttonRomanization.SetCheck(BST_UNCHECKED);
-				lrc_manager_wnd.SetTranslationEnabled(true);
-			} else
-			{
-				m_buttonTranslation.SetCheck(BST_UNCHECKED);
-				m_buttonTranslation.EnableWindow(FALSE);
-				lrc_manager_wnd.SetTranslationEnabled(false);
-			}
-			if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Romanization))
-			{
-				m_buttonRomanization.EnableWindow(TRUE);
-			} else
-			{
-				m_buttonRomanization.EnableWindow(FALSE);
-			}
-		} else
-		{
-			m_scrollBarLrcVertical.EnableWindow(FALSE);
-			m_buttonTranslation.SetCheck(BST_UNCHECKED);
-			m_buttonTranslation.EnableWindow(FALSE);
-			m_buttonRomanization.SetCheck(BST_UNCHECKED);
-			m_buttonRomanization.EnableWindow(FALSE);
-		}
+		LoadLyric(lrc_file);
 	}
 }
 
@@ -487,6 +456,42 @@ void CMFCMusicPlayerDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 	CDialogEx::OnContextMenu(pWnd, point);
 }
 
+void CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
+	lrc_manager_wnd.DestroyLrcController();
+	int result = lrc_manager_wnd.InitLrcControllerWithFile(file_path);
+	ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
+	if (lrc_manager_wnd.IsValid())
+	{
+		m_scrollBarLrcVertical.EnableWindow(TRUE);
+		if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Translation))
+		{
+			m_buttonTranslation.EnableWindow(TRUE);
+			m_buttonTranslation.SetCheck(BST_CHECKED);
+			m_buttonRomanization.SetCheck(BST_UNCHECKED);
+			lrc_manager_wnd.SetTranslationEnabled(true);
+		} else
+		{
+			m_buttonTranslation.SetCheck(BST_UNCHECKED);
+			m_buttonTranslation.EnableWindow(FALSE);
+			lrc_manager_wnd.SetTranslationEnabled(false);
+		}
+		if (lrc_manager_wnd.IsAuxiliaryInfoEnabled(LrcAuxiliaryInfo::Romanization))
+		{
+			m_buttonRomanization.EnableWindow(TRUE);
+		} else
+		{
+			m_buttonRomanization.EnableWindow(FALSE);
+		}
+	} else
+	{
+		m_scrollBarLrcVertical.EnableWindow(FALSE);
+		m_buttonTranslation.SetCheck(BST_UNCHECKED);
+		m_buttonTranslation.EnableWindow(FALSE);
+		m_buttonRomanization.SetCheck(BST_UNCHECKED);
+		m_buttonRomanization.EnableWindow(FALSE);
+	}
+}
+
 void CMFCMusicPlayerDlg::OnCancel()
 {
 	// TODO: 在此添加专用代码和/或调用基类
@@ -564,4 +569,14 @@ void CMFCMusicPlayerDlg::OnMenuAbout() {
 [[noreturn]]
 void CMFCMusicPlayerDlg::OnMenuExit() {
 	ExitProcess(0);
+}
+
+void CMFCMusicPlayerDlg::OnMenuOpenCustomLrc() {
+	if (music_player && music_player->IsInitialized()) {
+		CFileDialog dlg(TRUE, _T("lrc"), NULL, OFN_FILEMUSTEXIST, _T("LRC Files (*.lrc)|*.lrc||"));
+		if (dlg.DoModal() == IDOK) {
+			CString path = dlg.GetPathName();
+			LoadLyric(path);
+		}
+	}
 }

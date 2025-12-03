@@ -91,6 +91,7 @@ public:
 	afx_msg void OnCancel() override;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+	void LoadLyric(const CString& file_path);
 	void DestroyMediaPlayer();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
@@ -104,4 +105,5 @@ public:
 	CProgressScrollBar m_scrollBarLrcVertical;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
+	afx_msg void OnMenuOpenCustomLrc();
 };
