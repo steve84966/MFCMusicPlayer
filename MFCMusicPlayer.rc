@@ -1,19 +1,13 @@
 // Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
-
+#include <windows.h>
 #include "resource.h"
-
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#ifndef APSTUDIO_INVOKED
-#include "targetver.h"
+#ifndef IDC_STATIC
+#define IDC_STATIC (-1)
 #endif
-#include "afxres.h"
-#include "verrsrc.h"
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -22,48 +16,7 @@
 // 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#ifndef APSTUDIO_INVOKED\r\n"
-    "#include ""targetver.h""\r\n"
-    "#endif\r\n"
-    "#include ""afxres.h""\r\n"
-    "#include ""verrsrc.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
-    "#define _AFX_NO_OLE_RESOURCES\r\n"
-    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
-    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
-    "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
-    "LANGUAGE 4, 2\r\n"
-    "#include ""res\\MFCMusicPlayer.rc2""
-    "#include ""l.CHS\\afxres.rc""
-    "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""
-    "#endif\r\n"
-    "#endif\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
+LANGUAGE 0x04, 0x01// LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -167,34 +120,34 @@ END
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
  PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
+FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
- FILEFLAGS 0x1L
+FILEFLAGS 0x1L
 #else
- FILEFLAGS 0x0L
+FILEFLAGS 0x0L
 #endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
+FILEOS 0x40004L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
 BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "080404B0"
-        BEGIN
-            VALUE "CompanyName", "TODO: <公司名>"
-            VALUE "FileDescription", "MFCMusicPlayer"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "MFCMusicPlayer.exe"
-            VALUE "LegalCopyright", "TODO:  (C) <公司名>。  保留所有权利。"
-            VALUE "OriginalFilename", "MFCMusicPlayer.exe"
-            VALUE "ProductName", "TODO: <产品名>"
-            VALUE "ProductVersion", "1.0.0.1"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x804, 1200
-    END
+BLOCK "StringFileInfo"
+BEGIN
+BLOCK "080404B0"
+BEGIN
+VALUE "CompanyName", "TODO: <公司名>"
+VALUE "FileDescription", "MFCMusicPlayer"
+VALUE "FileVersion", "1.0.0.1"
+VALUE "InternalName", "MFCMusicPlayer.exe"
+VALUE "LegalCopyright", "TODO:  (C) <公司名>。  保留所有权利。"
+VALUE "OriginalFilename", "MFCMusicPlayer.exe"
+VALUE "ProductName", "TODO: <产品名>"
+VALUE "ProductVersion", "1.0.0.1"
+END
+END
+BLOCK "VarFileInfo"
+BEGIN
+VALUE "Translation", 0x804, 1200
+END
 END
 
 
@@ -206,94 +159,94 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 163
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
-        HORZGUIDE, 24
-    END
+IDD_ABOUTBOX, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 163
+TOPMARGIN, 7
+BOTTOMMARGIN, 55
+HORZGUIDE, 24
+END
 
-    IDD_MFCMUSICPLAYER_DIALOG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 312
-        VERTGUIDE, 25
-        VERTGUIDE, 37
-        VERTGUIDE, 57
-        VERTGUIDE, 77
-        VERTGUIDE, 97
-        VERTGUIDE, 117
-        VERTGUIDE, 243
-        VERTGUIDE, 263
-        VERTGUIDE, 303
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 193
-        HORZGUIDE, 24
-        HORZGUIDE, 30
-        HORZGUIDE, 133
-        HORZGUIDE, 148
-        HORZGUIDE, 163
-        HORZGUIDE, 173
-        HORZGUIDE, 192
-    END
+IDD_MFCMUSICPLAYER_DIALOG, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 312
+VERTGUIDE, 25
+VERTGUIDE, 37
+VERTGUIDE, 57
+VERTGUIDE, 77
+VERTGUIDE, 97
+VERTGUIDE, 117
+VERTGUIDE, 243
+VERTGUIDE, 263
+VERTGUIDE, 303
+TOPMARGIN, 7
+BOTTOMMARGIN, 193
+HORZGUIDE, 24
+HORZGUIDE, 30
+HORZGUIDE, 133
+HORZGUIDE, 148
+HORZGUIDE, 163
+HORZGUIDE, 173
+HORZGUIDE, 192
+END
 
-    IDD_MUSICPLAYERSETTINGDLG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 264
-        VERTGUIDE, 15
-        VERTGUIDE, 59
-        VERTGUIDE, 143
-        VERTGUIDE, 160
-        VERTGUIDE, 170
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 204
-        HORZGUIDE, 22
-        HORZGUIDE, 44
-        HORZGUIDE, 58
-        HORZGUIDE, 68
-        HORZGUIDE, 88
-        HORZGUIDE, 127
-        HORZGUIDE, 185
-    END
+IDD_MUSICPLAYERSETTINGDLG, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 264
+VERTGUIDE, 15
+VERTGUIDE, 59
+VERTGUIDE, 143
+VERTGUIDE, 160
+VERTGUIDE, 170
+TOPMARGIN, 7
+BOTTOMMARGIN, 204
+HORZGUIDE, 22
+HORZGUIDE, 44
+HORZGUIDE, 58
+HORZGUIDE, 68
+HORZGUIDE, 88
+HORZGUIDE, 127
+HORZGUIDE, 185
+END
 
-    IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 302
-        VERTGUIDE, 37
-        VERTGUIDE, 88
-        VERTGUIDE, 217
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 169
-        HORZGUIDE, 31
-        HORZGUIDE, 49
-        HORZGUIDE, 67
-    END
+IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 302
+VERTGUIDE, 37
+VERTGUIDE, 88
+VERTGUIDE, 217
+TOPMARGIN, 7
+BOTTOMMARGIN, 169
+HORZGUIDE, 31
+HORZGUIDE, 49
+HORZGUIDE, 67
+END
 
-    IDD_SETTINGS_CHILDPAGE_EQUALIZER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 302
-        VERTGUIDE, 27
-        VERTGUIDE, 46
-        VERTGUIDE, 67
-        VERTGUIDE, 87
-        VERTGUIDE, 107
-        VERTGUIDE, 127
-        VERTGUIDE, 147
-        VERTGUIDE, 167
-        VERTGUIDE, 187
-        VERTGUIDE, 207
-        VERTGUIDE, 227
-        VERTGUIDE, 247
-        VERTGUIDE, 267
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 169
-        HORZGUIDE, 26
-    END
+IDD_SETTINGS_CHILDPAGE_EQUALIZER, DIALOG
+BEGIN
+LEFTMARGIN, 7
+RIGHTMARGIN, 302
+VERTGUIDE, 27
+VERTGUIDE, 46
+VERTGUIDE, 67
+VERTGUIDE, 87
+VERTGUIDE, 107
+VERTGUIDE, 127
+VERTGUIDE, 147
+VERTGUIDE, 167
+VERTGUIDE, 187
+VERTGUIDE, 207
+VERTGUIDE, 227
+VERTGUIDE, 247
+VERTGUIDE, 267
+TOPMARGIN, 7
+BOTTOMMARGIN, 169
+HORZGUIDE, 26
+END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -305,27 +258,27 @@ END
 
 IDD_MFCMUSICPLAYER_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
-    0
+0
 END
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
 BEGIN
-    0
+0
 END
 
 IDD_MUSICPLAYERSETTINGDLG AFX_DIALOG_LAYOUT
 BEGIN
-    0
+0
 END
 
 IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT AFX_DIALOG_LAYOUT
 BEGIN
-    0
+0
 END
 
 IDD_SETTINGS_CHILDPAGE_EQUALIZER AFX_DIALOG_LAYOUT
 BEGIN
-    0
+0
 END
 
 
@@ -344,33 +297,33 @@ IDB_NOIMAGE             BITMAP                  "res\\bitmap1.bmp"
 
 IDD_ABOUTBOX DLGINIT
 BEGIN
-    IDC_MFCLINKGITHUB, 0x37c, 202, 0
-0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
-0x2f3a, 0x672f, 0x7469, 0x7568, 0x2e62, 0x6f63, 0x2f6d, 0x756c, 0x6163, 
-0x3173, 0x3035, 0x3736, 0x2f30, 0x464d, 0x4d43, 0x7375, 0x6369, 0x6c50, 
-0x7961, 0x7265, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x3e6c, 
-0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 0x7869, 
-0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 
-0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
-0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
-0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 
-0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 
-0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 
-0x6974, 0x3e70, 
-    0
+IDC_MFCLINKGITHUB, 0x37c, 202, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370,
+0x2f3a, 0x672f, 0x7469, 0x7568, 0x2e62, 0x6f63, 0x2f6d, 0x756c, 0x6163,
+0x3173, 0x3035, 0x3736, 0x2f30, 0x464d, 0x4d43, 0x7375, 0x6369, 0x6c50,
+0x7961, 0x7265, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x3e6c,
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 0x7869,
+0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665,
+0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974,
+0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974,
+0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865,
+0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d,
+0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f,
+0x6974, 0x3e70,
+0
 END
 
 IDD_SETTINGS_CHILDPAGE_AUDIOOUTPUT DLGINIT
 BEGIN
-    IDC_COMBOAUDIOBACKENDSELECT, 0x403, 17, 0
-0x4158, 0x6475, 0x6f69, 0x2032, 0xb2b9, 0xedcf, 0xa3c4, 0xbdca, "\000" 
-    IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
-0xa5b5, 0xa8cd, 0xc0b5, "\000" 
-    IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
-0xa2c1, 0xe5cc, 0xf9c9, "\000" 
-    IDC_COMBOCHANNELCOUNT, 0x403, 13, 0
-0xc4cb, 0xa8cd, 0xc0b5, 0xb7bb, 0xc6c8, 0xf9c9, "\000" 
-    0
+IDC_COMBOAUDIOBACKENDSELECT, 0x403, 17, 0
+0x4158, 0x6475, 0x6f69, 0x2032, 0xb2b9, 0xedcf, 0xa3c4, 0xbdca, "\000"
+IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
+0xa5b5, 0xa8cd, 0xc0b5, "\000"
+IDC_COMBOCHANNELCOUNT, 0x403, 7, 0
+0xa2c1, 0xe5cc, 0xf9c9, "\000"
+IDC_COMBOCHANNELCOUNT, 0x403, 13, 0
+0xc4cb, 0xa8cd, 0xc0b5, 0xb7bb, 0xc6c8, 0xf9c9, "\000"
+0
 END
 
 
@@ -381,37 +334,37 @@ END
 
 IDR_MENULYRICCONTROL MENU
 BEGIN
-    POPUP " "
-    BEGIN
+POPUP " "
+BEGIN
         MENUITEM "加载自定义歌词...",                  ID__32771
-        POPUP "歌词字体设置"
-        BEGIN
+POPUP "歌词字体设置"
+BEGIN
             MENUITEM "正文",                          ID_32773
             MENUITEM "翻译",                          ID_32774
             MENUITEM "罗马音",                         ID_32775
-        END
-        POPUP "歌词颜色设置"
-        BEGIN
+END
+POPUP "歌词颜色设置"
+BEGIN
             MENUITEM "正在播放",                        ID_32777
             MENUITEM "未播放/已播放",                     ID_32778
             MENUITEM "辅助信息显示",                      ID_32779
-        END
-    END
+END
+END
 END
 
 IDR_MENUMAIN MENU
 BEGIN
-    POPUP "文件(&F)"
-    BEGIN
+POPUP "文件(&F)"
+BEGIN
         MENUITEM "打开文件...",                     ID_MENU_OPENFILE
         MENUITEM "打开文件夹（作为播放列表）",               ID_MENU_OPENFOLDER
-        MENUITEM SEPARATOR
+MENUITEM SEPARATOR
         MENUITEM "退出",                          ID_MENU_EXIT
-    END
-    POPUP "关于(&A)"
-    BEGIN
+END
+POPUP "关于(&A)"
+BEGIN
         MENUITEM "关于 MFCMusicPlayer...",        ID_MENU_ABOUT
-    END
+END
 END
 
 
@@ -422,34 +375,10 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUTBOX            "关于 MFCMusicPlayer(&A)..."
-    IDS_CREDIT              "undefined, Zopiclone, Adam, 白菜叶_, 任行道, and anyone else who has contributed to this project / help test the program."
+IDS_ABOUTBOX            "关于 MFCMusicPlayer(&A)..."
+IDS_CREDIT              "undefined, Zopiclone, Adam, 白菜叶_, 任行道, and anyone else who has contributed to this project / help test the program."
 END
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-#define _AFX_NO_SPLITTER_RESOURCES
-#define _AFX_NO_OLE_RESOURCES
-#define _AFX_NO_TRACKER_RESOURCES
-#define _AFX_NO_PROPERTY_RESOURCES
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-LANGUAGE 4, 2
-#include "res\MFCMusicPlayer.rc2"  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹閹间礁纾归柟闂寸绾惧湱鎲搁悧鍫濈瑲闁稿顑夐弻锝夊箛椤掑倷绮靛銈嗗姌婵倝濡甸崟顖氱疀闁割偅娲橀宥夋⒑缁嬪潡顎楃紒澶婄秺瀵鈽夐姀鐘插祮闂侀潧顭堥崕鏌ユ倶閹剧粯鈷戦梻鍫熺〒婢ч亶鏌涚€ｎ亝鍣介柟?
-#include "l.CHS\afxres.rc"      // 闂傚倸鍊搁崐椋庣矆娓氣偓楠炴牠顢曢妶鍥╃厠闂佸搫顦伴崵姘洪鍕幯冾熆鐠虹尨韬俊顐㈠槻椤啴濡堕崱娆忣潷缂備緡鍠栧ù閿嬬珶閺囩喓闄勯柛娑橈功閸橀亶姊洪崫鍕偍闁告柨顑囬懞閬嶅礂缁楄桨绨?
-#if !defined(_AFXDLL)
-#include "l.CHS\afxribbon.rc"   // MFC 闂傚倸鍊搁崐椋庣矆娓氣偓楠炲鍨鹃幇浣圭稁婵犵數濮甸懝鍓х玻濡ゅ懏鐓涢柛銉ｅ劚閻忊晝绱掗埀顒勫磼濞戞瑥寮垮┑锛勫仩椤曆勭妤ｅ啯鍊甸悷娆忓缁€鍫濃攽閻愨晛浜鹃柣搴ゎ潐濞诧箓宕戞繝鍌滄殾闁绘梻鈷堥弫鍡涙煃瑜滈崜鐔笺€侀弮鍫晬闁绘劗琛ラ幏铏圭磼缂併垹骞栭柟铏姍閹偞绂掔€ｎ偆鍘遍梺瑙勫閺呮稒淇婇崸妤佺厱婵妫楁晶瀛樻叏婵犲啯銇濈€规洦鍋婂畷鐔煎垂椤愵剛绀€闂傚倷绶氬褔鎮ч崱妞曟椽濮€閵堝懐锛涢梺鍦劋閸ㄧ喖寮?
-#endif
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 
