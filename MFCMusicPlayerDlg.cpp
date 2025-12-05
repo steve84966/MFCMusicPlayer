@@ -319,6 +319,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 		music_player->Stop();
 	}
 	fBasePlayTime = 0.f;
+	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 }
 
 LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
@@ -339,7 +340,6 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	ATLTRACE("info: player notify stop, reset fBasePlayTime\n");
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
-	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	return LRESULT();
 }
