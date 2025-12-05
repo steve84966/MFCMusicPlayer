@@ -141,6 +141,7 @@ public:
 	[[nodiscard]] int get_current_lrc_lines_count() const;
 	[[nodiscard]] int get_current_lrc_node_index() const { return static_cast<int>(cur_lrc_node_index); }
 	[[nodiscard]] int get_lrc_node_count() const { return static_cast<int>(lrc_nodes.GetCount()); }
+	[[nodiscard]] int get_lrc_node_time_ms(int index) const { assert(index < lrc_nodes.GetCount());  return lrc_nodes[index]->get_time_ms(); }
 	int get_current_lrc_line_at(int index, CString& out_str) const;
 	int get_lrc_line_at(int lrc_node_index, int index, CString& out_str) const;
 	[[nodiscard]] int get_current_lrc_line_aux_index(LrcAuxiliaryInfo info) const;
@@ -187,6 +188,7 @@ public:
 	[[nodiscard]] int GetCurrentLrcNodeIndex() const { return lrc_controller.get_current_lrc_node_index(); }
 	[[nodiscard]] int GetLrcNodeCount() const { return lrc_controller.get_lrc_node_count(); }
 	[[nodiscard]] bool IsValid() const { return lrc_controller.valid(); }
+	[[nodiscard]] int GetLrcNodeTimeStamp(int index) { return lrc_controller.get_lrc_node_time_ms(index); }
 
 	void SetTranslationEnabled(bool enable) {
 		enable_translation = enable;

@@ -75,6 +75,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
+	bool bIsAdjustingLrcVertical = false;
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnClickedButtonOpen();
@@ -98,6 +99,8 @@ public:
 	CStatic m_labelAlbumArt;
 	CProgressSliderCtrl m_sliderProgress;
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar);
+
 	CSliderCtrl m_sliderVolumeCtrl;
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;
@@ -106,4 +109,5 @@ public:
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

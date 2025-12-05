@@ -98,8 +98,10 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
+	ON_WM_VSCROLL()
 	ON_WM_CONTEXTMENU()
 	ON_WM_SIZE()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -336,6 +338,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
+	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	return LRESULT();
 }
 
@@ -386,7 +389,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 		if (fabs(time - fBasePlayTime) > 1.f)
 		{
 			ATLTRACE("info: abnormal time event, time=%f, base=%f", time, fBasePlayTime);
-			time = fBasePlayTime;
+			return LRESULT();
 		} else
 		{
 			fBasePlayTime = time;
@@ -404,7 +407,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	// if user is controlling the slider, do not adjust
 	m_sliderProgress.SetPos(static_cast<int>(ratio * 1000));
 
-	if (lrc_manager_wnd.IsValid())
+	if (lrc_manager_wnd.IsValid() && !bIsAdjustingLrcVertical)
 	{
 		int current_lrc_node_index = lrc_manager_wnd.GetCurrentLrcNodeIndex();
 		int lrc_node_count = lrc_manager_wnd.GetLrcNodeCount();
@@ -413,7 +416,8 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	}
 
 	// re-post message to LrcManagerWnd
-	lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
+	if (!bIsAdjustingLrcVertical)
+		lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
 	return LRESULT();
 }
 
@@ -553,12 +557,64 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 			return;
 		}
 	}
+
+	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CMFCMusicPlayerDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) {
 	if (GetDlgItem(IDC_SCROLLBARLRCVERTICAL) == pScrollBar && music_player && music_player->IsInitialized()
 		&& lrc_manager_wnd.IsValid())
 	{
 
+		if (nSBCode == SB_THUMBTRACK) {
+			ATLTRACE("info: lrc vertical slider is being dragged\n");
+			bIsAdjustingLrcVertical = true;
+		}
+		if (nSBCode == SB_ENDSCROLL) {
+			ATLTRACE("info: lrc vertical slider drag ended\n");
+			SetTimer(1919810, 10, nullptr);
+			goto exit;
+		}
+		bIsMusicPlaying = music_player->IsPlaying();
+
+		int iSliderPos = nPos;
+		int iCurrentLrcNodeIndex = lrc_manager_wnd.GetCurrentLrcNodeIndex();
+		int iLrcNodeCount = lrc_manager_wnd.GetLrcNodeCount();
+		int iTargetLrcNodeIndex = static_cast<int>(static_cast<float>(iSliderPos) * static_cast<float>(iLrcNodeCount) / 1000.0f);
+		if (iTargetLrcNodeIndex >= iLrcNodeCount) 
+			iTargetLrcNodeIndex = iLrcNodeCount - 1;
+		if (iCurrentLrcNodeIndex != iTargetLrcNodeIndex) {
+			int iTimeStampTarget = lrc_manager_wnd.GetLrcNodeTimeStamp(iTargetLrcNodeIndex);
+			float fTarget = static_cast<float>(iTimeStampTarget) / 1000.f;
+			lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT*>(&fTarget));
+		}
+
+		if (nSBCode == SB_THUMBPOSITION) {
+			if (music_player && music_player->IsInitialized()) {
+				int iTimeStampTarget = lrc_manager_wnd.GetLrcNodeTimeStamp(iTargetLrcNodeIndex);
+				float fTarget = static_cast<float>(iTimeStampTarget) / 1000.f;
+				bool is_music_playing = bIsMusicPlaying;
+				if (fTarget > music_player->GetMusicTimeLength()) {
+					music_player->Stop();
+					goto exit;
+				}
+				fBasePlayTime = fTarget;
+				int iCurVerticalPos = static_cast<int>(static_cast<float>(iTargetLrcNodeIndex) * 1000.0f / static_cast<float>(iLrcNodeCount));
+				m_scrollBarLrcVertical.SetScrollPos(iCurVerticalPos, TRUE);
+				music_player->SeekToPosition(fTarget, true);
+				if (is_music_playing) {
+					ATLTRACE("info: music is playing, resume from seek point\n");
+					CEvent doneEvent;
+					if (WaitForSingleObject(doneEvent, 5) == WAIT_TIMEOUT) {
+						music_player->Start();
+					}
+				}
+			}
+		}
+
 	}
-	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
+exit:
+	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }
 
 void CMFCMusicPlayerDlg::OnMenuAbout() {
@@ -579,4 +635,13 @@ void CMFCMusicPlayerDlg::OnMenuOpenCustomLrc() {
 			LoadLyric(path);
 		}
 	}
+}
+
+void CMFCMusicPlayerDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == 1919810){
+		KillTimer(1919810);
+		bIsAdjustingLrcVertical = false;
+	}
+	CDialogEx::OnTimer(nIDEvent);
 }
