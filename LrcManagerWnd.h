@@ -171,6 +171,17 @@ class CLrcManagerWnd : public CWnd
 {
 
 protected:
+	struct LrcTextCustomization {
+		float font_size;
+		CString font_name;
+	};
+	LrcTextCustomization text_customization {
+		.font_size = 20, .font_name = _T("Microsoft YaHei")
+	};
+	LrcTextCustomization text_translation_customization {
+		.font_size = 16, .font_name = _T("Microsoft YaHei")
+	};
+	D2D1::ColorF text_played_color = D2D1::ColorF::Black, text_unplayed_color = D2D1::ColorF::DarkGray;
 
 public:
 	CLrcManagerWnd();
@@ -179,8 +190,13 @@ public:
 
 	void CreateDeviceResources();
 	void DiscardDeviceResources();
+	int InitDirectWrite();
+	void DiscardDirectWrite();
 
-	int InitDirect2D();
+	bool IsFontNameValid(const CString& font_name);
+
+	CString GetDirectWriteFontName(LOGFONT *logfont);
+
 	int InitLrcControllerWithFile(const CString& file_path);
 	void DestroyLrcController();
 	void UpdateLyric();
@@ -212,6 +228,13 @@ public:
 	// note: passing static control via SubclassDlgItem, no OnCreate call
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+
+	void ModifyTextColor(bool is_playing, D2D1::ColorF color);
+	void ModifyTextFont(bool is_translation, CString font_name);
+	void ModifyTextSize(bool is_translation, float font_size);
+	D2D1::ColorF GetTextColor(bool is_playing) const { return is_playing ? text_played_color : text_unplayed_color; }
+	CString GetTextFont(bool is_translation) const { return is_translation ? text_translation_customization.font_name : text_customization.font_name; }
+	float GetTextSize(bool is_translation) const { return is_translation ? text_translation_customization.font_size : text_customization.font_size; }
 
 protected:
 	ID2D1Factory* d2d1_factory;

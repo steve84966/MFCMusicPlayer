@@ -36,7 +36,15 @@ CLrcManagerWnd::CLrcManagerWnd() :
 
     default_dialog_color = D2D1::ColorF(r, g, b);
 
-    InitDirect2D();
+    UNREFERENCED_PARAMETER(
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d1_factory)
+    );
+
+    UNREFERENCED_PARAMETER(
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+            reinterpret_cast<IUnknown**>(&write_factory))
+    );
+    InitDirectWrite();
 }
 
 CLrcManagerWnd::~CLrcManagerWnd()
@@ -48,38 +56,29 @@ CLrcManagerWnd::~CLrcManagerWnd()
     if (d2d1_factory) d2d1_factory->Release();
 }
 
-int CLrcManagerWnd::InitDirect2D()
+int CLrcManagerWnd::InitDirectWrite()
 {
-    UNREFERENCED_PARAMETER(
-        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d1_factory)
-    );
-
-    UNREFERENCED_PARAMETER(
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-            reinterpret_cast<IUnknown**>(&write_factory))
-    );
-
     if (write_factory)
     {
         UNREFERENCED_PARAMETER(
             write_factory->CreateTextFormat(
-                _T(""), // TODO: customizable text format
+                text_customization.font_name, // TODO: customizable text format
                 nullptr,
                 DWRITE_FONT_WEIGHT_NORMAL,
                 DWRITE_FONT_STYLE_NORMAL,
                 DWRITE_FONT_STRETCH_NORMAL,
-                20.0f * GetSystemDpiScale(),
+                text_customization.font_size * GetSystemDpiScale(),
                 _T("zh-CN"),
                 &text_format)
         );
         UNREFERENCED_PARAMETER(
             write_factory->CreateTextFormat(
-                _T(""), // TODO: customizable text format
+                text_translation_customization.font_name, // TODO: customizable text format
                 nullptr,
                 DWRITE_FONT_WEIGHT_NORMAL,
                 DWRITE_FONT_STYLE_NORMAL,
                 DWRITE_FONT_STRETCH_NORMAL,
-                16.0f * GetSystemDpiScale(),
+                text_translation_customization.font_size * GetSystemDpiScale(),
                 _T("zh-CN"),
                 &text_format_translation)
         );
@@ -366,6 +365,34 @@ void CLrcManagerWnd::OnSize(UINT nType, int cx, int cy)
     }
 }
 
+void CLrcManagerWnd::ModifyTextColor(bool is_playing, D2D1::ColorF color) {
+    if (is_playing) {
+        brush_played_text->SetColor(color);
+    } else {
+        brush_unplay_text->SetColor(color);
+    }
+}
+
+void CLrcManagerWnd::ModifyTextFont(bool is_translation, CString font_name) {
+    LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
+    customization.font_name = font_name;
+    DiscardDeviceResources();
+    DiscardDirectWrite();
+    CreateDeviceResources();
+    InitDirectWrite();
+    Invalidate();
+}
+
+void CLrcManagerWnd::ModifyTextSize(bool is_translation, float font_size) {
+    LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
+    customization.font_size = font_size;
+    DiscardDeviceResources();
+    DiscardDirectWrite();
+    CreateDeviceResources();
+    InitDirectWrite();
+    Invalidate();
+}
+
 
 void CLrcManagerWnd::CreateDeviceResources()
 {
@@ -399,8 +426,8 @@ void CLrcManagerWnd::CreateDeviceResources()
     }
 }
 
-void CLrcManagerWnd::DiscardDeviceResources()
-{
+void CLrcManagerWnd::DiscardDirectWrite() {
+
     if (brush_unplay_text)
     {
         brush_unplay_text->Release();
@@ -411,6 +438,46 @@ void CLrcManagerWnd::DiscardDeviceResources()
         brush_played_text->Release();
         brush_played_text = nullptr;
     }
+}
+
+bool CLrcManagerWnd::IsFontNameValid(const CString &font_name) {
+    if (font_name.IsEmpty()) return false;
+    if (write_factory == nullptr) return false;
+
+    CComPtr<IDWriteFontCollection> font_collection;
+    write_factory->GetSystemFontCollection(&font_collection);
+
+    BOOL exists = FALSE;
+    UINT32 index;
+    font_collection->FindFamilyName(font_name.GetString(), &index, &exists);
+    return exists;
+}
+
+CString CLrcManagerWnd::GetDirectWriteFontName(LOGFONT* logfont) {
+    CComPtr<IDWriteGdiInterop> gdi_interop;
+    write_factory->GetGdiInterop(&gdi_interop);
+    CComPtr<IDWriteFont> font;
+    gdi_interop->CreateFontFromLOGFONT(logfont, &font);
+    CComPtr<IDWriteFontFamily> family;
+    font->GetFontFamily(&family);
+
+    CComPtr<IDWriteLocalizedStrings> family_names;
+    family->GetFamilyNames(&family_names);
+
+    UINT32 index = 0;
+    BOOL exists = FALSE;
+    family_names->FindLocaleName(L"zh-cn", &index, &exists);
+    if (!exists) index = 0; // fallback
+
+    WCHAR name[LF_FACESIZE];
+    UINT32 length = 0;
+    family_names->GetStringLength(index, &length);
+    family_names->GetString(index, name, LF_FACESIZE);
+    return name;
+}
+
+void CLrcManagerWnd::DiscardDeviceResources()
+{
     if (render_target)
     {
         render_target->Release();

@@ -96,6 +96,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_ABOUT, &CMFCMusicPlayerDlg::OnMenuAbout)
 	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
 	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
+	ON_COMMAND(ID_32773, &CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
@@ -644,4 +645,26 @@ void CMFCMusicPlayerDlg::OnTimer(UINT_PTR nIDEvent)
 		bIsAdjustingLrcVertical = false;
 	}
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+void CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont() {
+	CString font_name = lrc_manager_wnd.GetTextFont(false);
+	int font_size = static_cast<int>(lrc_manager_wnd.GetTextSize(false) / 3.f * 4);
+	LOGFONT lf;
+	memset(&lf, 0, sizeof(LOGFONT));
+	_tcscpy_s(lf.lfFaceName, font_name.GetString());
+	lf.lfHeight = font_size;
+	CFontDialog dlg;
+	dlg.m_cf.lpLogFont = &lf;
+	dlg.m_cf.Flags |= CF_INITTOLOGFONTSTRUCT;
+	if (dlg.DoModal() == IDOK) {
+		font_name = lrc_manager_wnd.GetDirectWriteFontName(&lf);
+		if (BOOL result = lrc_manager_wnd.IsFontNameValid(font_name); !result) {
+			ATLTRACE(_T("info: invalid font name %s, use default font\n"), font_name.GetString());
+			font_name = _T("Microsoft YaHei UI");
+		}
+		font_size = dlg.GetSize() / 10;
+		lrc_manager_wnd.ModifyTextFont(false, font_name);
+		lrc_manager_wnd.ModifyTextSize(false, font_size);
+	}
 }

@@ -110,4 +110,5 @@ public:
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnMenuSettingPlayingTextFont();
 };
