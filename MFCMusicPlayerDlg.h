@@ -111,4 +111,6 @@ public:
 	afx_msg void OnMenuOpenCustomLrc();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnMenuSettingPlayingTextFont();
+	void ModifyPlayingText(bool is_translation);
+	afx_msg void OnMenuSettingTranslationTextFont();
 };

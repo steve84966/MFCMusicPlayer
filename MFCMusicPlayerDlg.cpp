@@ -103,6 +103,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_WM_CONTEXTMENU()
 	ON_WM_SIZE()
 	ON_WM_TIMER()
+	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
 END_MESSAGE_MAP()
 
 
@@ -643,17 +644,25 @@ void CMFCMusicPlayerDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == 1919810){
 		KillTimer(1919810);
 		bIsAdjustingLrcVertical = false;
+		ATLTRACE(_T("114514\n"));
 	}
 	CDialogEx::OnTimer(nIDEvent);
 }
 
 void CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont() {
-	CString font_name = lrc_manager_wnd.GetTextFont(false);
-	int font_size = static_cast<int>(lrc_manager_wnd.GetTextSize(false) / 3.f * 4);
+	ModifyPlayingText(false);
+}
+
+void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
+	CString font_name = lrc_manager_wnd.GetTextFont(is_translation);
+	float font_size = lrc_manager_wnd.GetTextSize(is_translation) / 3.f * 4;
+	bool bold = lrc_manager_wnd.IsTextBold(is_translation), italic = lrc_manager_wnd.IsTextItalic(is_translation);
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
 	_tcscpy_s(lf.lfFaceName, font_name.GetString());
-	lf.lfHeight = font_size;
+	lf.lfHeight = static_cast<LONG>(font_size);
+	lf.lfItalic = italic;
+	lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
 	CFontDialog dlg;
 	dlg.m_cf.lpLogFont = &lf;
 	dlg.m_cf.Flags |= CF_INITTOLOGFONTSTRUCT;
@@ -663,8 +672,19 @@ void CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont() {
 			ATLTRACE(_T("info: invalid font name %s, use default font\n"), font_name.GetString());
 			font_name = _T("Microsoft YaHei UI");
 		}
-		font_size = dlg.GetSize() / 10;
-		lrc_manager_wnd.ModifyTextFont(false, font_name);
-		lrc_manager_wnd.ModifyTextSize(false, font_size);
+		font_size = static_cast<float>(dlg.GetSize()) / 10.f;
+		bold = dlg.IsBold();
+		italic = dlg.IsItalic();
+		lrc_manager_wnd.ModifyTextFont(is_translation, font_name);
+		lrc_manager_wnd.ModifyTextSize(is_translation, font_size);
+		lrc_manager_wnd.ModifyTextBold(is_translation, bold);
+		lrc_manager_wnd.ModifyTextItalic(is_translation, italic);
+		lrc_manager_wnd.ReInitializeDirect2D();
 	}
+}
+
+void CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont()
+{
+	// TODO: 在此添加命令处理程序代码
+	ModifyPlayingText(true);
 }

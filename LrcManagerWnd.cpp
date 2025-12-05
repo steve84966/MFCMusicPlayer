@@ -64,8 +64,8 @@ int CLrcManagerWnd::InitDirectWrite()
             write_factory->CreateTextFormat(
                 text_customization.font_name, // TODO: customizable text format
                 nullptr,
-                DWRITE_FONT_WEIGHT_NORMAL,
-                DWRITE_FONT_STYLE_NORMAL,
+                text_customization.is_bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL,
+                text_customization.is_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
                 DWRITE_FONT_STRETCH_NORMAL,
                 text_customization.font_size * GetSystemDpiScale(),
                 _T("zh-CN"),
@@ -75,8 +75,8 @@ int CLrcManagerWnd::InitDirectWrite()
             write_factory->CreateTextFormat(
                 text_translation_customization.font_name, // TODO: customizable text format
                 nullptr,
-                DWRITE_FONT_WEIGHT_NORMAL,
-                DWRITE_FONT_STYLE_NORMAL,
+                text_translation_customization.is_bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL,
+                text_translation_customization.is_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL,
                 DWRITE_FONT_STRETCH_NORMAL,
                 text_translation_customization.font_size * GetSystemDpiScale(),
                 _T("zh-CN"),
@@ -376,21 +376,21 @@ void CLrcManagerWnd::ModifyTextColor(bool is_playing, D2D1::ColorF color) {
 void CLrcManagerWnd::ModifyTextFont(bool is_translation, CString font_name) {
     LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
     customization.font_name = font_name;
-    DiscardDeviceResources();
-    DiscardDirectWrite();
-    CreateDeviceResources();
-    InitDirectWrite();
-    Invalidate();
 }
 
 void CLrcManagerWnd::ModifyTextSize(bool is_translation, float font_size) {
     LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
     customization.font_size = font_size;
-    DiscardDeviceResources();
-    DiscardDirectWrite();
-    CreateDeviceResources();
-    InitDirectWrite();
-    Invalidate();
+}
+
+void CLrcManagerWnd::ModifyTextBold(bool is_translation, bool is_bold) {
+    LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
+    customization.is_bold = is_bold;
+}
+
+void CLrcManagerWnd::ModifyTextItalic(bool is_translation, bool is_italic) {
+    LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
+    customization.is_italic = is_italic;
 }
 
 
@@ -440,6 +440,14 @@ void CLrcManagerWnd::DiscardDirectWrite() {
     }
 }
 
+void CLrcManagerWnd::ReInitializeDirect2D() {
+    DiscardDeviceResources();
+    DiscardDirectWrite();
+    CreateDeviceResources();
+    InitDirectWrite();
+    Invalidate();
+}
+
 bool CLrcManagerWnd::IsFontNameValid(const CString &font_name) {
     if (font_name.IsEmpty()) return false;
     if (write_factory == nullptr) return false;
@@ -455,24 +463,31 @@ bool CLrcManagerWnd::IsFontNameValid(const CString &font_name) {
 
 CString CLrcManagerWnd::GetDirectWriteFontName(LOGFONT* logfont) {
     CComPtr<IDWriteGdiInterop> gdi_interop;
-    write_factory->GetGdiInterop(&gdi_interop);
+    if (FAILED(write_factory->GetGdiInterop(&gdi_interop)))
+        return {};
     CComPtr<IDWriteFont> font;
-    gdi_interop->CreateFontFromLOGFONT(logfont, &font);
+    if (FAILED(gdi_interop->CreateFontFromLOGFONT(logfont, &font)))
+        return {};
     CComPtr<IDWriteFontFamily> family;
-    font->GetFontFamily(&family);
+    if (FAILED(font->GetFontFamily(&family)))
+        return {};
 
     CComPtr<IDWriteLocalizedStrings> family_names;
-    family->GetFamilyNames(&family_names);
+    if (FAILED(family->GetFamilyNames(&family_names)))
+        return {};
 
     UINT32 index = 0;
     BOOL exists = FALSE;
-    family_names->FindLocaleName(L"zh-cn", &index, &exists);
+    if (FAILED(family_names->FindLocaleName(L"zh-cn", &index, &exists)))
+        exists = FALSE;
     if (!exists) index = 0; // fallback
 
     WCHAR name[LF_FACESIZE];
     UINT32 length = 0;
-    family_names->GetStringLength(index, &length);
-    family_names->GetString(index, name, LF_FACESIZE);
+    if (FAILED(family_names->GetStringLength(index, &length)))
+        return {};
+    if (FAILED(family_names->GetString(index, name, LF_FACESIZE)))
+        return {};
     return name;
 }
 

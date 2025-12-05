@@ -174,12 +174,14 @@ protected:
 	struct LrcTextCustomization {
 		float font_size;
 		CString font_name;
+		bool is_bold;
+		bool is_italic;
 	};
 	LrcTextCustomization text_customization {
-		.font_size = 20, .font_name = _T("Microsoft YaHei")
+		.font_size = 20, .font_name = _T("Microsoft YaHei"), .is_bold = false, .is_italic = false
 	};
 	LrcTextCustomization text_translation_customization {
-		.font_size = 16, .font_name = _T("Microsoft YaHei")
+		.font_size = 16, .font_name = _T("Microsoft YaHei"), .is_bold = false, .is_italic = false
 	};
 	D2D1::ColorF text_played_color = D2D1::ColorF::Black, text_unplayed_color = D2D1::ColorF::DarkGray;
 
@@ -192,6 +194,7 @@ public:
 	void DiscardDeviceResources();
 	int InitDirectWrite();
 	void DiscardDirectWrite();
+	void ReInitializeDirect2D();
 
 	bool IsFontNameValid(const CString& font_name);
 
@@ -235,6 +238,11 @@ public:
 	D2D1::ColorF GetTextColor(bool is_playing) const { return is_playing ? text_played_color : text_unplayed_color; }
 	CString GetTextFont(bool is_translation) const { return is_translation ? text_translation_customization.font_name : text_customization.font_name; }
 	float GetTextSize(bool is_translation) const { return is_translation ? text_translation_customization.font_size : text_customization.font_size; }
+
+	void ModifyTextBold(bool is_translation, bool is_bold);
+	void ModifyTextItalic(bool is_translation, bool is_italic);
+	bool IsTextBold(bool is_translation) const { return is_translation ? text_translation_customization.is_bold : text_customization.is_bold; }
+	bool IsTextItalic(bool is_translation) const { return is_translation ? text_translation_customization.is_italic : text_customization.is_italic; }
 
 protected:
 	ID2D1Factory* d2d1_factory;
