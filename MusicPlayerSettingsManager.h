@@ -34,6 +34,9 @@ public:
 	public:
 	void LoadSettingsFromINI(const CString& ini_filepath)
 	{
+		// judge if ini exists
+		if (_taccess(ini_filepath, 0) == -1)
+			return; // file not exist, use default settings
 		lyric_font_size = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontSize"), 24, ini_filepath);
 		lyric_font_color = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontColor"), static_cast<int>(D2D1::ColorF::Black), ini_filepath);
 		lyric_font_color_translation = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontColorTranslation"), static_cast<int>(D2D1::ColorF::DarkGray), ini_filepath);

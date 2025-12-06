@@ -655,7 +655,7 @@ void CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont() {
 
 void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
 	CString font_name = lrc_manager_wnd.GetTextFont(is_translation);
-	float font_size = lrc_manager_wnd.GetTextSize(is_translation) / 3.f * 4;
+	float font_size = lrc_manager_wnd.GetTextSize(is_translation) / 3.f * 4 * GetSystemDpiScale();
 	bool bold = lrc_manager_wnd.IsTextBold(is_translation), italic = lrc_manager_wnd.IsTextItalic(is_translation);
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
