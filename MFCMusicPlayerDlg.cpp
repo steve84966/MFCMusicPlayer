@@ -97,6 +97,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
 	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
 	ON_COMMAND(ID_32773, &CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont)
+	ON_COMMAND(ID_32777, &CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor)
+	ON_COMMAND(ID_32778, &CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
@@ -687,4 +689,28 @@ void CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont()
 {
 	// TODO: 在此添加命令处理程序代码
 	ModifyPlayingText(true);
+}
+
+void CMFCMusicPlayerDlg::ModifyTextColor(bool is_playing) {
+	auto d2dColorToRGB = [](D2D1_COLOR_F color) {
+		return RGB(static_cast<BYTE>(color.r * 255.f), static_cast<BYTE>(color.g * 255.f), static_cast<BYTE>(color.b * 255.f));
+	};
+	auto rgbToD2DColor = [](COLORREF color) {
+		return D2D1::ColorF(GetRValue(color) / 255.f, GetGValue(color) / 255.f, GetBValue(color) / 255.f, 1.f);
+	};
+	D2D1::ColorF text_color = lrc_manager_wnd.GetTextColor(is_playing);
+	COLORREF text_color_ref = d2dColorToRGB(text_color);
+	CColorDialog dlg(text_color_ref, CC_FULLOPEN | CC_RGBINIT);
+	if (dlg.DoModal() == IDOK) {
+		D2D1::ColorF text_color = rgbToD2DColor(dlg.GetColor());
+		lrc_manager_wnd.ModifyTextColor(is_playing, text_color);
+	}
+}
+
+void CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor() {
+	ModifyTextColor(true);
+}
+
+void CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor() {
+	ModifyTextColor(false);
 }

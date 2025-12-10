@@ -113,4 +113,8 @@ public:
 	afx_msg void OnMenuSettingPlayingTextFont();
 	void ModifyPlayingText(bool is_translation);
 	afx_msg void OnMenuSettingTranslationTextFont();
+
+	void ModifyTextColor(bool is_playing);
+	afx_msg void OnMenuSettingPlayedTextColor();
+	afx_msg void OnMenuSettingUnplayedTextColor();
 };

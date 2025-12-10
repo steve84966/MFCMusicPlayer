@@ -367,8 +367,10 @@ void CLrcManagerWnd::OnSize(UINT nType, int cx, int cy)
 
 void CLrcManagerWnd::ModifyTextColor(bool is_playing, D2D1::ColorF color) {
     if (is_playing) {
+        text_played_color = color;
         brush_played_text->SetColor(color);
     } else {
+        text_unplayed_color = color;
         brush_unplay_text->SetColor(color);
     }
 }

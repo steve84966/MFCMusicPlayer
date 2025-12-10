@@ -39,7 +39,6 @@ Contact: lucas150670@petalmail.com
 
 
 ### note:
-- im refactoring pcm decode & submit logic. there will be no update for a long time.
 - no ffmpeg libraries (in either source code form, or binary form) are included in this repository.
 - if you want to build this project yourself, you will need to download ffmpeg libraries yourself. please note that ffmpeg is distributed under different licenses, you should comply with the licenses of the libraries you download.
 - automatic builds from [Github Actions](https://github.com/lucas150670/MFCMusicPlayer/actions) are available. ffmpeg libraries in build artifact are fetched from vcpkg directly and under LGPL license.

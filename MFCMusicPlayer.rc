@@ -346,7 +346,6 @@ BEGIN
         BEGIN
             MENUITEM "正在播放",                        ID_32777
             MENUITEM "未播放/已播放",                     ID_32778
-            MENUITEM "辅助信息显示",                      ID_32779
         END
     END
 END
