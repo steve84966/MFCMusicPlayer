@@ -58,6 +58,13 @@ END_MESSAGE_MAP()
 
 // CMFCMusicPlayerDlg 对话框
 
+std::initializer_list<CString> CMFCMusicPlayerDlg::music_ext_list = {
+	CString(_T("mp3")),
+	CString(_T("flac")),
+	CString(_T("wav")),
+	CString(_T("aac")),
+	CString(_T("ogg")),
+};
 
 
 CMFCMusicPlayerDlg::CMFCMusicPlayerDlg(CWnd* pParent /*=nullptr*/)
@@ -183,6 +190,29 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 			}
 		}
 	}
+	
+	// get command line and judge, with a path then try open
+	LPTSTR cmd_line = GetCommandLine();
+	int argc;
+	ATLTRACE(_T("info: command line: %s\n"), cmd_line);
+	// skip exe path
+	LPTSTR* str = CommandLineToArgvW(cmd_line, &argc); // NOLINT(*-unused-function)
+	for (int i = 0; i < argc; i++)
+	{
+		ATLTRACE(_T("info: argv[%d]=%s\n"), i, str[i]);
+	}
+	if (argc == 2 && str[1] != nullptr) {
+		CString file_path = str[1];
+		ATLTRACE(_T("info: hit argv[1], file path = %s\n"), file_path.GetString());
+		CString ext = file_path.Mid(file_path.ReverseFind(_T('.')) + 1);
+		if (ext.IsEmpty()) {
+			ATLTRACE(_T("err: file ext is empty!\n"));
+		}
+		else {
+			OpenMusic(file_path, ext);
+		}
+		LocalFree(str);
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -236,6 +266,42 @@ HCURSOR CMFCMusicPlayerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
+{
+	if (!file_path.IsEmpty() && !ext.IsEmpty())
+	{
+		delete music_player;
+		music_player = new MusicPlayer();
+		// judge ext is music file?
+		if (std::ranges::find(music_ext_list, ext) == music_ext_list.end()) {
+			ATLTRACE(_T("err: file ext %s not supported!\n"), ext.GetString());
+			AfxMessageBox(_T("不支持的文件格式！"), MB_ICONERROR);
+			return;
+		}
+		music_player->OpenFile(file_path, ext);
+		if (!music_player->IsInitialized()) {
+			delete music_player;
+			music_player = nullptr;
+		}
+		else {
+			this->PostMessage(WM_PLAYER_TIME_CHANGE, 0);
+			CString title = music_player->GetSongTitle();
+			CString artist = music_player->GetSongArtist();
+			if (title.IsEmpty() || artist.IsEmpty()) {
+				this->SetWindowText(file_path);
+			}
+			else {
+				CString windowTitle;
+				windowTitle.Format(_T("%s - %s"), artist.GetString(), title.GetString());
+				this->SetWindowText(windowTitle);
+			}
+			CString lrc_file = file_path.Left(file_path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
+			ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
+			LoadLyric(lrc_file);
+		}
+	}
+}
+
 
 void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 {
@@ -249,35 +315,8 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 		CString file = dlg.GetFileName();   // File name only
 		CString ext = dlg.GetFileExt();    // Extension
 
-		if (music_player) {
-			// immediate stop playing
-			delete music_player;
-			music_player = nullptr;
-		}
-		music_player = new MusicPlayer();
-		music_player->OpenFile(path, ext);
-		if (!music_player->IsInitialized()) {
-			delete music_player;
-			music_player = nullptr;
-			return;
-		}
-		// AfxMessageBox(_T("加载成功！"), MB_ICONINFORMATION);
-
-		CString title = music_player->GetSongTitle();
-		CString artist = music_player->GetSongArtist();
-		this->PostMessage(WM_PLAYER_TIME_CHANGE, 0);
-		if (title.IsEmpty() || artist.IsEmpty()) {
-			this->SetWindowText(file);
-		}
-		else {
-			CString windowTitle;
-			windowTitle.Format(_T("%s - %s"), artist.GetString(), title.GetString());
-			this->SetWindowText(windowTitle);
-		}
-
-		CString lrc_file = path.Left(path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
-		ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
-		LoadLyric(lrc_file);
+		ATLTRACE(_T("info: selected file path: %s\n"), path.GetString());
+		OpenMusic(path, ext);
 	}
 }
 
@@ -691,13 +730,13 @@ void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
 	}
 	if (is_translation) {
 		settings_manager.SetLyricAuxFontName(font_name);
-		settings_manager.SetLyricAuxFontSize(font_size);
+		settings_manager.SetLyricAuxFontSize(static_cast<int>(font_size));
 		settings_manager.SetLyricAuxFontBold(bold);
 		settings_manager.SetLyricAuxFontItalic(italic);
 	}
 	else {
 		settings_manager.SetLyricFontName(font_name);
-		settings_manager.SetLyricFontSize(font_size);
+		settings_manager.SetLyricFontSize(static_cast<int>(font_size));
 		settings_manager.SetLyricFontBold(bold);
 		settings_manager.SetLyricFontItalic(italic);
 	}

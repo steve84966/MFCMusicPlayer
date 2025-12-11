@@ -74,12 +74,14 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
+void OpenMusic(const CString& file_path, const CString& ext);
+bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
 	bool bIsAdjustingLrcVertical = false;
 	MusicPlayerSettingsManager settings_manager;
 	DECLARE_MESSAGE_MAP()
 public:
+	static std::initializer_list<CString> music_ext_list;
 	afx_msg void OnClickedButtonOpen();
 	afx_msg void OnClickedButtonPlay();
 	afx_msg void OnClickedButtonPause();

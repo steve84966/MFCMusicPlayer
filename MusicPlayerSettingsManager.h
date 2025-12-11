@@ -57,11 +57,20 @@ public:
 		// judge if ini exists
 		if (_taccess(ini_filepath_in, 0) == -1)
 			return; // file not exist, use default settings
-		TCHAR fullPath[MAX_PATH];
 		CString ini_fullpath = ini_filepath_in;
-		if (GetFullPathName(ini_filepath_in, MAX_PATH, fullPath, nullptr) != 0) {
-			ini_fullpath = fullPath;
+		CString module_name;
+		AfxGetModuleFileName(nullptr, module_name);
+		// remove exe name
+		int last_backslash_index = module_name.ReverseFind(_T('\\'));
+		if (last_backslash_index != -1)
+		{
+			module_name = module_name.Left(last_backslash_index + 1);
+		} else
+		{
+			module_name = _T(".\\");
 		}
+		ini_fullpath = module_name + ini_filepath_in;
+		ATLTRACE(_T("info: loading settings from ini file %s\n"), ini_fullpath.GetString());
 		lyric_font_size = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontSize"), 24, ini_fullpath);
 		lyric_font_color = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontColor"), static_cast<int>(D2D1::ColorF::Black), ini_fullpath);
 		lyric_font_color_translation = GetPrivateProfileInt(_T("LyricSettings"), _T("LyricFontColorTranslation"), static_cast<int>(D2D1::ColorF::DarkGray), ini_fullpath);

@@ -293,7 +293,7 @@
     <ClInclude Include="MusicPlayerSettingDlg.h" />
     <ClInclude Include="MusicPlayerSettingsManager.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>

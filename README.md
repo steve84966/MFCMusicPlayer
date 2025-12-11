@@ -19,7 +19,7 @@ A Simple music player, written in C++.
 Features:
 - MSBuild / CMake build system support
 - decode & play music files with FFmpeg
-- low latency playback with XAudio2, swresample -> 44.1kHz/16bit/2ch pcm output
+- real-time playback with XAudio2, swresample -> 44.1kHz/16bit/2ch pcm output
 - simple gui
 - lyric display support
 - translation / romanization support

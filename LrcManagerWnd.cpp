@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "LrcManagerWnd.h"
 
-#include <set>
+#pragma warning (disable: 4244) // only disable in this file. conversions are so much i cannot static_cast everyone.
 // #include "Resource.h"
 
 LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
@@ -128,8 +128,8 @@ void CLrcManagerWnd::UpdateLyric()
         MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width,
                            &lyric_main_metrics_height);
 
-        float center_x = (rc.Width() - lyric_main_metrics_width) / 2,
-              center_y = (rc.Height() - lyric_main_metrics_height) / 2 - 20;
+        float center_x = (static_cast<float>(rc.Width()) - lyric_main_metrics_width) / 2,
+              center_y = (static_cast<float>(rc.Height()) - lyric_main_metrics_height) / 2 - 20;
 
         D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width,
                                                       center_y + lyric_main_metrics_height);
@@ -144,7 +144,6 @@ void CLrcManagerWnd::UpdateLyric()
         float lyric_aux_metrics_width, lyric_aux_metrics_height;
         if ((IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation))
              || (IsRomanizationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Romanization)))
-        // TODO: switch between translation enabled, test only
         {
             LrcAuxiliaryInfo lrc_aux_info = LrcAuxiliaryInfo::Ignored;
             if (IsTranslationEnabled() && lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation) != -1)
