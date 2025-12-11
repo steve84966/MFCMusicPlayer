@@ -74,14 +74,16 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-void OpenMusic(const CString& file_path, const CString& ext);
-bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
+	void OpenMusic(const CString& file_path, const CString& ext);
+	bool bSingleLoop = false;
+	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
 	bool bIsAdjustingLrcVertical = false;
 	MusicPlayerSettingsManager settings_manager;
 	DECLARE_MESSAGE_MAP()
 public:
 	static std::initializer_list<CString> music_ext_list;
+	static CString get_common_dialog_music_filter();
 	afx_msg void OnClickedButtonOpen();
 	afx_msg void OnClickedButtonPlay();
 	afx_msg void OnClickedButtonPause();
@@ -109,6 +111,7 @@ public:
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;
 	CButton m_buttonRomanization;
+	CButton m_buttonSingleLoop;
 	CProgressScrollBar m_scrollBarLrcVertical;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
@@ -121,4 +124,5 @@ public:
 	void ModifyTextColor(bool is_playing);
 	afx_msg void OnMenuSettingPlayedTextColor();
 	afx_msg void OnMenuSettingUnplayedTextColor();
+	afx_msg void OnClickedButtonSingleLoop();
 };

@@ -128,10 +128,9 @@ void CLrcManagerWnd::UpdateLyric()
         MeasureTextMetrics(lyric_main_text, static_cast<float>(rc.right - rc.left), &lyric_main_metrics_width,
                            &lyric_main_metrics_height);
 
-        float center_x = (static_cast<float>(rc.Width()) - lyric_main_metrics_width) / 2,
-              center_y = (static_cast<float>(rc.Height()) - lyric_main_metrics_height) / 2 - 20;
+        float center_y = (static_cast<float>(rc.Height()) - lyric_main_metrics_height) / 2 - 20;
 
-        D2D1_RECT_F center_lyric_layout = D2D1::RectF(center_x, center_y, center_x + lyric_main_metrics_width,
+        D2D1_RECT_F center_lyric_layout = D2D1::RectF(rc.left, center_y, rc.right,
                                                       center_y + lyric_main_metrics_height);
 
         render_target->DrawText(
@@ -324,7 +323,7 @@ void CLrcManagerWnd::MeasureTextMetrics(const CString& str, float max_width, flo
 {
     Microsoft::WRL::ComPtr<IDWriteTextLayout> layout_ptr;
     IDWriteTextFormat* text_format_1 =
-        aux_info == LrcAuxiliaryInfo::Translation ? text_format_translation : text_format;
+        aux_info == LrcAuxiliaryInfo::Lyric ? text_format : text_format_translation;
     if (FAILED(write_factory->CreateTextLayout(str, str.GetLength(), text_format_1, max_width, FLT_MAX, &layout_ptr)))
     {
         ATLTRACE(_T("err: CreateTextLayout failed!\n"));

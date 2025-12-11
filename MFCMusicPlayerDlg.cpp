@@ -61,9 +61,29 @@ std::initializer_list<CString> CMFCMusicPlayerDlg::music_ext_list = {
 	CString(_T("mp3")),
 	CString(_T("flac")),
 	CString(_T("wav")),
+	CString(_T("wma")),
 	CString(_T("aac")),
 	CString(_T("ogg")),
+	CString(_T("m4a")),
+	CString(_T("ape")),
 };
+
+CString CMFCMusicPlayerDlg::get_common_dialog_music_filter()
+{
+	static CString filter = _T("Music Files (");
+	if (filter != _T("Music Files (")) {
+		return filter;
+	}
+	for (const auto& ext : music_ext_list) {
+		filter += _T("*.") + ext + _T(";");
+	}
+	filter = filter.Left(filter.GetLength() - 1) + _T(")|");
+	for (const auto& ext : music_ext_list) {
+		filter += _T("*.") + ext + _T(";");
+	}
+	filter = filter.Left(filter.GetLength() - 1) + _T("||");
+	return filter;
+}
 
 
 CMFCMusicPlayerDlg::CMFCMusicPlayerDlg(CWnd* pParent /*=nullptr*/)
@@ -81,6 +101,7 @@ void CMFCMusicPlayerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLIDERVOLUMECTRL, m_sliderVolumeCtrl);
 	DDX_Control(pDX, IDC_BUTTONTRANSLATION, m_buttonTranslation);
 	DDX_Control(pDX, IDC_BUTTONROMANIZATION, m_buttonRomanization);
+	DDX_Control(pDX, IDC_BUTTONSINGLELOOP, m_buttonSingleLoop);
 	DDX_Control(pDX, IDC_SCROLLBARLRCVERTICAL, m_scrollBarLrcVertical);
 }
 
@@ -95,6 +116,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONPAUSE, &CMFCMusicPlayerDlg::OnClickedButtonPause)
 	ON_BN_CLICKED(IDC_BUTTONTRANSLATION, &CMFCMusicPlayerDlg::OnClickedButtonTranslation)
 	ON_BN_CLICKED(IDC_BUTTONROMANIZATION, &CMFCMusicPlayerDlg::OnClickedButtonRomanization)
+	ON_BN_CLICKED(IDC_BUTTONSINGLELOOP, &CMFCMusicPlayerDlg::OnClickedButtonSingleLoop)
 	ON_MESSAGE(WM_PLAYER_FILE_INIT, &CMFCMusicPlayerDlg::OnPlayerFileInit)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_PAUSE, &CMFCMusicPlayerDlg::OnPlayerPause)
@@ -168,6 +190,10 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	HICON hIcon = AfxGetApp()->LoadIcon(IDI_ICONFILEOPEN);
 	CButton* pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONOPEN));
 	pBtn->ModifyStyle(0, BS_ICON);
+	pBtn->SetIcon(hIcon);
+	hIcon = AfxGetApp()->LoadIcon(IDI_ICONSINGLELOOP);
+	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONSINGLELOOP));
+	pBtn->ModifyStyle(0, BS_ICON | BS_AUTOCHECKBOX | BS_PUSHLIKE);
 	pBtn->SetIcon(hIcon);
 
 	// attach IDR_MENUMAIN to main window
@@ -308,7 +334,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 	// TODO: 在此添加控件通知处理程序代码
 	CFileDialog dlg(TRUE, NULL, NULL, // NOLINT(*-use-nullptr)
 	                OFN_FILEMUSTEXIST,
-	                _T("Music Files (*.mp3;*.wav;*.flac;*.aac;*.ogg)|*.mp3;*.wav;*.flac;*.aac;*.ogg||"));
+	                get_common_dialog_music_filter());
 	if (dlg.DoModal() == IDOK)
 	{
 		CString path = dlg.GetPathName();   // Full path
@@ -388,6 +414,10 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
+	if (bSingleLoop)
+	{
+		music_player->Start();
+	}
 	return LRESULT();
 }
 
@@ -796,4 +826,9 @@ void CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor() {
 
 void CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor() {
 	ModifyTextColor(false);
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonSingleLoop()
+{
+	bSingleLoop = m_buttonSingleLoop.GetCheck();
 }

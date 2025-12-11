@@ -16,6 +16,7 @@
 #define IDR_MENULYRICCONTROL            140
 #define IDR_MENUMAIN                    141
 #define IDI_ICONFILEOPEN                142
+#define IDI_ICONSINGLELOOP              143
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
@@ -38,6 +39,7 @@
 #define IDC_SLIDER_1KHZ                 1012
 #define IDC_BUTTON2                     1013
 #define IDC_SLIDER_2KHZ                 1013
+#define IDC_BUTTONSINGLELOOP            1013
 #define IDC_MFCLINK1                    1014
 #define IDC_MFCLINKGITHUB               1014
 #define IDC_SLIDER_4KHZ                 1014

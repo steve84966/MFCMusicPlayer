@@ -16,7 +16,17 @@
 // 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-LANGUAGE 0x04, 0x01// LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICONSINGLELOOP      ICON                    "res\\ico00001.ico"
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -68,6 +78,7 @@ BEGIN
     LTEXT           "",IDC_LRCDISPLAY,117,30,186,103
     PUSHBUTTON      "译",IDC_BUTTONTRANSLATION,77,173,20,20
     PUSHBUTTON      "あ",IDC_BUTTONROMANIZATION,97,173,20,20
+    PUSHBUTTON      "",IDC_BUTTONSINGLELOOP,117,173,20,20
 END
 
 IDD_MUSICPLAYERSETTINGDLG DIALOGEX 0, 0, 271, 211
@@ -178,6 +189,7 @@ BEGIN
         VERTGUIDE, 77
         VERTGUIDE, 97
         VERTGUIDE, 117
+        VERTGUIDE, 137
         VERTGUIDE, 243
         VERTGUIDE, 263
         VERTGUIDE, 303
