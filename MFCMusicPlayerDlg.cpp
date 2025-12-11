@@ -7,7 +7,6 @@
 #include "MFCMusicPlayer.h"
 #include "MFCMusicPlayerDlg.h"
 
-#include <set>
 
 
 #ifdef _DEBUG
@@ -106,6 +105,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
 	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
 	ON_COMMAND(ID_32773, &CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont)
+	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
 	ON_COMMAND(ID_32777, &CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor)
 	ON_COMMAND(ID_32778, &CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor)
 	ON_WM_CLOSE()
@@ -114,7 +114,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_WM_CONTEXTMENU()
 	ON_WM_SIZE()
 	ON_WM_TIMER()
-	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -213,7 +213,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 		}
 		LocalFree(str);
 	}
-
+	DragAcceptFiles(TRUE);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -747,6 +747,23 @@ void CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont()
 {
 	// TODO: 在此添加命令处理程序代码
 	ModifyPlayingText(true);
+}
+
+void CMFCMusicPlayerDlg::OnDropFiles(HDROP hDropInfo)
+{
+	UINT fileCount = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
+	CString openFile, ext;
+
+	for (UINT i = 0; i < fileCount; i++)
+	{
+		TCHAR filePath[MAX_PATH] = {0};
+		DragQueryFile(hDropInfo, i, filePath, MAX_PATH);
+		openFile = filePath;
+		ext = openFile.Mid(openFile.ReverseFind(_T('.')) + 1);
+	}
+	DragFinish(hDropInfo);
+	OpenMusic(openFile, ext);
+	CDialogEx::OnDropFiles(hDropInfo);
 }
 
 void CMFCMusicPlayerDlg::ModifyTextColor(bool is_playing) {
