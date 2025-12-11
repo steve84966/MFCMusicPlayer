@@ -285,6 +285,8 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
+		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
+		music_player->SetMasterVolume(volume);
 		music_player->Start();
 	}
 }
@@ -637,7 +639,7 @@ void CMFCMusicPlayerDlg::OnMenuExit() {
 
 void CMFCMusicPlayerDlg::OnMenuOpenCustomLrc() {
 	if (music_player && music_player->IsInitialized()) {
-		CFileDialog dlg(TRUE, _T("lrc"), NULL, OFN_FILEMUSTEXIST, _T("LRC Files (*.lrc)|*.lrc||"));
+		CFileDialog dlg(TRUE, _T("lrc"), nullptr, OFN_FILEMUSTEXIST, _T("Lyric Files (*.lrc)|*.lrc||"));
 		if (dlg.DoModal() == IDOK) {
 			CString path = dlg.GetPathName();
 			LoadLyric(path);
@@ -690,6 +692,8 @@ void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
 	if (is_translation) {
 		settings_manager.SetLyricAuxFontName(font_name);
 		settings_manager.SetLyricAuxFontSize(font_size);
+		settings_manager.SetLyricAuxFontBold(bold);
+		settings_manager.SetLyricAuxFontItalic(italic);
 	}
 	else {
 		settings_manager.SetLyricFontName(font_name);
@@ -718,10 +722,13 @@ void CMFCMusicPlayerDlg::ModifyTextColor(bool is_playing) {
 	CColorDialog dlg(text_color_ref, CC_FULLOPEN | CC_RGBINIT);
 	if (dlg.DoModal() == IDOK) {
 		COLORREF color = dlg.GetColor();
-		D2D1::ColorF text_color = rgbToD2DColor(color);
-		lrc_manager_wnd.ModifyTextColor(is_playing, text_color);
+		D2D1::ColorF text_color_f = rgbToD2DColor(color);
+		lrc_manager_wnd.ModifyTextColor(is_playing, text_color_f);
 		if (is_playing) {
 			settings_manager.SetLyricFontColor(color);
+		} else
+		{
+			settings_manager.SetLyricFontColorTranslation(color);
 		}
 	}
 	settings_manager.SaveIni();

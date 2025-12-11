@@ -41,6 +41,10 @@ public:
 	void SetLyricAuxFontSize(int font_size) { lyric_aux_font_size = font_size; }
 	[[nodiscard]] CString GetLyricAuxFontName() const { return lyric_aux_font_name; }
 	void SetLyricAuxFontName(const CString& font_name) { lyric_aux_font_name = font_name; }
+	[[nodiscard]] bool IsLyricAuxFontBold() const { return lyric_aux_font_bold; }
+	void SetLyricAuxFontBold(bool is_bold) { lyric_aux_font_bold = is_bold; }
+	[[nodiscard]] bool IsLyricAuxFontItalic() const { return lyric_aux_font_italic; }
+	void SetLyricAuxFontItalic(bool is_italic) { lyric_aux_font_italic = is_italic; }
 	[[nodiscard]] COLORREF GetLyricFontColorTranslation() const { return lyric_font_color_translation; }
 	void SetLyricFontColorTranslation(COLORREF font_color_translation) { lyric_font_color_translation = font_color_translation; }
 #pragma endregion

@@ -23,7 +23,7 @@ Features:
 - simple gui
 - lyric display support
 - translation / romanization support
-- ARM64 Native Binary in CI build, tested on Qualcomm Snapdragon 845 (XIAOMI MIX 2S)
+- ARM64 Native build & development environment, tested on Qualcomm Snapdragon X Elite
 
 Screenshot:
 
