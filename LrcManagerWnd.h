@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include "resource.h"
+#include "MusicPlayerSettingsManager.h"
 
 
 class LrcLanguageHelper
@@ -243,6 +244,7 @@ public:
 	void ModifyTextItalic(bool is_translation, bool is_italic);
 	bool IsTextBold(bool is_translation) const { return is_translation ? text_translation_customization.is_bold : text_customization.is_bold; }
 	bool IsTextItalic(bool is_translation) const { return is_translation ? text_translation_customization.is_italic : text_customization.is_italic; }
+	void LoadSettingsFromManager(const MusicPlayerSettingsManager& settings_manager);
 
 protected:
 	ID2D1Factory* d2d1_factory;

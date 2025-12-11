@@ -46,7 +46,7 @@ target_compile_definitions(MFCMusicPlayer
         _UNICODE
         _AFXDLL
         _BUILD_SYSTEM_CMAKE
-        # ATLTRACE_REDIRECT_ENABLED
+        ATLTRACE_REDIRECT_ENABLED
         $<$<CONFIG:Debug>:_DEBUG>
         $<$<CONFIG:Release>:NDEBUG>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},X86>:WIN32>

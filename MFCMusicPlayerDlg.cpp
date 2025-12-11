@@ -7,6 +7,8 @@
 #include "MFCMusicPlayer.h"
 #include "MFCMusicPlayerDlg.h"
 
+#include <set>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -149,7 +151,9 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_buttonTranslation.EnableWindow(FALSE);
 	m_buttonRomanization.EnableWindow(FALSE);
 
+	settings_manager.LoadIniOrDefault();
 	lrc_manager_wnd.SubclassDlgItem(IDC_LRCDISPLAY, this);
+	lrc_manager_wnd.LoadSettingsFromManager(settings_manager);
 
 	m_buttonTranslation.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 	m_buttonRomanization.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
@@ -646,7 +650,7 @@ void CMFCMusicPlayerDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == 1919810){
 		KillTimer(1919810);
 		bIsAdjustingLrcVertical = false;
-		ATLTRACE(_T("114514\n"));
+		ATLTRACE(_T("info: 114514\n"));
 	}
 	CDialogEx::OnTimer(nIDEvent);
 }
@@ -683,6 +687,17 @@ void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
 		lrc_manager_wnd.ModifyTextItalic(is_translation, italic);
 		lrc_manager_wnd.ReInitializeDirect2D();
 	}
+	if (is_translation) {
+		settings_manager.SetLyricAuxFontName(font_name);
+		settings_manager.SetLyricAuxFontSize(font_size);
+	}
+	else {
+		settings_manager.SetLyricFontName(font_name);
+		settings_manager.SetLyricFontSize(font_size);
+		settings_manager.SetLyricFontBold(bold);
+		settings_manager.SetLyricFontItalic(italic);
+	}
+	settings_manager.SaveIni();
 }
 
 void CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont()
@@ -702,9 +717,14 @@ void CMFCMusicPlayerDlg::ModifyTextColor(bool is_playing) {
 	COLORREF text_color_ref = d2dColorToRGB(text_color);
 	CColorDialog dlg(text_color_ref, CC_FULLOPEN | CC_RGBINIT);
 	if (dlg.DoModal() == IDOK) {
-		D2D1::ColorF text_color = rgbToD2DColor(dlg.GetColor());
+		COLORREF color = dlg.GetColor();
+		D2D1::ColorF text_color = rgbToD2DColor(color);
 		lrc_manager_wnd.ModifyTextColor(is_playing, text_color);
+		if (is_playing) {
+			settings_manager.SetLyricFontColor(color);
+		}
 	}
+	settings_manager.SaveIni();
 }
 
 void CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor() {

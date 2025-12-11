@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "MusicPlayerSettingsManager.h"
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
 
@@ -76,6 +77,7 @@ protected:
 	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
 	bool bIsAdjustingLrcVertical = false;
+	MusicPlayerSettingsManager settings_manager;
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnClickedButtonOpen();

@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "LrcManagerWnd.h"
+
+#include <set>
 // #include "Resource.h"
 
 LRESULT CLrcManagerWnd::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
@@ -373,6 +375,7 @@ void CLrcManagerWnd::ModifyTextColor(bool is_playing, D2D1::ColorF color) {
         text_unplayed_color = color;
         brush_unplay_text->SetColor(color);
     }
+    Invalidate();
 }
 
 void CLrcManagerWnd::ModifyTextFont(bool is_translation, CString font_name) {
@@ -393,6 +396,32 @@ void CLrcManagerWnd::ModifyTextBold(bool is_translation, bool is_bold) {
 void CLrcManagerWnd::ModifyTextItalic(bool is_translation, bool is_italic) {
     LrcTextCustomization& customization = is_translation ? text_translation_customization : text_customization;
     customization.is_italic = is_italic;
+}
+
+void CLrcManagerWnd::LoadSettingsFromManager(const MusicPlayerSettingsManager &settings_manager) {
+    ATLTRACE(_T("info: resume settings from ini\n"));
+    ATLTRACE(_T("info: lyric font: %s, size: %d\n"), settings_manager.GetLyricFontName().GetString(), settings_manager.GetLyricFontSize());
+    ATLTRACE(_T("info: lyric aux font: %s, size: %d\n"), settings_manager.GetLyricAuxFontName().GetString(), settings_manager.GetLyricAuxFontSize());
+    ATLTRACE(_T("info: lyric font bold: %d\n"), settings_manager.IsLyricFontBold());
+    ATLTRACE(_T("info: lyric font italic: %d\n"), settings_manager.IsLyricFontItalic());
+    ATLTRACE(_T("info: lyric font color: %d\n"), settings_manager.GetLyricFontColor());
+    text_customization.font_name = settings_manager.GetLyricFontName();
+    text_customization.font_size = settings_manager.GetLyricFontSize();
+    text_translation_customization.font_name = settings_manager.GetLyricAuxFontName();
+    text_translation_customization.font_size = settings_manager.GetLyricAuxFontSize();
+    text_customization.is_bold = settings_manager.IsLyricFontBold();
+    text_customization.is_italic = settings_manager.IsLyricFontItalic();
+    auto colorrefToD2DColor = [](COLORREF color) {
+        return D2D1::ColorF(
+            GetRValue(color) / 255.f,
+            GetGValue(color) / 255.f,
+            GetBValue(color) / 255.f,
+            1.f);
+    };
+    text_played_color = colorrefToD2DColor(settings_manager.GetLyricFontColor());
+    text_unplayed_color = colorrefToD2DColor(settings_manager.GetLyricFontColorTranslation());
+
+    ReInitializeDirect2D();
 }
 
 
@@ -417,9 +446,9 @@ void CLrcManagerWnd::CreateDeviceResources()
         {
             render_target->SetDpi(96.0f, 96.0f); // process is dpi aware, do not use dip scale
             UNREFERENCED_PARAMETER(
-                render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::DarkGray), &brush_unplay_text));
+                render_target->CreateSolidColorBrush(text_unplayed_color, &brush_unplay_text));
             UNREFERENCED_PARAMETER(
-                render_target->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Black), &brush_played_text));
+                render_target->CreateSolidColorBrush(text_played_color, &brush_played_text));
         }
         else
         {
