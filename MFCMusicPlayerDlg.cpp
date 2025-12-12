@@ -444,6 +444,8 @@ void CMFCMusicPlayerDlg::OnClickedButtonPrevious()
 		OnClickedButtonPlay();
 	}
 	iPlaylistIndex = playlist_controller.GetCurrentIndex();
+	if (m_pPlaylistDlg)
+		m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonNext()
@@ -469,6 +471,8 @@ void CMFCMusicPlayerDlg::OnClickedButtonNext()
 		OnClickedButtonPlay();
 	}
 	iPlaylistIndex = playlist_controller.GetCurrentIndex();
+	if (m_pPlaylistDlg)
+		m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonStop()
