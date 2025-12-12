@@ -961,6 +961,11 @@ void CMFCMusicPlayerDlg::OnClickedButtonSingleLoop()
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
+	if (m_pPlaylistDlg && ::IsWindow(m_pPlaylistDlg->GetSafeHwnd())) {
+		m_pPlaylistDlg->SetForegroundWindow();
+		return;
+	}
+
 	iPlaylistIndex = playlist_controller.GetCurrentIndex();
 	auto* dlg = new PlayListDialog(this);
 	dlg->SetPlaylistController(&playlist_controller);
@@ -971,4 +976,6 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
 	dlg->GetWindowRect(&dlgRect);
 	dlg->SetWindowPos(nullptr, thisRect.right, thisRect.top, dlgRect.Width(), dlgRect.Height(), SWP_NOZORDER);
 	dlg->ShowWindow(SW_SHOW);
+    dlg->SetOwner(this);
+	m_pPlaylistDlg = dlg;
 }

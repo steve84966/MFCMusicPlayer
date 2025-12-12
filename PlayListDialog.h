@@ -44,5 +44,6 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	void OnContextMenu(CWnd* pWnd, CPoint point);
 	void PostNcDestroy() override;
+	void OnDestroy();
 
 };

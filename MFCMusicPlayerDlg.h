@@ -9,6 +9,8 @@
 #include "LrcManagerWnd.h"
 #include "PlaylistController.h"
 
+class PlayListDialog;
+
 class CProgressSliderCtrl : public CSliderCtrl
 {
 protected:
@@ -122,6 +124,7 @@ public:
 	CButton m_buttonPrevious;
 	CButton m_buttonNext;
 	CProgressScrollBar m_scrollBarLrcVertical;
+	PlayListDialog* m_pPlaylistDlg = nullptr;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();

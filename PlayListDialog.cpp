@@ -5,6 +5,8 @@
 #include "MFCMusicPlayer.h"
 #include "afxdialogex.h"
 #include "PlayListDialog.h"
+
+#include "MFCMusicPlayerDlg.h"
 #include "PlaylistController.h"
 
 
@@ -149,6 +151,7 @@ BEGIN_MESSAGE_MAP(PlayListDialog, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
 	ON_WM_CONTEXTMENU()
+	ON_WM_DESTROY()
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlaySelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlayNextSelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_DELETESELECTED, &PlayListDialog::OnMenuPlayListCtrlDeleteSelected)
@@ -266,4 +269,12 @@ void PlayListDialog::PostNcDestroy()
 {
 	CDialogEx::PostNcDestroy();
 	delete this;
+}
+
+void PlayListDialog::OnDestroy()
+{
+	if (GetOwner()) {
+		auto* pMainDlg = reinterpret_cast<CMFCMusicPlayerDlg*>(GetOwner());
+		if (pMainDlg) pMainDlg->m_pPlaylistDlg = nullptr;
+	}
 }
