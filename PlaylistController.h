@@ -22,5 +22,6 @@ public:
     bool MovePrevious();
     void ResetIndex();
     [[nodiscard]] int GetCurrentIndex() const { return index; }
+    void MoveItem(int fromIndex, int toIndex);
 };
 

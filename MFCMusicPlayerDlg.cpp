@@ -6,7 +6,7 @@
 #include "framework.h"
 #include "MFCMusicPlayer.h"
 #include "MFCMusicPlayerDlg.h"
-
+#include "PlaylistDialog.h"
 
 
 #ifdef _DEBUG
@@ -119,6 +119,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONSINGLELOOP, &CMFCMusicPlayerDlg::OnClickedButtonSingleLoop)
 	ON_BN_CLICKED(IDC_BUTTONPREVIOUS, &CMFCMusicPlayerDlg::OnClickedButtonPrevious)
 	ON_BN_CLICKED(IDC_BUTTONNEXT, &CMFCMusicPlayerDlg::OnClickedButtonNext)
+	ON_BN_CLICKED(IDC_BUTTONPLAYLISTMGMT, &CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt)
 	ON_MESSAGE(WM_PLAYER_FILE_INIT, &CMFCMusicPlayerDlg::OnPlayerFileInit)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_PAUSE, &CMFCMusicPlayerDlg::OnPlayerPause)
@@ -189,22 +190,17 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_buttonTranslation.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 	m_buttonRomanization.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 
-	HICON hIcon = AfxGetApp()->LoadIcon(IDI_ICONFILEOPEN);
-	auto* pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONOPEN));
-	pBtn->ModifyStyle(0, BS_ICON);
-	pBtn->SetIcon(hIcon);
-	hIcon = AfxGetApp()->LoadIcon(IDI_ICONSINGLELOOP);
-	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONSINGLELOOP));
-	pBtn->ModifyStyle(0, BS_ICON | BS_AUTOCHECKBOX | BS_PUSHLIKE);
-	pBtn->SetIcon(hIcon);
-	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONPREVIOUS));
-	hIcon = AfxGetApp()->LoadIcon(IDI_ICONPREVIOUS);
-	pBtn->ModifyStyle(0, BS_ICON);
-	pBtn->SetIcon(hIcon);
-	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONNEXT));
-	hIcon = AfxGetApp()->LoadIcon(IDI_ICONNEXT);
-	pBtn->ModifyStyle(0, BS_ICON);
-	pBtn->SetIcon(hIcon);
+	auto modifyButtonIcon = [this](int buttonId, int iconId, int style = 0) {
+		auto* pBtn = reinterpret_cast<CButton*>(GetDlgItem(buttonId));
+		pBtn->ModifyStyle(0, style | BS_ICON);
+		pBtn->SetIcon(AfxGetApp()->LoadIcon(iconId));
+	};
+	modifyButtonIcon(IDC_BUTTONOPEN, IDI_ICONFILEOPEN);
+	modifyButtonIcon(IDC_BUTTONSINGLELOOP, IDI_ICONSINGLELOOP, BS_AUTOCHECKBOX | BS_PUSHLIKE);
+	modifyButtonIcon(IDC_BUTTONPREVIOUS, IDI_ICONPREVIOUS);
+	modifyButtonIcon(IDC_BUTTONNEXT, IDI_ICONNEXT);
+	modifyButtonIcon(IDC_BUTTONPLAYLISTMGMT, IDI_ICONPLAYLIST);
+
 
 	// attach IDR_MENUMAIN to main window
 	{
@@ -891,4 +887,10 @@ void CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor() {
 void CMFCMusicPlayerDlg::OnClickedButtonSingleLoop()
 {
 	bSingleLoop = m_buttonSingleLoop.GetCheck();
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
+	PlayListDialog dlg(this);
+	dlg.SetPlaylistController(&playlist_controller);
+	dlg.DoModal();
 }

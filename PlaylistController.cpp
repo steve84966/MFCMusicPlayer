@@ -63,3 +63,25 @@ void PlaylistController::ResetIndex()
 {
     index = 0;
 }
+
+void PlaylistController::MoveItem(int fromIndex, int toIndex)
+{
+    if (fromIndex < 0 || fromIndex >= playlist.GetSize() ||
+        toIndex < 0 || toIndex >= playlist.GetSize() ||
+        fromIndex == toIndex)
+        return;
+
+    CString item = playlist[fromIndex];
+    playlist.RemoveAt(fromIndex);
+    playlist.InsertAt(toIndex, item);
+
+    if (index == fromIndex) {
+        index = toIndex;
+    }
+    else if (fromIndex < index && toIndex >= index) {
+        index--;
+    }
+    else if (fromIndex > index && toIndex <= index) {
+        index++;
+    }
+}

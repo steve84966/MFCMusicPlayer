@@ -132,4 +132,5 @@ public:
 	afx_msg void OnMenuSettingPlayedTextColor();
 	afx_msg void OnMenuSettingUnplayedTextColor();
 	afx_msg void OnClickedButtonSingleLoop();
+	afx_msg void OnClickedButtonPlaylistMgmt();
 };

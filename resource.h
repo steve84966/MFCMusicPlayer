@@ -17,9 +17,10 @@
 #define IDR_MENUMAIN                    141
 #define IDI_ICONFILEOPEN                142
 #define IDI_ICONSINGLELOOP              143
+#define IDD_DIALOGPLAYLIST              143
 #define IDI_ICONPREVIOUS                144
 #define IDI_ICONNEXT                    145
-#define IDD_DIALOGPLAYLIST              143
+#define IDI_ICONPLAYLIST                146
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
@@ -54,6 +55,7 @@
 #define IDC_LISTPLAYLIST                1020
 #define IDC_BUTTONPREVIOUS              1021
 #define IDC_BUTTONNEXT                  1022
+#define IDC_BUTTONPLAYLISTMGMT          1023
 #define ID__32771                       32771
 #define ID__32772                       32772
 #define ID_32773                        32773

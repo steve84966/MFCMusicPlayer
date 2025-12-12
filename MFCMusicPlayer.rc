@@ -37,6 +37,8 @@ IDI_ICONPREVIOUS        ICON                    "res\\ico00002.ico"
 
 IDI_ICONNEXT            ICON                    "res\\ico00003.ico"
 
+IDI_ICONPLAYLIST        ICON                    "res\\ico00004.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,7 +63,8 @@ EXSTYLE WS_EX_APPWINDOW
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "00:00 / 00:00",IDC_STATICTIME,37,163,60,8
-    PUSHBUTTON      "",IDC_BUTTONOPEN,7,7,18,17
+    PUSHBUTTON      "",IDC_BUTTONOPEN,7,7,18,18
+    PUSHBUTTON      "",IDC_BUTTONPLAYLISTMGMT,25,7,18,18
     PUSHBUTTON      "播放",IDC_BUTTONPLAY,7,163,30,30
     PUSHBUTTON      "停止",IDC_BUTTONSTOP,57,173,20,20
     PUSHBUTTON      "暂停",IDC_BUTTONPAUSE,37,173,20,20
