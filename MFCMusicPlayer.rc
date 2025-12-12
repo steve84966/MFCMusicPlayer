@@ -33,6 +33,10 @@ IDI_ICONVOLUME          ICON                    "res\\icon1.ico"
 
 IDI_ICONFILEOPEN        ICON                    "res\\icon2.ico"
 
+IDI_ICONPREVIOUS        ICON                    "res\\ico00002.ico"
+
+IDI_ICONNEXT            ICON                    "res\\ico00003.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -70,6 +74,8 @@ BEGIN
     PUSHBUTTON      "译",IDC_BUTTONTRANSLATION,77,173,20,20
     PUSHBUTTON      "あ",IDC_BUTTONROMANIZATION,97,173,20,20
     PUSHBUTTON      "",IDC_BUTTONSINGLELOOP,117,173,20,20
+    PUSHBUTTON      "",IDC_BUTTONPREVIOUS,147,173,20,20
+    PUSHBUTTON      "",IDC_BUTTONNEXT,177,173,20,20
 END
 
 IDD_MUSICPLAYERSETTINGDLG DIALOGEX 0, 0, 271, 211

@@ -6,7 +6,7 @@ class PlaylistController
 {
 protected:
     CStringArray playlist;
-    size_t index = 0;
+    int index = 0;
 public:
     PlaylistController() = default;
     ~PlaylistController() = default;
@@ -15,12 +15,12 @@ public:
     void AddMusicFile(const CString& file_path);
     void ClearPlaylist();
     [[nodiscard]] size_t GetPlaylistSize() const;
-    [[nodiscard]] CString GetMusicFileAt(size_t index) const;
-    bool CanMoveNext();
-    bool CanMovePrevious();
+    [[nodiscard]] CString GetMusicFileAt(int index_in) const;
+    bool CanMoveNext() const;
+    bool CanMovePrevious() const;
     bool MoveNext();
     bool MovePrevious();
     void ResetIndex();
-    [[nodiscard]] size_t GetCurrentIndex() const { return index; }
+    [[nodiscard]] int GetCurrentIndex() const { return index; }
 };
 

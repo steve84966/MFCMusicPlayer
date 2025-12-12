@@ -92,6 +92,8 @@ public:
 	afx_msg void OnClickedButtonPause();
 	afx_msg void OnClickedButtonTranslation();
 	afx_msg void OnClickedButtonRomanization();
+	afx_msg void OnClickedButtonPrevious();
+	afx_msg void OnClickedButtonNext();
 	afx_msg LRESULT OnPlayerFileInit(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerTimeChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPlayerPause(WPARAM wParam, LPARAM lParam);
@@ -115,6 +117,8 @@ public:
 	CButton m_buttonTranslation;
 	CButton m_buttonRomanization;
 	CButton m_buttonSingleLoop;
+	CButton m_buttonPrevious;
+	CButton m_buttonNext;
 	CProgressScrollBar m_scrollBarLrcVertical;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();

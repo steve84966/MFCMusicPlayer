@@ -23,20 +23,20 @@ size_t PlaylistController::GetPlaylistSize() const
     return playlist.GetSize();
 }
 
-CString PlaylistController::GetMusicFileAt(size_t index) const
+CString PlaylistController::GetMusicFileAt(int index_in) const
 {
-    if (index < playlist.GetSize()) {
-        return playlist[index];
+    if (index_in < playlist.GetSize()) {
+        return playlist[index_in];
     }
-    return CString();
+    return {};
 }
 
-bool PlaylistController::CanMoveNext()
+bool PlaylistController::CanMoveNext() const
 {
     return index + 1 < playlist.GetSize();
 }
 
-bool PlaylistController::CanMovePrevious()
+bool PlaylistController::CanMovePrevious() const
 {
     return index > 0;
 }

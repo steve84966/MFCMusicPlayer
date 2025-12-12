@@ -117,6 +117,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONTRANSLATION, &CMFCMusicPlayerDlg::OnClickedButtonTranslation)
 	ON_BN_CLICKED(IDC_BUTTONROMANIZATION, &CMFCMusicPlayerDlg::OnClickedButtonRomanization)
 	ON_BN_CLICKED(IDC_BUTTONSINGLELOOP, &CMFCMusicPlayerDlg::OnClickedButtonSingleLoop)
+	ON_BN_CLICKED(IDC_BUTTONPREVIOUS, &CMFCMusicPlayerDlg::OnClickedButtonPrevious)
+	ON_BN_CLICKED(IDC_BUTTONNEXT, &CMFCMusicPlayerDlg::OnClickedButtonNext)
 	ON_MESSAGE(WM_PLAYER_FILE_INIT, &CMFCMusicPlayerDlg::OnPlayerFileInit)
 	ON_MESSAGE(WM_PLAYER_TIME_CHANGE, &CMFCMusicPlayerDlg::OnPlayerTimeChange)
 	ON_MESSAGE(WM_PLAYER_PAUSE, &CMFCMusicPlayerDlg::OnPlayerPause)
@@ -188,12 +190,20 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	m_buttonRomanization.ModifyStyle(0, BS_AUTOCHECKBOX | BS_PUSHLIKE);
 
 	HICON hIcon = AfxGetApp()->LoadIcon(IDI_ICONFILEOPEN);
-	CButton* pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONOPEN));
+	auto* pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONOPEN));
 	pBtn->ModifyStyle(0, BS_ICON);
 	pBtn->SetIcon(hIcon);
 	hIcon = AfxGetApp()->LoadIcon(IDI_ICONSINGLELOOP);
 	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONSINGLELOOP));
 	pBtn->ModifyStyle(0, BS_ICON | BS_AUTOCHECKBOX | BS_PUSHLIKE);
+	pBtn->SetIcon(hIcon);
+	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONPREVIOUS));
+	hIcon = AfxGetApp()->LoadIcon(IDI_ICONPREVIOUS);
+	pBtn->ModifyStyle(0, BS_ICON);
+	pBtn->SetIcon(hIcon);
+	pBtn = reinterpret_cast<CButton*>(GetDlgItem(IDC_BUTTONNEXT));
+	hIcon = AfxGetApp()->LoadIcon(IDI_ICONNEXT);
+	pBtn->ModifyStyle(0, BS_ICON);
 	pBtn->SetIcon(hIcon);
 
 	// attach IDR_MENUMAIN to main window
@@ -333,13 +343,15 @@ void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
 	playlist_controller.ClearPlaylist();
 	for (int i = 0; i < array.GetCount(); i++) {
 		ATLTRACE(_T("info: playlist file[%d]: %s\n"), i, array.GetAt(i).GetString());
-		CString path = array.GetAt(i);
+		const CString& path = array.GetAt(i);
 		playlist_controller.AddMusicFile(path);
 	}
 	if (array.GetCount() > 0)
 	{
-		CString ext = array.GetAt(0).Mid(array.GetAt(0).ReverseFind(_T('.')) + 1);;
-		OpenMusic(array.GetAt(0), ext);
+		const CString& music = playlist_controller.GetMusicFileAt(0),
+						 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+		ATLTRACE(_T("info: open file %s for playing\n"), music.GetString());
+		OpenMusic(music, ext);
 	}
 }
 
@@ -406,6 +418,32 @@ void CMFCMusicPlayerDlg::OnClickedButtonRomanization() {
 		lrc_manager_wnd.SetTranslationEnabled(false);
 	}
 	lrc_manager_wnd.SetRomanizationEnabled(bCheckedRomanization);
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonPrevious()
+{
+	if (!playlist_controller.MovePrevious())
+	{
+		ATLTRACE(_T("warn: cannot go previous\n"));
+		return;
+	}
+	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
+					 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+	ATLTRACE(_T("info: open previous file %s for playing\n"), music.GetString());
+	OpenMusic(music, ext);
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonNext()
+{
+	if (!playlist_controller.MoveNext())
+	{
+		ATLTRACE(_T("warn: cannot go next\n"));
+		return;
+	}
+	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
+					 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+	ATLTRACE(_T("info: open next file %s for playing\n"), music.GetString());
+	OpenMusic(music, ext);
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonStop()
@@ -804,18 +842,17 @@ void CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont()
 
 void CMFCMusicPlayerDlg::OnDropFiles(HDROP hDropInfo)
 {
-	UINT fileCount = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
-	CString openFile, ext;
+	UINT fileCount = DragQueryFile(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+	CStringArray openFiles;
 
 	for (UINT i = 0; i < fileCount; i++)
 	{
 		TCHAR filePath[MAX_PATH] = {0};
 		DragQueryFile(hDropInfo, i, filePath, MAX_PATH);
-		openFile = filePath;
-		ext = openFile.Mid(openFile.ReverseFind(_T('.')) + 1);
+		openFiles.Add(filePath);
 	}
 	DragFinish(hDropInfo);
-	OpenMusic(openFile, ext);
+	OpenMusic(openFiles);
 	CDialogEx::OnDropFiles(hDropInfo);
 }
 
