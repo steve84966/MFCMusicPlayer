@@ -25,18 +25,9 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICONSINGLELOOP      ICON                    "res\\ico00001.ico"
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\MFCMusicPlayer.ico"
+
+IDI_ICONSINGLELOOP      ICON                    "res\\ico00001.ico"
 
 IDI_ICONVOLUME          ICON                    "res\\icon1.ico"
 
@@ -120,6 +111,15 @@ BEGIN
     CONTROL         "",IDC_SLIDER_8KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,207,26,21,100
     CONTROL         "",IDC_SLIDER_16KHZ,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,227,26,21,100
     LTEXT           "   31       62    125     250    500     1k      2k      4k       8k     16k  ",IDC_STATIC,46,135,201,8
+END
+
+IDD_DIALOGPLAYLIST DIALOGEX 0, 0, 146, 240
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "播放列表..."
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,89,219,50,14
+    CONTROL         "",IDC_LISTPLAYLIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,17,15,110,196
 END
 
 
@@ -259,6 +259,14 @@ BEGIN
         BOTTOMMARGIN, 169
         HORZGUIDE, 26
     END
+
+    IDD_DIALOGPLAYLIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 139
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 233
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -289,6 +297,11 @@ BEGIN
 END
 
 IDD_SETTINGS_CHILDPAGE_EQUALIZER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOGPLAYLIST AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

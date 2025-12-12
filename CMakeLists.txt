@@ -3,7 +3,6 @@ project(MFCMusicPlayer LANGUAGES CXX)
 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_MFC_FLAG 2)
-set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
 
 find_package(FFMPEG REQUIRED)
 
@@ -22,6 +21,8 @@ add_executable(MFCMusicPlayer WIN32
     MFCMusicPlayer.rc
     res/MFCMusicPlayer.rc2
     MusicPlayerSettingsManager.cpp
+    PlaylistController.cpp
+    PlaylistDialog.cpp
 )
 
 target_include_directories(MFCMusicPlayer

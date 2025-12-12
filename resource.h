@@ -17,6 +17,7 @@
 #define IDR_MENUMAIN                    141
 #define IDI_ICONFILEOPEN                142
 #define IDI_ICONSINGLELOOP              143
+#define IDD_DIALOGPLAYLIST              143
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
@@ -25,7 +26,6 @@
 #define IDC_STATICTIME                  1004
 #define IDC_ALBUMART                    1005
 #define IDC_BUTTONPAUSE                 1006
-#define IDC_SLIDER1                     1007
 #define IDC_SLIDERVOLUMECTRL            1007
 #define IDC_SLIDER_31HZ                 1007
 #define IDC_STATICVOLUMEICON            1008
@@ -37,7 +37,6 @@
 #define IDC_SLIDER_500HZ                1011
 #define IDC_BUTTONTRANSLATION           1012
 #define IDC_SLIDER_1KHZ                 1012
-#define IDC_BUTTON2                     1013
 #define IDC_SLIDER_2KHZ                 1013
 #define IDC_BUTTONSINGLELOOP            1013
 #define IDC_MFCLINK1                    1014
@@ -46,13 +45,11 @@
 #define IDC_COMBOAUDIOBACKENDSELECT     1015
 #define IDC_SLIDER_8KHZ                 1015
 #define IDC_EDITSAMPLERATE              1016
-#define IDC_SLIDER_31HZ2                1016
 #define IDC_SLIDER_16KHZ                1016
-#define IDC_COMBO2                      1017
 #define IDC_COMBOCHANNELCOUNT           1017
 #define IDC_TABSETTINGS                 1018
-#define IDC_BUTTON1                     1019
 #define IDC_BUTTONROMANIZATION          1019
+#define IDC_LISTPLAYLIST                1020
 #define ID__32771                       32771
 #define ID__32772                       32772
 #define ID_32773                        32773

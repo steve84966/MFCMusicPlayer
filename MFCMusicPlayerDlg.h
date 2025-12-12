@@ -7,6 +7,7 @@
 #include "MusicPlayerSettingsManager.h"
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
+#include "PlaylistController.h"
 
 class CProgressSliderCtrl : public CSliderCtrl
 {
@@ -68,6 +69,7 @@ public:
 protected:
 	HICON m_hIcon;
 	MusicPlayer* music_player;
+	PlaylistController playlist_controller;
 
 // 生成的消息映射函数
 	BOOL OnInitDialog() override;
@@ -75,6 +77,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	void OpenMusic(const CString& file_path, const CString& ext);
+	void OpenMusic(const CStringArray& array);
 	bool bSingleLoop = false;
 	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;

@@ -328,21 +328,44 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 	}
 }
 
+void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
+{
+	playlist_controller.ClearPlaylist();
+	for (int i = 0; i < array.GetCount(); i++) {
+		ATLTRACE(_T("info: playlist file[%d]: %s\n"), i, array.GetAt(i).GetString());
+		CString path = array.GetAt(i);
+		playlist_controller.AddMusicFile(path);
+	}
+	if (array.GetCount() > 0)
+	{
+		CString ext = array.GetAt(0).Mid(array.GetAt(0).ReverseFind(_T('.')) + 1);;
+		OpenMusic(array.GetAt(0), ext);
+	}
+}
+
 
 void CMFCMusicPlayerDlg::OnClickedButtonOpen()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CFileDialog dlg(TRUE, NULL, NULL, // NOLINT(*-use-nullptr)
-	                OFN_FILEMUSTEXIST,
+	                OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT,
 	                get_common_dialog_music_filter());
+	constexpr DWORD bufferSize = 64 * 1024;
+	std::vector<TCHAR> buffer(bufferSize);
+	dlg.m_ofn.lpstrFile = buffer.data();
+	dlg.m_ofn.nMaxFile = bufferSize;
 	if (dlg.DoModal() == IDOK)
 	{
-		CString path = dlg.GetPathName();   // Full path
-		CString file = dlg.GetFileName();   // File name only
-		CString ext = dlg.GetFileExt();    // Extension
-
-		ATLTRACE(_T("info: selected file path: %s\n"), path.GetString());
-		OpenMusic(path, ext);
+		CStringArray paths;
+		POSITION pos = dlg.GetStartPosition();
+		while (pos)
+		{
+			CString path = dlg.GetNextPathName(pos);
+			ATLTRACE(_T("info: selected file path: %s\n"), path.GetString());
+			paths.Add(path);
+			// 在这里处理每个文件
+		}
+		OpenMusic(paths);
 	}
 }
 

@@ -48,6 +48,12 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PlaylistController.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayListDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMusicPlayer.cpp">
@@ -72,6 +78,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MusicPlayerSettingsManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PlaylistController.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayListDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
