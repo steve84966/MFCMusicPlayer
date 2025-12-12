@@ -133,6 +133,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
 	ON_COMMAND(ID_32777, &CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor)
 	ON_COMMAND(ID_32778, &CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor)
+	ON_MESSAGE(WM_PLAYLIST_CHANGED, &CMFCMusicPlayerDlg::OnPlaylistChanged)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
@@ -418,28 +419,52 @@ void CMFCMusicPlayerDlg::OnClickedButtonRomanization() {
 
 void CMFCMusicPlayerDlg::OnClickedButtonPrevious()
 {
+	bool playing = music_player && music_player->IsPlaying();
 	if (!playlist_controller.MovePrevious())
 	{
 		ATLTRACE(_T("warn: cannot go previous\n"));
+		if (playing)
+		{
+			music_player->Stop();
+			fBasePlayTime = 0.0f;
+			PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
+		}
 		return;
 	}
 	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
 					 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
 	ATLTRACE(_T("info: open previous file %s for playing\n"), music.GetString());
 	OpenMusic(music, ext);
+	if (playing)
+	{
+		music_player->Start();
+	}
+	iPlaylistIndex = playlist_controller.GetCurrentIndex();
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonNext()
 {
+	bool playing = music_player && music_player->IsPlaying();
 	if (!playlist_controller.MoveNext())
 	{
 		ATLTRACE(_T("warn: cannot go next\n"));
+		if (playing)
+		{
+			music_player->Stop();
+			fBasePlayTime = 0.0f;
+			PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
+		}
 		return;
 	}
 	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
 					 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
 	ATLTRACE(_T("info: open next file %s for playing\n"), music.GetString());
 	OpenMusic(music, ext);
+	if (playing)
+	{
+		music_player->Start();
+	}
+	iPlaylistIndex = playlist_controller.GetCurrentIndex();
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonStop()
@@ -517,6 +542,10 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 {
 	static CString prev_timeStr = _T("");
+	if (!music_player) {
+		m_sliderProgress.SetPos(0);
+		return {};
+	}
 	UINT32 raw = static_cast<UINT32>(wParam); // NOLINT(*-use-auto)
 	float time = *reinterpret_cast<float*>(&raw);
 	float length = music_player->GetMusicTimeLength();
@@ -753,6 +782,48 @@ exit:
 	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }
 
+void CMFCMusicPlayerDlg::ResetPlayer()
+{
+	ATLTRACE("info: player reset to initial state\n");
+	if (music_player && music_player->IsPlaying())
+		music_player->Stop();
+	fBasePlayTime = 0.f;
+	DestroyMediaPlayer();
+	SetWindowText(_T(""));
+	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT*>(&fBasePlayTime));
+
+	m_labelTime.SetWindowText(_T("00:00 / 00:00"));
+	PostMessage(WM_PLAYER_ALBUM_ART_INIT, 0, 0);
+	lrc_manager_wnd.DestroyLrcController();
+	lrc_manager_wnd.Invalidate(FALSE);
+	m_scrollBarLrcVertical.EnableWindow(FALSE);
+	m_buttonTranslation.SetCheck(BST_UNCHECKED);
+	m_buttonTranslation.EnableWindow(FALSE);
+	m_buttonRomanization.SetCheck(BST_UNCHECKED);
+	m_buttonRomanization.EnableWindow(FALSE);
+}
+
+LRESULT CMFCMusicPlayerDlg::OnPlaylistChanged(WPARAM wParam, LPARAM lParam)
+{
+	bool is_playing = music_player && music_player->IsPlaying();
+	if (playlist_controller.GetPlaylistSize() == 0)
+	{
+		ResetPlayer();
+	}
+	else
+	{
+		const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
+						 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+		ATLTRACE(_T("info: open changed file %s for playing\n"), music.GetString());
+		OpenMusic(music, ext);
+		if (is_playing)
+		{
+			music_player->Start();
+		}
+	}
+	return {};
+}
+
 void CMFCMusicPlayerDlg::OnMenuAbout() {
 	CAboutDlg dlg;
 	dlg.DoModal();
@@ -890,7 +961,14 @@ void CMFCMusicPlayerDlg::OnClickedButtonSingleLoop()
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
-	PlayListDialog dlg(this);
-	dlg.SetPlaylistController(&playlist_controller);
-	dlg.DoModal();
+	iPlaylistIndex = playlist_controller.GetCurrentIndex();
+	auto* dlg = new PlayListDialog(this);
+	dlg->SetPlaylistController(&playlist_controller);
+	dlg->Create(IDD_DIALOGPLAYLIST, this);
+	CRect thisRect;
+	this->GetWindowRect(&thisRect);
+	CRect dlgRect;
+	dlg->GetWindowRect(&dlgRect);
+	dlg->SetWindowPos(nullptr, thisRect.right, thisRect.top, dlgRect.Width(), dlgRect.Height(), SWP_NOZORDER);
+	dlg->ShowWindow(SW_SHOW);
 }

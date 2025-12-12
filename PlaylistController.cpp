@@ -33,7 +33,7 @@ CString PlaylistController::GetMusicFileAt(int index_in) const
 
 bool PlaylistController::CanMoveNext() const
 {
-    return index + 1 < playlist.GetSize();
+    return index + 1 < playlist.GetSize() || nextIndex != -1;
 }
 
 bool PlaylistController::CanMovePrevious() const
@@ -44,6 +44,11 @@ bool PlaylistController::CanMovePrevious() const
 bool PlaylistController::MoveNext()
 {
     if (CanMoveNext()) {
+        if (nextIndex != -1) {
+            index = nextIndex;
+            nextIndex = -1;
+            return true;
+        }
         index++;
         return true;
     }
@@ -67,9 +72,20 @@ void PlaylistController::ResetIndex()
 void PlaylistController::MoveItem(int fromIndex, int toIndex)
 {
     if (fromIndex < 0 || fromIndex >= playlist.GetSize() ||
-        toIndex < 0 || toIndex >= playlist.GetSize() ||
         fromIndex == toIndex)
         return;
+    if (toIndex < 0 || toIndex >= playlist.GetSize())
+    {
+        // remove item
+        playlist.RemoveAt(fromIndex);
+        if (index == fromIndex) {
+            index = 0;
+        }
+        else if (fromIndex < index) {
+            index--;
+        }
+        return;
+    }
 
     CString item = playlist[fromIndex];
     playlist.RemoveAt(fromIndex);
@@ -83,5 +99,19 @@ void PlaylistController::MoveItem(int fromIndex, int toIndex)
     }
     else if (fromIndex > index && toIndex <= index) {
         index++;
+    }
+}
+
+void PlaylistController::SetNextIndex(int next_index)
+{
+    if (next_index >= 0 && next_index < playlist.GetSize()) {
+        nextIndex = next_index;
+    }
+}
+
+void PlaylistController::SetIndex(int index_in)
+{
+    if (index >= 0 && index_in < playlist.GetSize()) {
+        index = index_in;
     }
 }

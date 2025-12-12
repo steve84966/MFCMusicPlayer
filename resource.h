@@ -15,6 +15,7 @@
 #define IDD_SETTINGS_CHILDPAGE_EQUALIZER 138
 #define IDR_MENULYRICCONTROL            140
 #define IDR_MENUMAIN                    141
+#define IDR_MENUPLAYLISTCTRL            142
 #define IDI_ICONFILEOPEN                142
 #define IDI_ICONSINGLELOOP              143
 #define IDD_DIALOGPLAYLIST              143
@@ -73,7 +74,10 @@
 #define ID_MENU_OPENFILE                32785
 #define ID_MENU_OPENFOLDER              32786
 #define ID_MENU_ABOUT                   32787
-
+#define ID_MENU_PLAYLISTCTRL_PLAYSELECTED     32788
+#define ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED 32789
+#define ID_MENU_PLAYLISTCTRL_DELETESELECTED   32790
+#define ID_MENU_PLAYLISTCTRL_CLEARPLAYLIST    32791
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

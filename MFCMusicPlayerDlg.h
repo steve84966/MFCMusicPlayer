@@ -82,6 +82,7 @@ protected:
 	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
 	bool bIsAdjustingLrcVertical = false;
+	int iPlaylistIndex = 0;
 	MusicPlayerSettingsManager settings_manager;
 	DECLARE_MESSAGE_MAP()
 public:
@@ -111,7 +112,8 @@ public:
 	CProgressSliderCtrl m_sliderProgress;
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar);
-
+	void ResetPlayer();
+	afx_msg LRESULT OnPlaylistChanged(WPARAM wParam, LPARAM lParam);
 	CSliderCtrl m_sliderVolumeCtrl;
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;

@@ -146,6 +146,7 @@ extern "C" {
 #define WM_PLAYER_STOP			  (WM_USER + 104)
 #define WM_PLAYER_ALBUM_ART_INIT  (WM_USER + 105)
 #define WM_PLAYER_DESTROY		  (WM_USER + 106)
+#define WM_PLAYLIST_CHANGED       (WM_USER + 107)
 #pragma endregion
 
 #pragma region Common Type Definition
@@ -174,6 +175,15 @@ enum class LrcAuxiliaryInfo
 	Translation,
 	Romanization,
 	Ignored
+};
+
+enum class PlaylistPlayMode
+{
+	None,
+	Sequential,
+	Loop,
+	Random,
+	SingleLoop
 };
 #pragma endregion
 

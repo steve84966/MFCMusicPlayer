@@ -14,7 +14,6 @@ public:
 	PlayListDialog(CWnd* pParent = nullptr);   // 标准构造函数
 	~PlayListDialog() override;
 	void SetPlaylistController(PlaylistController* pPlaylistController);
-	void GetSelectedIndex();
 
 	int OnInitDialog() override;
 
@@ -28,6 +27,10 @@ protected:
 
 	CListCtrl m_listCtrlPlayList;
 	PlaylistController* m_pPlaylistController;
+	afx_msg void OnMenuPlayListCtrlPlaySelected();
+	afx_msg void OnMenuPlayListCtrlPlayNextSelected();
+	afx_msg void OnMenuPlayListCtrlDeleteSelected();
+	afx_msg void OnMenuPlayListCtrlClearPlaylist();
 	DECLARE_MESSAGE_MAP()
 
 	int m_nDragIndex = -1;
@@ -39,5 +42,7 @@ protected:
 	afx_msg void OnLvnBegindragListplaylist(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	void OnContextMenu(CWnd* pWnd, CPoint point);
+	void PostNcDestroy() override;
 
 };
