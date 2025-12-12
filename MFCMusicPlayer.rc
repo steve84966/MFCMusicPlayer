@@ -39,6 +39,12 @@ IDI_ICONNEXT            ICON                    "res\\ico00003.ico"
 
 IDI_ICONPLAYLIST        ICON                    "res\\ico00004.ico"
 
+IDI_ICONSEQUENTIAL      ICON                    "res\\ico00005.ico"
+
+IDI_ICONLISTLOOP        ICON                    "res\\ico00006.ico"
+
+IDI_ICONRANDOMPLAY      ICON                    "res\\ico00007.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
