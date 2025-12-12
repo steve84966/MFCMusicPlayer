@@ -37,6 +37,7 @@ protected:
 	int m_nDragIndex = -1;
 	BOOL m_bDragging = FALSE;
 	CImageList* m_pDragImage = nullptr;
+	CDialogEx* m_pParent = nullptr;
 
 	void RefreshPlaylist();
 
@@ -47,5 +48,7 @@ protected:
 	void OnContextMenu(CWnd* pWnd, CPoint point);
 	void PostNcDestroy() override;
 	void OnDestroy();
+	void OnCancel();
+	void OnOK();
 
 };

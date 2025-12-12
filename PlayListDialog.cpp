@@ -15,7 +15,9 @@
 IMPLEMENT_DYNAMIC(PlayListDialog, CDialogEx)
 
 PlayListDialog::PlayListDialog(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_DIALOGPLAYLIST, pParent), m_pPlaylistController(nullptr) {
+	: CDialogEx(IDD_DIALOGPLAYLIST, pParent), m_pPlaylistController(nullptr),
+	m_pParent(reinterpret_cast<CDialogEx*>(pParent))
+{
 }
 
 PlayListDialog::~PlayListDialog() = default;
@@ -167,6 +169,7 @@ BEGIN_MESSAGE_MAP(PlayListDialog, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_CONTEXTMENU()
 	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlaySelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlayNextSelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_DELETESELECTED, &PlayListDialog::OnMenuPlayListCtrlDeleteSelected)
@@ -289,10 +292,22 @@ void PlayListDialog::PostNcDestroy()
 
 void PlayListDialog::OnDestroy()
 {
+	ATLTRACE("info: destroying dialog, set parent ptr to null\n");
 	if (GetOwner()) {
 		auto* pMainDlg = reinterpret_cast<CMFCMusicPlayerDlg*>(GetOwner());
 		if (pMainDlg) pMainDlg->m_pPlaylistDlg = nullptr;
 	}
+	CDialogEx::OnDestroy();
+}
+
+void PlayListDialog::OnCancel()
+{
+	DestroyWindow();
+}
+
+void PlayListDialog::OnOK()
+{
+	DestroyWindow();
 }
 
 void PlayListDialog::OnNMDblclkListplaylist(NMHDR* pNMHDR, LRESULT* pResult)

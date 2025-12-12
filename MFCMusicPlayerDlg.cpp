@@ -441,7 +441,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPrevious()
 	OpenMusic(music, ext);
 	if (playing)
 	{
-		music_player->Start();
+		OnClickedButtonPlay();
 	}
 	iPlaylistIndex = playlist_controller.GetCurrentIndex();
 }
@@ -466,7 +466,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonNext()
 	OpenMusic(music, ext);
 	if (playing)
 	{
-		music_player->Start();
+		OnClickedButtonPlay();
 	}
 	iPlaylistIndex = playlist_controller.GetCurrentIndex();
 }
@@ -502,7 +502,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	if (bSingleLoop)
 	{
-		music_player->Start();
+		OnClickedButtonPlay();
 	}
 	return LRESULT();
 }
@@ -717,7 +717,7 @@ void CMFCMusicPlayerDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 					ATLTRACE("info: music is playing, resume from seek point\n");
 					CEvent doneEvent;
 					if (WaitForSingleObject(doneEvent, 5) == WAIT_TIMEOUT)
-						music_player->Start();
+						OnClickedButtonPlay();
 				}
 				fBasePlayTime = fCurSelectedTime;
 			}
@@ -775,7 +775,7 @@ void CMFCMusicPlayerDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollB
 					ATLTRACE("info: music is playing, resume from seek point\n");
 					CEvent doneEvent;
 					if (WaitForSingleObject(doneEvent, 5) == WAIT_TIMEOUT) {
-						music_player->Start();
+						OnClickedButtonPlay();
 					}
 				}
 			}
@@ -822,7 +822,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlaylistChanged(WPARAM wParam, LPARAM lParam)
 		OpenMusic(music, ext);
 		if (is_playing)
 		{
-			music_player->Start();
+			OnClickedButtonPlay();
 		}
 	}
 	return {};
