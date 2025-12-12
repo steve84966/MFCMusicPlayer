@@ -139,14 +139,15 @@ extern "C" {
 */
 
 #pragma region User-defined Message
-#define WM_PLAYER_FILE_INIT		  (WM_USER + 100)
-#define WM_PLAYER_TIME_CHANGE	  (WM_USER + 101)
-#define WM_PLAYER_START           (WM_USER + 102)
-#define WM_PLAYER_PAUSE			  (WM_USER + 103)
-#define WM_PLAYER_STOP			  (WM_USER + 104)
-#define WM_PLAYER_ALBUM_ART_INIT  (WM_USER + 105)
-#define WM_PLAYER_DESTROY		  (WM_USER + 106)
-#define WM_PLAYLIST_CHANGED       (WM_USER + 107)
+#define WM_PLAYER_FILE_INIT				   (WM_USER + 100)
+#define WM_PLAYER_TIME_CHANGE			   (WM_USER + 101)
+#define WM_PLAYER_START					   (WM_USER + 102)
+#define WM_PLAYER_PAUSE					   (WM_USER + 103)
+#define WM_PLAYER_STOP					   (WM_USER + 104)
+#define WM_PLAYER_ALBUM_ART_INIT		   (WM_USER + 105)
+#define WM_PLAYER_DESTROY				   (WM_USER + 106)
+#define WM_PLAYLIST_CHANGED				   (WM_USER + 107)
+#define WM_PLAYLIST_CHANGE_BY_PLAYER       (WM_USER + 108)
 #pragma endregion
 
 #pragma region Common Type Definition

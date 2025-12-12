@@ -85,6 +85,20 @@ void PlayListDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LISTPLAYLIST, m_listCtrlPlayList);
 }
 
+LRESULT PlayListDialog::OnMainDialogNotify(WPARAM wParam, LPARAM lParam)
+{
+	RefreshPlaylist();
+	int selectedIndex = m_pPlaylistController->GetCurrentIndex();
+	ATLTRACE("info: cur selected-index = %d", selectedIndex);
+	if (selectedIndex >= 0 && selectedIndex < m_listCtrlPlayList.GetItemCount())
+	{
+		m_listCtrlPlayList.SetItemState(selectedIndex, LVIS_SELECTED | LVIS_FOCUSED,
+			LVIS_SELECTED | LVIS_FOCUSED);
+		m_listCtrlPlayList.EnsureVisible(selectedIndex, FALSE);
+	}
+	return {};
+}
+
 void PlayListDialog::OnMenuPlayListCtrlPlaySelected()
 {
 	POSITION pos = m_listCtrlPlayList.GetFirstSelectedItemPosition();
@@ -148,6 +162,7 @@ void PlayListDialog::OnMenuPlayListCtrlClearPlaylist()
 
 BEGIN_MESSAGE_MAP(PlayListDialog, CDialogEx)
 	ON_NOTIFY(LVN_BEGINDRAG, IDC_LISTPLAYLIST, &PlayListDialog::OnLvnBegindragListplaylist)
+	ON_NOTIFY(NM_DBLCLK, IDC_LISTPLAYLIST, &PlayListDialog::OnNMDblclkListplaylist)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
 	ON_WM_CONTEXTMENU()
@@ -156,6 +171,7 @@ BEGIN_MESSAGE_MAP(PlayListDialog, CDialogEx)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlayNextSelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_DELETESELECTED, &PlayListDialog::OnMenuPlayListCtrlDeleteSelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_CLEARPLAYLIST, &PlayListDialog::OnMenuPlayListCtrlClearPlaylist)
+	ON_MESSAGE(WM_PLAYLIST_CHANGE_BY_PLAYER, &PlayListDialog::OnMainDialogNotify)
 END_MESSAGE_MAP()
 
 
@@ -277,4 +293,26 @@ void PlayListDialog::OnDestroy()
 		auto* pMainDlg = reinterpret_cast<CMFCMusicPlayerDlg*>(GetOwner());
 		if (pMainDlg) pMainDlg->m_pPlaylistDlg = nullptr;
 	}
+}
+
+void PlayListDialog::OnNMDblclkListplaylist(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	UNREFERENCED_PARAMETER(pNMHDR);
+
+	POSITION pos = m_listCtrlPlayList.GetFirstSelectedItemPosition();
+	if (pos == nullptr) {
+		ATLTRACE("warn: no item selected on double click!\n");
+		*pResult = 0;
+		return;
+	}
+
+	int selection = m_listCtrlPlayList.GetNextSelectedItem(pos);
+	ATLTRACE("info: double click play index=%d\n", selection);
+
+	if (m_pPlaylistController && selection >= 0) {
+		m_pPlaylistController->SetIndex(selection);
+		AfxGetMainWnd()->PostMessage(WM_PLAYLIST_CHANGED);
+	}
+
+	*pResult = 0;
 }

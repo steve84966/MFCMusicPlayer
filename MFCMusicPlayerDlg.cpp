@@ -350,6 +350,10 @@ void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
 		ATLTRACE(_T("info: open file %s for playing\n"), music.GetString());
 		OpenMusic(music, ext);
 	}
+	if (m_pPlaylistDlg)
+	{
+		m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
+	}
 }
 
 

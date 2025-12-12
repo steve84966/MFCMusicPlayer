@@ -27,6 +27,7 @@ protected:
 
 	CListCtrl m_listCtrlPlayList;
 	PlaylistController* m_pPlaylistController;
+	afx_msg LRESULT OnMainDialogNotify(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnMenuPlayListCtrlPlaySelected();
 	afx_msg void OnMenuPlayListCtrlPlayNextSelected();
 	afx_msg void OnMenuPlayListCtrlDeleteSelected();
@@ -39,6 +40,7 @@ protected:
 
 	void RefreshPlaylist();
 
+	afx_msg void OnNMDblclkListplaylist(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnLvnBegindragListplaylist(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
