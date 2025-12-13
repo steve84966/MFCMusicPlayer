@@ -8,6 +8,7 @@ protected:
     CStringArray playlist;
     int index = 0;
     int nextIndex = -1;
+    PlaylistPlayMode mode = PlaylistPlayMode::Sequential;
 public:
     PlaylistController() = default;
     ~PlaylistController() = default;
@@ -19,6 +20,7 @@ public:
     [[nodiscard]] CString GetMusicFileAt(int index_in) const;
     [[nodiscard]] bool CanMoveNext() const;
     [[nodiscard]] bool CanMovePrevious() const;
+    void GenerateNextIndex();
     bool MoveNext();
     bool MovePrevious();
     void ResetIndex();
@@ -26,5 +28,6 @@ public:
     void MoveItem(int fromIndex, int toIndex);
     void SetNextIndex(int next_index);
     void SetIndex (int index_in);
+    void SetPlayMode(PlaylistPlayMode mode_in) { mode = mode_in; GenerateNextIndex(); }
 };
 

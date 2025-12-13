@@ -101,7 +101,7 @@ void CMFCMusicPlayerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLIDERVOLUMECTRL, m_sliderVolumeCtrl);
 	DDX_Control(pDX, IDC_BUTTONTRANSLATION, m_buttonTranslation);
 	DDX_Control(pDX, IDC_BUTTONROMANIZATION, m_buttonRomanization);
-	DDX_Control(pDX, IDC_BUTTONSINGLELOOP, m_buttonSingleLoop);
+	DDX_Control(pDX, IDC_BUTTONLOOPMODE, m_buttonLoopMode);
 	DDX_Control(pDX, IDC_SCROLLBARLRCVERTICAL, m_scrollBarLrcVertical);
 }
 
@@ -116,7 +116,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTONPAUSE, &CMFCMusicPlayerDlg::OnClickedButtonPause)
 	ON_BN_CLICKED(IDC_BUTTONTRANSLATION, &CMFCMusicPlayerDlg::OnClickedButtonTranslation)
 	ON_BN_CLICKED(IDC_BUTTONROMANIZATION, &CMFCMusicPlayerDlg::OnClickedButtonRomanization)
-	ON_BN_CLICKED(IDC_BUTTONSINGLELOOP, &CMFCMusicPlayerDlg::OnClickedButtonSingleLoop)
+	ON_BN_CLICKED(IDC_BUTTONLOOPMODE, &CMFCMusicPlayerDlg::OnClickedButtonLoopMode)
 	ON_BN_CLICKED(IDC_BUTTONPREVIOUS, &CMFCMusicPlayerDlg::OnClickedButtonPrevious)
 	ON_BN_CLICKED(IDC_BUTTONNEXT, &CMFCMusicPlayerDlg::OnClickedButtonNext)
 	ON_BN_CLICKED(IDC_BUTTONPLAYLISTMGMT, &CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt)
@@ -197,7 +197,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 		pBtn->SetIcon(AfxGetApp()->LoadIcon(iconId));
 	};
 	modifyButtonIcon(IDC_BUTTONOPEN, IDI_ICONFILEOPEN);
-	modifyButtonIcon(IDC_BUTTONSINGLELOOP, IDI_ICONSINGLELOOP, BS_AUTOCHECKBOX | BS_PUSHLIKE);
+	modifyButtonIcon(IDC_BUTTONLOOPMODE, IDI_ICONSEQUENTIAL);
 	modifyButtonIcon(IDC_BUTTONPREVIOUS, IDI_ICONPREVIOUS);
 	modifyButtonIcon(IDC_BUTTONNEXT, IDI_ICONNEXT);
 	modifyButtonIcon(IDC_BUTTONPLAYLISTMGMT, IDI_ICONPLAYLIST);
@@ -504,8 +504,16 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 	fBasePlayTime = 0.f;
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
-	if (bSingleLoop)
+	// OnClickedButtonPlay();
+	if (playlist_controller.MoveNext())
 	{
+		const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
+						 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+		ATLTRACE(_T("info: open next file %s for playing\n"), music.GetString());
+		OpenMusic(music, ext);
+		iPlaylistIndex = playlist_controller.GetCurrentIndex();
+		if (m_pPlaylistDlg)
+			m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
 		OnClickedButtonPlay();
 	}
 	return LRESULT();
@@ -563,10 +571,8 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 		{
 			ATLTRACE("info: abnormal time event, time=%f, base=%f", time, fBasePlayTime);
 			return LRESULT();
-		} else
-		{
-			fBasePlayTime = time;
 		}
+		fBasePlayTime = time;
 	}
 	CString timeStr;
 	int min = static_cast<int>(time) / 60, sec = static_cast<int>(time) % 60;
@@ -963,9 +969,27 @@ void CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor() {
 	ModifyTextColor(false);
 }
 
-void CMFCMusicPlayerDlg::OnClickedButtonSingleLoop()
+void CMFCMusicPlayerDlg::OnClickedButtonLoopMode()
 {
-	bSingleLoop = m_buttonSingleLoop.GetCheck();
+	play_mode = static_cast<PlaylistPlayMode>((static_cast<int>(play_mode) + 1) % 4);
+	playlist_controller.SetPlayMode(play_mode);
+	// change button icon
+	switch (play_mode) {
+	case PlaylistPlayMode::SingleLoop:
+		m_buttonLoopMode.SetIcon(AfxGetApp()->LoadIcon(IDI_ICONSINGLELOOP));
+		break;
+	case PlaylistPlayMode::Sequential:
+		m_buttonLoopMode.SetIcon(AfxGetApp()->LoadIcon(IDI_ICONSEQUENTIAL));
+		break;
+	case PlaylistPlayMode::ListLoop:
+		m_buttonLoopMode.SetIcon(AfxGetApp()->LoadIcon(IDI_ICONLISTLOOP));
+		break;
+	case PlaylistPlayMode::Random:
+		m_buttonLoopMode.SetIcon(AfxGetApp()->LoadIcon(IDI_ICONRANDOMPLAY));
+		break;
+	default:
+		assert(FALSE);
+	}
 }
 
 void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {

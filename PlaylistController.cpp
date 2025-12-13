@@ -1,21 +1,25 @@
 #include "pch.h"
 #include "PlaylistController.h"
+#include <random>
 
 PlaylistController::PlaylistController(const CStringArray& arr)
 {
     for (int i = 0; i < arr.GetCount(); i++) {
         playlist.Add(arr.GetAt(i));
     }
+    GenerateNextIndex();
 }
 
 void PlaylistController::AddMusicFile(const CString& file_path)
 {
     playlist.Add(file_path);
+    GenerateNextIndex();
 }
 
 void PlaylistController::ClearPlaylist()
 {
     playlist.RemoveAll();
+    nextIndex = -1;
 }
 
 size_t PlaylistController::GetPlaylistSize() const
@@ -33,7 +37,7 @@ CString PlaylistController::GetMusicFileAt(int index_in) const
 
 bool PlaylistController::CanMoveNext() const
 {
-    return index + 1 < playlist.GetSize() || nextIndex != -1;
+    return nextIndex != -1;
 }
 
 bool PlaylistController::CanMovePrevious() const
@@ -41,15 +45,48 @@ bool PlaylistController::CanMovePrevious() const
     return index > 0;
 }
 
+void PlaylistController::GenerateNextIndex()
+{
+    switch (mode)
+    {
+    case PlaylistPlayMode::Sequential:
+        if (index + 1 < playlist.GetSize())
+        {
+            nextIndex = index + 1;
+        }
+        break;
+    case PlaylistPlayMode::ListLoop:
+        nextIndex = index + 1;
+        if (nextIndex >= playlist.GetSize())
+            nextIndex = 0;
+        break;
+    case PlaylistPlayMode::SingleLoop:
+        nextIndex = index;
+        break;
+    case PlaylistPlayMode::Random:
+        {
+            static std::default_random_engine e;
+            std::uniform_int_distribution u(0, static_cast<int>(playlist.GetSize()) - 1);
+            int rand_index = index;
+            // avoid the same index
+            while (rand_index == index && playlist.GetSize() > 1)
+            {
+                rand_index = u(e);
+            }
+            nextIndex = rand_index;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 bool PlaylistController::MoveNext()
 {
     if (CanMoveNext()) {
-        if (nextIndex != -1) {
-            index = nextIndex;
-            nextIndex = -1;
-            return true;
-        }
-        index++;
+        index = nextIndex;
+        nextIndex = -1;
+        GenerateNextIndex();
         return true;
     }
     return false;

@@ -180,11 +180,10 @@ enum class LrcAuxiliaryInfo
 
 enum class PlaylistPlayMode
 {
-	None,
 	Sequential,
-	Loop,
+	ListLoop,
+	SingleLoop,
 	Random,
-	SingleLoop
 };
 #pragma endregion
 

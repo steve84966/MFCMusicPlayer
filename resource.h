@@ -45,7 +45,7 @@
 #define IDC_BUTTONTRANSLATION           1012
 #define IDC_SLIDER_1KHZ                 1012
 #define IDC_SLIDER_2KHZ                 1013
-#define IDC_BUTTONSINGLELOOP            1013
+#define IDC_BUTTONLOOPMODE            1013
 #define IDC_MFCLINK1                    1014
 #define IDC_MFCLINKGITHUB               1014
 #define IDC_SLIDER_4KHZ                 1014

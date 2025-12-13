@@ -71,6 +71,7 @@ public:
 protected:
 	HICON m_hIcon;
 	MusicPlayer* music_player;
+	PlaylistPlayMode play_mode = PlaylistPlayMode::Sequential;
 	PlaylistController playlist_controller;
 
 // 生成的消息映射函数
@@ -80,7 +81,6 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	void OpenMusic(const CString& file_path, const CString& ext);
 	void OpenMusic(const CStringArray& array);
-	bool bSingleLoop = false;
 	bool bIsMusicPlaying = false, bIsMusicPlayingStateRecorded = false;
 	float fBasePlayTime = -1.f;
 	bool bIsAdjustingLrcVertical = false;
@@ -120,7 +120,7 @@ public:
 	CLrcManagerWnd lrc_manager_wnd;
 	CButton m_buttonTranslation;
 	CButton m_buttonRomanization;
-	CButton m_buttonSingleLoop;
+	CButton m_buttonLoopMode;
 	CButton m_buttonPrevious;
 	CButton m_buttonNext;
 	CProgressScrollBar m_scrollBarLrcVertical;
@@ -136,6 +136,6 @@ public:
 	void ModifyTextColor(bool is_playing);
 	afx_msg void OnMenuSettingPlayedTextColor();
 	afx_msg void OnMenuSettingUnplayedTextColor();
-	afx_msg void OnClickedButtonSingleLoop();
+	afx_msg void OnClickedButtonLoopMode();
 	afx_msg void OnClickedButtonPlaylistMgmt();
 };
