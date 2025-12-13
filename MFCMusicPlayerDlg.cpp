@@ -203,6 +203,9 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	modifyButtonIcon(IDC_BUTTONPREVIOUS, IDI_ICONPREVIOUS);
 	modifyButtonIcon(IDC_BUTTONNEXT, IDI_ICONNEXT);
 	modifyButtonIcon(IDC_BUTTONPLAYLISTMGMT, IDI_ICONPLAYLIST);
+	modifyButtonIcon(IDC_BUTTONPLAY, IDI_ICONPLAY);
+	modifyButtonIcon(IDC_BUTTONPAUSE, IDI_ICONPAUSE);
+	modifyButtonIcon(IDC_BUTTONSTOP, IDI_ICONSTOP);
 
 
 	// attach IDR_MENUMAIN to main window

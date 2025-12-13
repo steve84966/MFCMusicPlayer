@@ -25,6 +25,9 @@
 #define IDI_ICONSEQUENTIAL              147
 #define IDI_ICONLISTLOOP                148
 #define IDI_ICONRANDOMPLAY              149
+#define IDI_ICONPLAY                    150
+#define IDI_ICONPAUSE                   151
+#define IDI_ICONSTOP                    152
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
