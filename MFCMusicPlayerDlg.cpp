@@ -128,6 +128,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_MESSAGE(WM_PLAYER_ALBUM_ART_INIT, &CMFCMusicPlayerDlg::OnAlbumArtInit)
 	ON_COMMAND(ID_MENU_ABOUT, &CMFCMusicPlayerDlg::OnMenuAbout)
 	ON_COMMAND(ID_MENU_EXIT, &CMFCMusicPlayerDlg::OnMenuExit)
+	ON_COMMAND(ID_MENU_OPENFOLDER, &CMFCMusicPlayerDlg::OnMenuOpenFolderAsPlayList)
 	ON_COMMAND(ID__32771, &CMFCMusicPlayerDlg::OnMenuOpenCustomLrc)
 	ON_COMMAND(ID_32773, &CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont)
 	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
@@ -834,6 +835,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlaylistChanged(WPARAM wParam, LPARAM lParam)
 		{
 			OnClickedButtonPlay();
 		}
+		playlist_controller.GenerateNextIndex();
 	}
 	return {};
 }
@@ -871,6 +873,75 @@ void CMFCMusicPlayerDlg::OnTimer(UINT_PTR nIDEvent)
 void CMFCMusicPlayerDlg::OnMenuSettingPlayingTextFont() {
 	ModifyPlayingText(false);
 }
+
+void CMFCMusicPlayerDlg::OnMenuOpenFolderAsPlayList() {
+	CFolderPickerDialog dlg(_T("Select Music Folder"), OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT, this);
+	if (dlg.DoModal() == IDOK) {
+		playlist_controller.ClearPlaylist();
+
+		auto addMusicFilesFromFolder = [this](const CString &rootPath) {
+			std::vector<CString> folders;
+			folders.push_back(rootPath);
+
+			while (!folders.empty()) {
+				CString current = folders.back();
+				folders.pop_back();
+
+				CString searchPath = current;
+				if (!searchPath.IsEmpty() && searchPath.Right(1) != _T("\\") && searchPath.Right(1) != _T("/")) {
+					searchPath += _T("\\");
+				}
+				searchPath += _T("*.*");
+
+				CFileFind finder;
+				BOOL bWorking = finder.FindFile(searchPath);
+				while (bWorking) {
+					bWorking = finder.FindNextFile();
+					if (finder.IsDots()) {
+						continue;
+					}
+					if (finder.IsDirectory()) {
+						folders.push_back(finder.GetFilePath());
+						continue;
+					}
+					CString filePath = finder.GetFilePath();
+					int dotIndex = filePath.ReverseFind(_T('.'));
+					if (dotIndex == -1) {
+						continue;
+					}
+					CString ext = filePath.Mid(dotIndex + 1);
+					ext.MakeLower();
+					for (const auto &supported: music_ext_list) {
+						CString supportedLower = supported;
+						supportedLower.MakeLower();
+						if (supportedLower == ext) {
+							playlist_controller.AddMusicFile(filePath);
+							break;
+						}
+					}
+				}
+				finder.Close();
+			}
+		};
+
+		POSITION pos = dlg.GetStartPosition();
+		while (pos) {
+			CString folderPath = dlg.GetNextPathName(pos);
+			ATLTRACE(_T("info: selected folder path: %s\n"), folderPath.GetString());
+			addMusicFilesFromFolder(folderPath);
+		}
+		if (playlist_controller.GetPlaylistSize() > 0) {
+			const CString &music = playlist_controller.GetMusicFileAt(0),
+					ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+			ATLTRACE(_T("info: open file %s for playing\n"), music.GetString());
+			OpenMusic(music, ext);
+		}
+		if (m_pPlaylistDlg) {
+			m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
+		}
+	}
+}
+
 
 void CMFCMusicPlayerDlg::ModifyPlayingText(bool is_translation) {
 	CString font_name = lrc_manager_wnd.GetTextFont(is_translation);

@@ -130,6 +130,7 @@ public:
 	afx_msg void OnMenuOpenCustomLrc();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnMenuSettingPlayingTextFont();
+	afx_msg void OnMenuOpenFolderAsPlayList();
 	void ModifyPlayingText(bool is_translation);
 	afx_msg void OnMenuSettingTranslationTextFont();
 	afx_msg void OnDropFiles(HDROP hDropInfo);
