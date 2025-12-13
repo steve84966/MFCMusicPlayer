@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_MOVE()
 	ON_BN_CLICKED(IDC_BUTTONOPEN, &CMFCMusicPlayerDlg::OnClickedButtonOpen)
 	ON_COMMAND(ID_MENU_OPENFILE, &CMFCMusicPlayerDlg::OnClickedButtonOpen)
 	ON_BN_CLICKED(IDC_BUTTONPLAY, &CMFCMusicPlayerDlg::OnClickedButtonPlay)
@@ -1081,4 +1082,16 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
 	dlg->ShowWindow(SW_SHOW);
     dlg->SetOwner(this);
 	m_pPlaylistDlg = dlg;
+}
+
+void CMFCMusicPlayerDlg::OnMove(int cx, int cy) {
+	CDialogEx::OnMove(cx, cy);
+	if (m_pPlaylistDlg)
+	{
+		CRect thisRect;
+		this->GetWindowRect(&thisRect);
+		CRect dlgRect;
+		m_pPlaylistDlg->GetWindowRect(&dlgRect);
+		m_pPlaylistDlg->SetWindowPos(nullptr, thisRect.right, thisRect.top, dlgRect.Width(), dlgRect.Height(), SWP_NOZORDER);
+	}
 }
