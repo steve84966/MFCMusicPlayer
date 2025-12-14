@@ -678,6 +678,8 @@ void CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
 		m_buttonRomanization.SetCheck(BST_UNCHECKED);
 		m_buttonRomanization.EnableWindow(FALSE);
 	}
+
+	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 }
 
 void CMFCMusicPlayerDlg::OnCancel()
