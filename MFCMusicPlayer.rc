@@ -406,6 +406,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "退出",                          ID_MENU_EXIT
     END
+    POPUP "窗口(&W)"
+    BEGIN
+        MENUITEM "窗口始终置于最前",                  ID_MENU_WINDOW_ALWAYSONTOP
+        MENUITEM "播放列表...",                     ID_MENU_WINDOW_PLAYLIST
+    END
     POPUP "关于(&A)"
     BEGIN
         MENUITEM "关于 MFCMusicPlayer...",        ID_MENU_ABOUT

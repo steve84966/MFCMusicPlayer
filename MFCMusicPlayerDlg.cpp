@@ -135,6 +135,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_32774, &CMFCMusicPlayerDlg::OnMenuSettingTranslationTextFont)
 	ON_COMMAND(ID_32777, &CMFCMusicPlayerDlg::OnMenuSettingPlayedTextColor)
 	ON_COMMAND(ID_32778, &CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor)
+	ON_COMMAND(ID_MENU_WINDOW_ALWAYSONTOP, &CMFCMusicPlayerDlg::OnMenuWindowAlwaysOnTop)
+	ON_COMMAND(ID_MENU_WINDOW_PLAYLIST, &CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt)
 	ON_MESSAGE(WM_PLAYLIST_CHANGED, &CMFCMusicPlayerDlg::OnPlaylistChanged)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
@@ -1098,5 +1100,28 @@ void CMFCMusicPlayerDlg::OnMove(int cx, int cy) {
 		CRect dlgRect;
 		m_pPlaylistDlg->GetWindowRect(&dlgRect);
 		m_pPlaylistDlg->SetWindowPos(nullptr, thisRect.right, thisRect.top, dlgRect.Width(), dlgRect.Height(), SWP_NOZORDER);
+	}
+}
+
+void CMFCMusicPlayerDlg::OnMenuWindowAlwaysOnTop()
+{
+	CMenu* pMenu = GetMenu();
+	if (pMenu != nullptr)
+	{
+		UINT uState = pMenu->GetMenuState(ID_MENU_WINDOW_ALWAYSONTOP, MF_BYCOMMAND);
+		if (uState != 0xFFFFFFFF)
+		{
+			bool bChecked = (uState & MF_CHECKED) != 0;
+			if (bChecked)
+			{
+				pMenu->CheckMenuItem(ID_MENU_WINDOW_ALWAYSONTOP, MF_UNCHECKED | MF_BYCOMMAND);
+				SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			}
+			else
+			{
+				pMenu->CheckMenuItem(ID_MENU_WINDOW_ALWAYSONTOP, MF_CHECKED | MF_BYCOMMAND);
+				SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			}
+		}
 	}
 }

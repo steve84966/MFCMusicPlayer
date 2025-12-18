@@ -140,4 +140,5 @@ public:
 	afx_msg void OnClickedButtonLoopMode();
 	afx_msg void OnClickedButtonPlaylistMgmt();
 	afx_msg void OnMove(int cx, int cy);
+	afx_msg void OnMenuWindowAlwaysOnTop();
 };
