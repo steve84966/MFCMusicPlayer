@@ -1088,6 +1088,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt() {
 	dlg->SetWindowPos(nullptr, thisRect.right, thisRect.top, dlgRect.Width(), dlgRect.Height(), SWP_NOZORDER);
 	dlg->ShowWindow(SW_SHOW);
     dlg->SetOwner(this);
+	dlg->SetAdjustParentPosition(TRUE);
 	m_pPlaylistDlg = dlg;
 }
 

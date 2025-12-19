@@ -731,8 +731,8 @@ void MusicPlayer::audio_playback_worker_thread()
 				xaudio2_playing_buffers.erase(xaudio2_playing_buffers.begin(), it);
 				xaudio2_played_buffers = played_buffers - 1;
 				xaudio2_played_samples = samples_sum - (*it)->AudioBytes / wfx.nBlockAlign;
-				ATLTRACE("info: samples played=%lld, cur played_buffers=%lld, cur samples=%lld, xaudio2 buffer arr size=%lld\n",
-					state.SamplesPlayed, played_buffers, samples_sum, xaudio2_playing_buffers.size());
+				// ATLTRACE("info: samples played=%lld, cur played_buffers=%lld, cur samples=%lld, xaudio2 buffer arr size=%lld\n",
+				// 	state.SamplesPlayed, played_buffers, samples_sum, xaudio2_playing_buffers.size());
 				// std::printf("info: buffer played=%zd\n", played_buffers);
 				decode_time_ms = static_cast<double>(xaudio2_played_samples - prev_decode_cycle_xaudio2_played_samples) * 1000.0 / wfx.nSamplesPerSec;
 				prev_decode_cycle_xaudio2_played_samples = xaudio2_played_samples;
@@ -857,7 +857,7 @@ void MusicPlayer::audio_decode_worker_thread()
 				// LeaveCriticalSection(audio_fifo_section);
 				break;
 			}
-			ATLTRACE("info: decoded frame nb_samples=%d, pts=%lld\n", frame->nb_samples, frame->pts);
+			// ATLTRACE("info: decoded frame nb_samples=%d, pts=%lld\n", frame->nb_samples, frame->pts);
 			// LeaveCriticalSection(audio_fifo_section);
 			av_frame_unref(frame);
 		}
@@ -1124,7 +1124,7 @@ void MusicPlayer::xaudio2_init_buffer(XAUDIO2_BUFFER* dest_buffer, int size) // 
 XAUDIO2_BUFFER* MusicPlayer::xaudio2_allocate_buffer(int size)
 {
 	if (size < 8192) size = 8192;
-	ATLTRACE("info: xaudio2_allocate_buffer, allocate_size=%d\n", size);
+	// ATLTRACE("info: xaudio2_allocate_buffer, allocate_size=%d\n", size);
 	XAUDIO2_BUFFER* dest_buffer = DBG_NEW XAUDIO2_BUFFER{}; // NOLINT(*-use-auto)
 	dest_buffer->pAudioData = DBG_NEW BYTE[size];
 	dest_buffer->pContext = DBG_NEW int(size);

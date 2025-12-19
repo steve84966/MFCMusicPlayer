@@ -544,6 +544,17 @@ LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
     if (jp_index != -1)
     {
         aux_infos[jp_index] = LrcAuxiliaryInfo::Lyric;
+        int jp_index_2;
+        for (jp_index_2 = jp_index + 1; jp_index_2 < str_count; ++jp_index_2) {
+            if (lang_types[jp_index_2] == LrcLanguageHelper::LanguageType::jp) {
+                break;
+            }
+        }
+        if (jp_index_2 != str_count) {
+            // 一般是罗马音置前导致的误判，设置第二个为歌词
+            aux_infos[jp_index_2] = LrcAuxiliaryInfo::Lyric;
+            aux_infos[jp_index] = LrcAuxiliaryInfo::Ignored;
+        }
         if (kr_index != -1)
         {
             ATLTRACE(_T("warn: jp & kr mix, ignoring kr line\n"));
@@ -572,7 +583,7 @@ LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
         }
         if (jp_index != -1 || kr_index != -1 || eng_index != -1 && lang_types[zh_index] == LrcLanguageHelper::LanguageType::zh)
         {
-            ATLTRACE(_T("info: translation hit, line %s\n"), texts[zh_index].GetString());
+//            ATLTRACE(_T("info: translation hit, line %s\n"), texts[zh_index].GetString());
             aux_infos[zh_index] = LrcAuxiliaryInfo::Translation;
         }
         else
@@ -591,7 +602,7 @@ LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
         }
         else if (eng_prob < romaji_prob && (jp_index != -1 || kr_index != -1))
         {
-            ATLTRACE(_T("info: romanization hit, line %s\n"), texts[eng_index].GetString());
+//            ATLTRACE(_T("info: romanization hit, line %s\n"), texts[eng_index].GetString());
             aux_infos[eng_index] = LrcAuxiliaryInfo::Romanization;
         }
         else if (jp_index != -1 && kr_index != -1)
@@ -690,8 +701,8 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
     auto write_prob = [&input, probability](const CString& out_type, float out_prob)
     {
         if (probability) *probability = out_prob;
-        ATLTRACE(_T("info: line %s, type = %s, max prob = %f\n"),
-                 input.GetString(), out_type.GetString(), out_prob);
+//        ATLTRACE(_T("info: line %s, type = %s, max prob = %f\n"),
+//                 input.GetString(), out_type.GetString(), out_prob);
     };
 
     if (zh > 0 && jp > 0)

@@ -170,6 +170,7 @@ BEGIN_MESSAGE_MAP(PlayListDialog, CDialogEx)
 	ON_WM_CONTEXTMENU()
 	ON_WM_DESTROY()
 	ON_WM_CLOSE()
+	ON_WM_MOVE()
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlaySelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED, &PlayListDialog::OnMenuPlayListCtrlPlayNextSelected)
 	ON_COMMAND(ID_MENU_PLAYLISTCTRL_DELETESELECTED, &PlayListDialog::OnMenuPlayListCtrlDeleteSelected)
@@ -310,6 +311,18 @@ void PlayListDialog::OnOK()
 	DestroyWindow();
 }
 
+void PlayListDialog::OnMove(int cx, int cy) {
+	if (this->m_pParentWnd != nullptr && m_bAdjustParentPosition)
+	{
+		CRect thisRect;
+		this->GetWindowRect(&thisRect);
+		CRect parentDlgRect;
+		this->m_pParentWnd->GetWindowRect(&parentDlgRect);
+		m_pParentWnd->MoveWindow(thisRect.left - parentDlgRect.Width(), thisRect.top, parentDlgRect.Width(), parentDlgRect.Height());
+	}
+	CDialogEx::OnMove(cx, cy);
+}
+
 void PlayListDialog::OnNMDblclkListplaylist(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	UNREFERENCED_PARAMETER(pNMHDR);
@@ -326,6 +339,7 @@ void PlayListDialog::OnNMDblclkListplaylist(NMHDR* pNMHDR, LRESULT* pResult)
 
 	if (m_pPlaylistController && selection >= 0) {
 		m_pPlaylistController->SetIndex(selection);
+		m_pPlaylistController->GenerateNextIndex();
 		AfxGetMainWnd()->PostMessage(WM_PLAYLIST_CHANGED);
 	}
 
