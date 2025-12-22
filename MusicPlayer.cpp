@@ -45,6 +45,7 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 	// 打开文件流
 	// std::ios::sync_with_stdio(false);
 	file_stream = new CFile();
+	file_extension = file_extension_in;
 	if (!file_stream->Open(audio_filename, CFile::modeRead | CFile::shareDenyWrite))
 	{
 		ATLTRACE("err: file not exists!\n");
@@ -71,12 +72,8 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 			mem_file->Write(decryptor_result.audioData.data(), static_cast<UINT>(decryptor_result.audioData.size()));
 			mem_file->SeekToBegin();
 			file_stream = mem_file;
-			HBITMAP bitmap = download_ncm_album_art(decryptor_result.pictureUrl, 160 * GetSystemDpiScale());
-			if (bitmap) album_art = bitmap;
-			AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(album_art));
+			download_ncm_album_art_async(decryptor_result.pictureUrl, 160 * GetSystemDpiScale());
 			delete decryptor;
-			return load_audio_context_stream(file_stream);
-
 		}
 		catch (std::exception& e)
 		{
@@ -188,7 +185,8 @@ int MusicPlayer::load_audio_context_stream(CFile* in_file_stream)
 		album_art = decode_id3_album_art(image_stream_id, static_cast<int>(160.0f * GetSystemDpiScale()));
 	}
 
-	AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(album_art));
+	if (this->file_extension != _T("ncm"))
+		AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(album_art));
 	read_metadata();
 
 	// 从0ms开始读取
@@ -292,8 +290,8 @@ bool MusicPlayer::is_audio_context_initialized()
 HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 {
 	if (url.IsEmpty()) return nullptr;
-	CInternetSession session(_T("NCM Image Downloader")); 
-	CString headers; 
+	CInternetSession session(_T("NCM Image Downloader"));
+	CString headers;
 	headers.Format(_T("User-Agent: %s\r\n"), _T("Mozilla/5.0 "
 		"(Windows NT 10.0; Win64; x64) "
 		"AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -301,11 +299,13 @@ HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 	CHttpFile* pHttpFile = nullptr;
 	try
 	{
-		pHttpFile = (CHttpFile*)session.OpenURL(url, 1,
-			INTERNET_FLAG_TRANSFER_BINARY 
-			| INTERNET_FLAG_RELOAD
-			| INTERNET_FLAG_NO_CACHE_WRITE, 
-			headers, headers.GetLength()); 
+		ATLTRACE("info: establishing connection with ncm server\n");
+		pHttpFile = static_cast<CHttpFile*>( // NOLINT(*-pro-type-static-cast-downcast)
+			session.OpenURL(url, 1,
+		        INTERNET_FLAG_TRANSFER_BINARY
+		         | INTERNET_FLAG_RELOAD
+		         | INTERNET_FLAG_NO_CACHE_WRITE,
+		         headers, headers.GetLength()));
 		if (!pHttpFile) 
 			return nullptr;
 		CString strLine;
@@ -319,6 +319,7 @@ HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 			totalBytesRead += nRead;
 			file->Write(buf, nRead);
 		}
+		ATLTRACE("info: downloaded %llu bytes\n", totalBytesRead);
 		pHttpFile->Close();
 		delete pHttpFile;
 		pHttpFile = nullptr;
@@ -389,6 +390,10 @@ HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 	}
 	catch (CInternetException* e)
 	{
+		CString strError;
+		e->GetErrorMessage(strError.GetBuffer(1024), 1024);
+		strError.ReleaseBuffer();
+		ATLTRACE(_T("err: download album art failed, reason=%s"), strError.GetString());
 		e->Delete();
 		delete pHttpFile;
 		session.Close();
@@ -457,6 +462,17 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 	imaging_factory->Release();
 
 	return bmp;
+}
+
+void MusicPlayer::download_ncm_album_art_async(const CString& url, int scale_size)
+{
+	AfxBeginThread([](LPVOID param) -> UINT {
+		auto* ctx = reinterpret_cast<std::pair<MusicPlayer*, CString>*>(param);
+		HBITMAP bitmap = download_ncm_album_art(ctx->second, 160 * GetSystemDpiScale());
+		AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(bitmap));
+		delete ctx;
+		return 0;
+	}, new std::pair(this, url));
 }
 
 void MusicPlayer::read_metadata()
