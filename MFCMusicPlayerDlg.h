@@ -106,7 +106,8 @@ public:
 	afx_msg void OnCancel() override;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	void LoadLyric(const CString& file_path);
+
+bool LoadLyric(const CString &file_path);
 	void DestroyMediaPlayer();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();

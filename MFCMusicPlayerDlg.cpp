@@ -6,6 +6,9 @@
 #include "framework.h"
 #include "MFCMusicPlayer.h"
 #include "MFCMusicPlayerDlg.h"
+
+#include <set>
+
 #include "PlaylistDialog.h"
 
 
@@ -337,8 +340,91 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 				this->SetWindowText(windowTitle);
 			}
 			CString lrc_file = file_path.Left(file_path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
-			ATLTRACE(_T("info: lrc file: %s\n"), lrc_file.GetString());
-			LoadLyric(lrc_file);
+			CString lrc_file_name = lrc_file.Right(lrc_file.GetLength() - lrc_file.ReverseFind(_T('\\')) - 1);
+			CString lrc_path = lrc_file.Left(lrc_file.GetLength() - lrc_file_name.GetLength());
+			CSimpleArray<CString> lyric_search_paths;
+			lyric_search_paths.Add(lrc_path);
+			lyric_search_paths.Add(lrc_path + _T("..\\"));
+			PWSTR path = nullptr;
+			auto addKnownFolderPath = [&](GUID rfid) {
+				HRESULT hr = SHGetKnownFolderPath(rfid, 0, NULL, &path);
+				CString strPath;
+				if (SUCCEEDED(hr)) {
+					strPath = path;
+					CoTaskMemFree(path);
+				}
+				lyric_search_paths.Add(strPath + _T("\\"));
+				lyric_search_paths.Add(strPath + _T("\\Lyrics\\"));
+			};
+			addKnownFolderPath(FOLDERID_Music);
+			addKnownFolderPath(FOLDERID_Documents);
+			for (int i = 0; i < lyric_search_paths.GetSize(); i++) {
+				lrc_file = *(lyric_search_paths.GetData() + i) + lrc_file_name;
+				// ATLTRACE(_T("info: searching in: %s\n"), lrc_file.GetString());
+			}
+			// 歌词文件查询，采用关键词匹配最佳，故使用交并集算法
+			auto jaccardDistance = [](const CString& str1, const CString& str2) {
+				std::set<TCHAR> set1, set2;
+				for (int i = 0; i < str1.GetLength(); i++)
+					set1.insert(str1[i]);
+				for (int i = 0; i < str2.GetLength(); i++)
+					set2.insert(str2[i]);
+				std::set<TCHAR> intersection;
+				std::ranges::set_intersection(set1, set2,
+				                              std::inserter(intersection, intersection.begin()));
+				std::set<TCHAR> uni;
+				std::ranges::set_union(set1, set2,
+				                       std::inserter(uni, uni.begin()));
+				return static_cast<float>(intersection.size()) / static_cast<float>(uni.size());
+			};
+			BOOL bLoadedLyric = false;
+			for (int i = 0; i < lyric_search_paths.GetSize(); i++) {
+				lrc_path = *(lyric_search_paths.GetData() + i);
+
+				CFileFind finder;
+				CString searchPattern = lrc_path + _T("*.lrc");
+				BOOL bWorking = finder.FindFile(searchPattern);
+
+				CString bestMatchFile;
+				float bestSimilarity = 0.0f;
+
+				while (bWorking) {
+					bWorking = finder.FindNextFile();
+					if (finder.IsDots() || finder.IsDirectory()) {
+						continue;
+					}
+
+					CString foundFileName = finder.GetFileName();
+					// ATLTRACE(_T("info: comparing file %s"), foundFileName.GetString());
+					CString foundNameWithoutExt = foundFileName.Left(foundFileName.GetLength() - 4);
+					CString targetNameWithoutExt = lrc_file_name.Left(lrc_file_name.GetLength() - 4);
+					if (foundNameWithoutExt.Find(targetNameWithoutExt) != -1) {
+						bestSimilarity = 1.0f;
+						bestMatchFile = finder.GetFilePath();
+						break;
+					}
+
+					float similarity = jaccardDistance(foundNameWithoutExt, targetNameWithoutExt);
+					// ATLTRACE(_T("info: similarity: %.2f\n"), similarity);
+
+					if (similarity > 0.7f && similarity > bestSimilarity) {
+						bestSimilarity = similarity;
+						bestMatchFile = finder.GetFilePath();
+					}
+				}
+				finder.Close();
+
+				if (!bestMatchFile.IsEmpty()) {
+					ATLTRACE(_T("info: found matching lrc file: %s (similarity: %.2f)\n"),
+							 bestMatchFile.GetString(), bestSimilarity);
+					LoadLyric(bestMatchFile);
+					bLoadedLyric = true;
+					break;
+				}
+			}
+			if (!bLoadedLyric) {
+				LoadLyric(lrc_file);
+			}
 		}
 	}
 }
@@ -647,7 +733,7 @@ void CMFCMusicPlayerDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 	CDialogEx::OnContextMenu(pWnd, point);
 }
 
-void CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
+bool CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
 	lrc_manager_wnd.DestroyLrcController();
 	int result = lrc_manager_wnd.InitLrcControllerWithFile(file_path);
 	ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
@@ -683,6 +769,7 @@ void CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
 	}
 
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
+	return result;
 }
 
 void CMFCMusicPlayerDlg::OnCancel()
