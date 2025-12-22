@@ -52,7 +52,7 @@ jobs:
       run: |
          git clone https://github.com/microsoft/vcpkg.git ${{ github.workspace }}/vcpkg
          cd ${{ github.workspace }}/vcpkg
-         git checkout 195276f71622bc41392db5c5c5c5141c95ff9a36
+         git checkout de46587b4beaa638743916fe5674825cecfb48b3
 
     - name: Setup vcpkg and install FFmpeg
       uses: lukka/run-vcpkg@v7.6
