@@ -30,7 +30,7 @@ Screenshot:
 
 ![Screenshot](res/screenshot-1.png)
 
-Depends: FFmpeg, XAudio2
+Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64
 
 UI: MFC(main), Direct2D(lyric)
 

@@ -320,6 +320,7 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 		if (std::ranges::find(music_ext_list, ext) == music_ext_list.end()) {
 			ATLTRACE(_T("err: file ext %s not supported!\n"), ext.GetString());
 			AfxMessageBox(_T("不支持的文件格式！"), MB_ICONERROR);
+			ResetPlayer();
 			return;
 		}
 		music_player->OpenFile(file_path, ext);
@@ -398,7 +399,24 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 					// ATLTRACE(_T("info: comparing file %s"), foundFileName.GetString());
 					CString foundNameWithoutExt = foundFileName.Left(foundFileName.GetLength() - 4);
 					CString targetNameWithoutExt = lrc_file_name.Left(lrc_file_name.GetLength() - 4);
-					if (foundNameWithoutExt.Find(targetNameWithoutExt) != -1) {
+					CString targetNameTmp = lrc_file_name.Left(lrc_file_name.GetLength() - 4);
+					foundNameWithoutExt.Replace(_T('-'), _T(' '));
+					targetNameWithoutExt.Replace(_T('-'), _T(' '));
+					int iPos = 0;
+					CStringArray tokens;
+					while (targetNameTmp.Trim() != _T("")) {
+						tokens.Add(targetNameTmp);
+						// ATLTRACE(_T("info: token = %s\n"), targetNameTmp.GetString());
+						targetNameTmp = targetNameWithoutExt.Tokenize(_T(" "), iPos);
+					}
+					// 防止同一歌手名被匹配，仅检查最后一个token
+					LONGLONG index = tokens.GetSize() - 1;
+					// 跳过类似(dj何鹏版)(feat.xxx)这种括号后缀
+					if (tokens.ElementAt(index)[0] == _T('(') || tokens.ElementAt(index)[0] == _T('（')
+						|| tokens.ElementAt(index)[0] == _T('[') || tokens.ElementAt(index)[0] == _T('【'))
+						if (index != 0) index--;
+					// ATLTRACE(_T("info: token = %s\n"), tokens.ElementAt(index).GetString());
+					if (foundNameWithoutExt.Find(tokens.ElementAt(index)) != -1) {
 						bestSimilarity = 1.0f;
 						bestMatchFile = finder.GetFilePath();
 						break;
@@ -439,6 +457,15 @@ void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
 	}
 	if (array.GetCount() > 0)
 	{
+		for (int i = 0; i < playlist_controller.GetPlaylistSize(); ++i) {
+			const CString& music = playlist_controller.GetMusicFileAt(i),
+							 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+			if (std::ranges::find(music_ext_list, ext) == music_ext_list.end()) {
+				AfxMessageBox(_T("不支持的文件格式！"), MB_ICONERROR);
+				ResetPlayer();
+				return;
+			}
+		}
 		const CString& music = playlist_controller.GetMusicFileAt(0),
 						 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
 		ATLTRACE(_T("info: open file %s for playing\n"), music.GetString());
@@ -900,6 +927,9 @@ void CMFCMusicPlayerDlg::ResetPlayer()
 		music_player->Stop();
 	fBasePlayTime = 0.f;
 	DestroyMediaPlayer();
+	playlist_controller.ClearPlaylist();
+	if (m_pPlaylistDlg)
+		m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
 	SetWindowText(_T(""));
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<UINT*>(&fBasePlayTime));
 
