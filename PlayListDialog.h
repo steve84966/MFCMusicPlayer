@@ -35,7 +35,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	int m_nDragIndex = -1;
-	BOOL m_bDragging = FALSE;
+	BOOL m_bDragging = FALSE, m_bAdjustParentPosition = FALSE;
 	CImageList* m_pDragImage = nullptr;
 	CDialogEx* m_pParent = nullptr;
 
@@ -45,10 +45,12 @@ protected:
 	afx_msg void OnLvnBegindragListplaylist(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	void OnContextMenu(CWnd* pWnd, CPoint point);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	void PostNcDestroy() override;
-	void OnDestroy();
-	void OnCancel();
-	void OnOK();
-
+	afx_msg void OnDestroy();
+	afx_msg void OnCancel();
+	afx_msg void OnOK();
+	afx_msg void OnMove(int cx, int cy);
+public:
+	void SetAdjustParentPosition(BOOL bAdjustParentPosition) { m_bAdjustParentPosition = bAdjustParentPosition; }
 };
