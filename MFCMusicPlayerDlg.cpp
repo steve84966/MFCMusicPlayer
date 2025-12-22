@@ -66,6 +66,7 @@ std::initializer_list<CString> CMFCMusicPlayerDlg::music_ext_list = {
 	CString(_T("ogg")),
 	CString(_T("m4a")),
 	CString(_T("ape")),
+	CString(_T("ncm"))
 };
 
 CString CMFCMusicPlayerDlg::get_common_dialog_music_filter()

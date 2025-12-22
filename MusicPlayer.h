@@ -93,6 +93,7 @@ class MusicPlayer
 	void release_audio_context();
 	void reset_audio_context();
 	bool is_audio_context_initialized();
+	static HBITMAP download_ncm_album_art(const CString& url, int scale_size = 128);
 	HBITMAP decode_id3_album_art(int stream_index, int scale_size = 128);
 	void read_metadata();
 

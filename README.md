@@ -6,9 +6,9 @@
 </div>
 
 A Simple music player, written in C++. 
+<!-- ![Build System](https://img.shields.io/badge/Build%20System-MSBuild-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNzI4MTA5NjA3MzUyIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjYxMjAiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiPjxwYXRoIGQ9Ik03MTguOTMzMzMzIDg1LjMzMzMzM0wzODcuODQgNDE2Ljg1MzMzM2wtMjA5LjA2NjY2Ny0xNjQuNjkzMzMzTDg3LjQ2NjY2NyAyOTguNjY2NjY3djQyNi42NjY2NjZsOTEuNzMzMzMzIDQ2LjUwNjY2NyAyMTAuMzQ2NjY3LTE2NC4yNjY2NjdMNzE5Ljc4NjY2NyA5MzguNjY2NjY3IDkzOC42NjY2NjcgODUwLjM0NjY2N1YxNzAuNjY2NjY3ek0xODYuNDUzMzMzIDYxMC4xMzMzMzNWNDExLjczMzMzM2wxMDQuMTA2NjY3IDEwMy42OHogbTUyNi4wOCA1NS4wNEw1MTQuMTMzMzMzIDUxMmwxOTguNC0xNTMuMTczMzMzeiIgcC1pZD0iNjEyMSIgZmlsbD0iI2ZmZmZmZiI+PC9wYXRoPjwvc3ZnPg==) -->
 
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-latest-yellow?style=for-the-badge&logo=ffmpeg)
-![Build System](https://img.shields.io/badge/Build%20System-MSBuild-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNzI4MTA5NjA3MzUyIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjYxMjAiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiPjxwYXRoIGQ9Ik03MTguOTMzMzMzIDg1LjMzMzMzM0wzODcuODQgNDE2Ljg1MzMzM2wtMjA5LjA2NjY2Ny0xNjQuNjkzMzMzTDg3LjQ2NjY2NyAyOTguNjY2NjY3djQyNi42NjY2NjZsOTEuNzMzMzMzIDQ2LjUwNjY2NyAyMTAuMzQ2NjY3LTE2NC4yNjY2NjdMNzE5Ljc4NjY2NyA5MzguNjY2NjY3IDkzOC42NjY2NjcgODUwLjM0NjY2N1YxNzAuNjY2NjY3ek0xODYuNDUzMzMzIDYxMC4xMzMzMzNWNDExLjczMzMzM2wxMDQuMTA2NjY3IDEwMy42OHogbTUyNi4wOCA1NS4wNEw1MTQuMTMzMzMzIDUxMmwxOTguNC0xNTMuMTczMzMzeiIgcC1pZD0iNjEyMSIgZmlsbD0iI2ZmZmZmZiI+PC9wYXRoPjwvc3ZnPg==) 
 ![CMake](https://img.shields.io/badge/Build%20System-CMake-064F8C?style=for-the-badge&logo=cmake)
 ![GitHub top language](https://img.shields.io/github/languages/top/lucas150670/MFCMusicPlayer?style=for-the-badge)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/lucas150670/MFCMusicPlayer?style=for-the-badge)
@@ -17,13 +17,14 @@ A Simple music player, written in C++.
 [![State-of-the-art Shitcode](https://img.shields.io/static/v1?label=State-of-the-art&message=Shitcode&color=7B5804&style=for-the-badge)](https://github.com/trekhleb/state-of-the-art-shitcode)
 
 Features:
-- MSBuild / CMake build system support
+- CMake build system support
 - decode & play music files with FFmpeg
 - real-time playback with XAudio2, swresample -> 44.1kHz/16bit/2ch pcm output
 - simple gui
 - lyric display support
 - translation / romanization support
-- ARM64 Native build & development environment, tested on Qualcomm Snapdragon X Elite
+- ARM64 build, tested on Snapdragon X Elite
+- NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
 
 Screenshot:
 
@@ -33,7 +34,7 @@ Depends: FFmpeg, XAudio2
 
 UI: MFC(main), Direct2D(lyric)
 
-License: MIT (main-program), LGPL (ffmpeg), MIT (Windows App SDK), [Microsoft DirectX Software Development Kit License](LICENSE.XAudio2.txt) (XAudio2, direct2d)
+License: MIT (main-program), LGPL (ffmpeg), MIT (Windows App SDK), [Microsoft DirectX Software Development Kit License](LICENSE.XAudio2.txt) (XAudio2, direct2d), MIT (NCM Decoder)
 
 Contact: lucas150670@petalmail.com
 

@@ -1,6 +1,6 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "MusicPlayer.h"
-
+#include "NcmDecryptor.h"
 
 int MusicPlayer::read_func(uint8_t* buf, int buf_size) {
 	// ATLTRACE("info: read buf_size=%d, rest=%lld\n", buf_size, file_stream->GetLength() - file_stream->GetPosition());
@@ -50,6 +50,44 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 		ATLTRACE("err: file not exists!\n");
 		delete file_stream;
 		return -1;
+	}
+	if (file_extension_in == _T("ncm"))
+	{
+		AfxMessageBox(_T("即将尝试解码网易云音乐加密文件。\n本软件不对解密算法可用性和解密结果做保证。"), MB_ICONINFORMATION);
+		CFile* mem_file = nullptr;
+		try
+		{
+			std::vector<uint8_t> file_data;
+			DWORD file_size = 0;
+			file_stream->SeekToBegin();
+			file_size = file_stream->GetLength();
+			file_data.resize(file_size);
+			file_stream->Read(file_data.data(), file_stream->GetLength());
+			file_stream->SeekToBegin();
+			auto decryptor = new NcmDecryptor(file_data, audio_filename);
+			auto decryptor_result = decryptor->Decrypt();
+			file_stream->Close();
+			mem_file = new CMemFile();
+			mem_file->Write(decryptor_result.audioData.data(), static_cast<UINT>(decryptor_result.audioData.size()));
+			mem_file->SeekToBegin();
+			file_stream = mem_file;
+			HBITMAP bitmap = download_ncm_album_art(decryptor_result.pictureUrl, 160 * GetSystemDpiScale());
+			if (bitmap) album_art = bitmap;
+			AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(album_art));
+			delete decryptor;
+			return load_audio_context_stream(file_stream);
+
+		}
+		catch (std::exception& e)
+		{
+			ATLTRACE("err: decrypt ncm failed: %s\n", e.what());
+			ATLTRACE("err: this can be caused by ncm algorithm update, or ncm file corrupt\n");
+			ATLTRACE("err: please try to report ncm file to issues\n");
+			delete file_stream;
+			delete mem_file;
+			return -1;
+		}
+		// create a new memory buffer managed by file stream
 	}
 	return load_audio_context_stream(file_stream);
 }
@@ -249,6 +287,113 @@ bool MusicPlayer::is_audio_context_initialized()
 		&& format_context
 		&& codec_context
 		&& file_stream;
+}
+
+HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
+{
+	if (url.IsEmpty()) return nullptr;
+	CInternetSession session(_T("NCM Image Downloader")); 
+	CString headers; 
+	headers.Format(_T("User-Agent: %s\r\n"), _T("Mozilla/5.0 "
+		"(Windows NT 10.0; Win64; x64) "
+		"AppleWebKit/537.36 (KHTML, like Gecko) "
+		"Chrome/143.0.0.0 Safari/537.36"));
+	CHttpFile* pHttpFile = nullptr;
+	try
+	{
+		pHttpFile = (CHttpFile*)session.OpenURL(url, 1,
+			INTERNET_FLAG_TRANSFER_BINARY 
+			| INTERNET_FLAG_RELOAD
+			| INTERNET_FLAG_NO_CACHE_WRITE, 
+			headers, headers.GetLength()); 
+		if (!pHttpFile) 
+			return nullptr;
+		CString strLine;
+		CMemFile* file;
+		file = new CMemFile;
+		BYTE buf[4096];
+		UINT nRead = 0;
+		ULONGLONG totalBytesRead = 0;
+		while ((nRead = pHttpFile->Read(buf, sizeof(buf))) > 0) 
+		{
+			totalBytesRead += nRead;
+			file->Write(buf, nRead);
+		}
+		pHttpFile->Close();
+		delete pHttpFile;
+		pHttpFile = nullptr;
+		session.Close();
+		if (totalBytesRead == 0)
+			return nullptr;
+
+		file->SeekToBegin();
+		IWICImagingFactory* imaging_factory = nullptr;
+		UNREFERENCED_PARAMETER(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+			IID_PPV_ARGS(&imaging_factory)));
+		IWICStream* iwic_stream = nullptr;
+		UNREFERENCED_PARAMETER(imaging_factory->CreateStream(&iwic_stream)); 
+		void* pBufStart = nullptr;
+		void* pBufMax = nullptr;
+		file->GetBufferPtr(CFile::bufferRead, 0, &pBufStart, &pBufMax);
+		BYTE* pData = (BYTE*)pBufStart;
+		UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pData, file->GetLength()));
+		IWICBitmapDecoder* bitmap_decoder = nullptr;
+		UNREFERENCED_PARAMETER(imaging_factory->CreateDecoderFromStream(iwic_stream, nullptr,
+			WICDecodeMetadataCacheOnLoad, &bitmap_decoder));
+
+		if (!bitmap_decoder)
+		{
+			ATLTRACE("err: create decoder from stream failed\n");
+			iwic_stream->Release();
+			imaging_factory->Release();
+			return nullptr;
+		}
+		IWICBitmapFrameDecode* source = nullptr;
+		UNREFERENCED_PARAMETER(bitmap_decoder->GetFrame(0, &source));
+		IWICFormatConverter* iwic_format_converter = nullptr;
+		UNREFERENCED_PARAMETER(imaging_factory->CreateFormatConverter(&iwic_format_converter));
+		UNREFERENCED_PARAMETER(iwic_format_converter->Initialize(source, GUID_WICPixelFormat32bppBGRA,
+			WICBitmapDitherTypeNone, nullptr, 0.f,
+			WICBitmapPaletteTypeCustom));
+
+		UINT width, height;
+		UNREFERENCED_PARAMETER(source->GetSize(&width, &height));
+
+		IWICBitmapScaler* scaler = nullptr;
+		UNREFERENCED_PARAMETER(imaging_factory->CreateBitmapScaler(&scaler));
+		UNREFERENCED_PARAMETER(
+			scaler->Initialize(iwic_format_converter, scale_size, scale_size, WICBitmapInterpolationModeFant));
+
+		BITMAPINFO bmi = {};
+		bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmi.bmiHeader.biWidth = scale_size;
+		bmi.bmiHeader.biHeight = -scale_size; // top-down
+		bmi.bmiHeader.biPlanes = 1;
+		bmi.bmiHeader.biBitCount = 32;
+		bmi.bmiHeader.biCompression = BI_RGB;
+		const UINT stride = scale_size * 4;
+		const UINT buffer_size = stride * scale_size;
+		BYTE* image_bits = nullptr;
+		HDC hdc_screen = GetDC(nullptr);
+		HBITMAP bmp = CreateDIBSection(hdc_screen, &bmi, DIB_RGB_COLORS,
+		                               reinterpret_cast<void**>(&image_bits), nullptr, 0);
+		ReleaseDC(nullptr, hdc_screen);
+		UNREFERENCED_PARAMETER(scaler->CopyPixels(nullptr, stride, buffer_size, image_bits));
+
+		scaler->Release();
+		iwic_format_converter->Release();
+		iwic_stream->Release();
+		imaging_factory->Release();
+		delete file;
+		return bmp;
+	}
+	catch (CInternetException* e)
+	{
+		e->Delete();
+		delete pHttpFile;
+		session.Close();
+		return nullptr;
+	}
 }
 
 HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size)
@@ -523,7 +668,7 @@ void MusicPlayer::audio_playback_worker_thread()
 		// clock_t decode_begin_time = clock();
 
 		CriticalSectionLock lock(audio_playback_section);
-		
+
 		int fifo_size = get_audio_fifo_cached_samples_size();
 		if (fifo_size < 0 && decoder_is_running) {
 			// LeaveCriticalSection(audio_playback_section);
@@ -603,7 +748,7 @@ void MusicPlayer::audio_playback_worker_thread()
 
 		//out_buffer_size = sizeof(uint8_t) * frame->nb_samples * wfx.nBlockAlign;
 		// out_buffer_size = (
-		// 	decode_lag_use_big_buffer 
+		// 	decode_lag_use_big_buffer
 		// 	? sizeof(uint8_t) * xaudio2_play_frame_size * wfx.nBlockAlign * static_cast<int>(ceil(last_frametime / standard_frametime))
 		// 	: sizeof(uint8_t) * xaudio2_play_frame_size * wfx.nBlockAlign
 		// );
@@ -873,7 +1018,7 @@ void MusicPlayer::audio_decode_worker_thread()
 			}
 		}
 		// LeaveCriticalSection(audio_fifo_section);
-		
+
 		int player_bufferes_queued = (
 			is_xaudio2_initialized()
 			 ? decoder_query_xaudio2_buffer_size()

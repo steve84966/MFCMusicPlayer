@@ -5,6 +5,9 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_MFC_FLAG 2)
 
 find_package(FFMPEG REQUIRED)
+find_package(rapidjson REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_path(CPP_BASE64_INCLUDE_DIRS "cpp-base64/base64.cpp")
 
 if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")) # check if using clang-cl
     message("clang-cl detected!")
@@ -23,6 +26,7 @@ add_executable(MFCMusicPlayer WIN32
     MusicPlayerSettingsManager.cpp
     PlaylistController.cpp
     PlaylistDialog.cpp
+    NcmDecryptor.cpp
 )
 
 target_include_directories(MFCMusicPlayer
@@ -70,6 +74,18 @@ target_link_options(MFCMusicPlayer
         /ENTRY:wWinMainCRTStartup
 )
 
-target_include_directories(MFCMusicPlayer PRIVATE ${FFMPEG_INCLUDE_DIRS})
-target_link_directories(MFCMusicPlayer PRIVATE ${FFMPEG_LIBRARY_DIRS})
-target_link_libraries(MFCMusicPlayer PRIVATE ${FFMPEG_LIBRARIES})
+target_include_directories(MFCMusicPlayer
+   PRIVATE
+        ${FFMPEG_INCLUDE_DIRS}
+        ${CPP_BASE64_INCLUDE_DIRS}
+)
+
+target_link_directories(MFCMusicPlayer
+   PRIVATE
+        ${FFMPEG_LIBRARY_DIRS}
+)
+
+target_link_libraries(MFCMusicPlayer
+   PRIVATE
+        ${FFMPEG_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto
+)

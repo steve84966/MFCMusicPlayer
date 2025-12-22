@@ -49,6 +49,7 @@
 
 #include <afxdialogex.h>
 #include <afxdlgs.h>
+#include <afxinet.h>
 #include <afxcontrolbars.h>     // MFC 支持功能区和控制条
 #pragma endregion
 

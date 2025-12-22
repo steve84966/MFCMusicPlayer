@@ -32,3 +32,5 @@
 
 // Windows Image Component
 #pragma comment(lib, "windowscodecs.lib")
+
+#include <cpp-base64/base64.cpp>
