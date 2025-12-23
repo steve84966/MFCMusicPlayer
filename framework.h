@@ -149,6 +149,12 @@ extern "C" {
 #define WM_PLAYER_DESTROY				   (WM_USER + 106)
 #define WM_PLAYLIST_CHANGED				   (WM_USER + 107)
 #define WM_PLAYLIST_CHANGE_BY_PLAYER       (WM_USER + 108)
+#define WM_SMTC_PLAY                       (WM_USER + 109)
+#define WM_SMTC_PAUSE                      (WM_USER + 110)
+#define WM_SMTC_STOP                       (WM_USER + 111)
+#define WM_SMTC_PLAY_NEXT                  (WM_USER + 112)
+#define WM_SMTC_PLAY_PREV                  (WM_USER + 113)
+#define WM_PLAYER_UPDATE_SMTC 			   (WM_USER + 114)
 #pragma endregion
 
 #pragma region Common Type Definition
@@ -203,4 +209,10 @@ enum class PlaylistPlayMode
 #pragma region Global Tool Function
 float GetSystemDpiScale();
 CString GetSystemArchitecture();
+#pragma endregion
+
+#pragma region WinRT API
+#include <winrt/base.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Media.h>
 #pragma endregion

@@ -7,6 +7,7 @@ set(CMAKE_MFC_FLAG 2)
 find_package(FFMPEG REQUIRED)
 find_package(rapidjson REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(cppwinrt CONFIG REQUIRED)
 find_path(CPP_BASE64_INCLUDE_DIRS "cpp-base64/base64.cpp")
 
 if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")) # check if using clang-cl
@@ -27,6 +28,7 @@ add_executable(MFCMusicPlayer WIN32
     PlaylistController.cpp
     PlaylistDialog.cpp
     NcmDecryptor.cpp
+        WinRT_SMTCController.cpp
 )
 
 target_include_directories(MFCMusicPlayer
@@ -62,6 +64,10 @@ target_link_libraries(MFCMusicPlayer
     PUBLIC
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},x64>:Avrt.lib>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>:Avrt.lib>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},x64>:RuntimeObject.lib>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>:RuntimeObject.lib>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},x64>: WindowsApp.lib>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>: WindowsApp.lib>
 )
 
 target_compile_options(MFCMusicPlayer
@@ -87,5 +93,5 @@ target_link_directories(MFCMusicPlayer
 
 target_link_libraries(MFCMusicPlayer
    PRIVATE
-        ${FFMPEG_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto
+        ${FFMPEG_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto Microsoft::CppWinRT
 )

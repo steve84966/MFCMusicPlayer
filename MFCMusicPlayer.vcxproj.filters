@@ -57,6 +57,9 @@
     <ClInclude Include="NcmDecryptor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WinRT_SMTCController.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMusicPlayer.cpp">
@@ -90,6 +93,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NcmDecryptor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WinRT_SMTCController.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

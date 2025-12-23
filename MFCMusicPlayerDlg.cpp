@@ -157,7 +157,8 @@ END_MESSAGE_MAP()
 BOOL CMFCMusicPlayerDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-
+	smtc_controller = &WinRT_SMTCController::GetInstance();
+	smtc_controller->Initialize(m_hWnd);
 	// 将“关于...”菜单项添加到系统菜单中。
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。

@@ -8,6 +8,7 @@
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
 #include "PlaylistController.h"
+#include "WinRT_SMTCController.h"
 
 class PlayListDialog;
 
@@ -107,7 +108,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 
-bool LoadLyric(const CString &file_path);
+	bool LoadLyric(const CString &file_path);
 	void DestroyMediaPlayer();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
@@ -126,6 +127,7 @@ bool LoadLyric(const CString &file_path);
 	CButton m_buttonNext;
 	CProgressScrollBar m_scrollBarLrcVertical;
 	PlayListDialog* m_pPlaylistDlg = nullptr;
+	WinRT_SMTCController* smtc_controller;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();
