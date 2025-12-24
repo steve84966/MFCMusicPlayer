@@ -97,6 +97,7 @@ extern "C" {
 #include <cassert>
 #include <list>
 #include <functional>
+#include <future>
 #include <string>
 #include <stack>
 #include <algorithm>
@@ -155,6 +156,7 @@ extern "C" {
 #define WM_SMTC_PLAY_NEXT                  (WM_USER + 112)
 #define WM_SMTC_PLAY_PREV                  (WM_USER + 113)
 #define WM_PLAYER_UPDATE_SMTC 			   (WM_USER + 114)
+#define WM_PLAYER_UPDATE_SMTC_STATUS       (WM_USER + 115)
 #pragma endregion
 
 #pragma region Common Type Definition
@@ -215,4 +217,7 @@ CString GetSystemArchitecture();
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Media.h>
+#include <winrt/Windows.Media.Playback.h>
+#include <winrt/Windows.Storage.Streams.h>
+#include <winrt/Windows.Graphics.Imaging.h>
 #pragma endregion

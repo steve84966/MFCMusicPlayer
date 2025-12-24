@@ -25,12 +25,13 @@ Features:
 - translation / romanization support
 - ARM64 build, tested on Snapdragon X Elite
 - NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
+- Windows's SystemMediaTransportControls support
 
 Screenshot:
 
 ![Screenshot](res/screenshot-1.png)
 
-Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64
+Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt
 
 UI: MFC(main), Direct2D(lyric)
 

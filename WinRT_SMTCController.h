@@ -23,8 +23,16 @@ private:
     winrt::Windows::Media::SystemMediaTransportControls SMTC{ nullptr };
     WinRT_SMTCController() = default; // NOLINT(*-use-equals-delete)
     static WinRT_SMTCController instance;
+#pragma endregion
+
+#pragma region Message Dispatching
+protected:
     DECLARE_MESSAGE_MAP()
+    winrt::Windows::Storage::Streams::IRandomAccessStream ConvertHBitmapToStream(HBITMAP hbitmap);
+
+public:
     afx_msg LRESULT OnSMTCUpdate(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnSMTCUpdateStatus(WPARAM wParam, LPARAM lParam);
 #pragma endregion
 };
 

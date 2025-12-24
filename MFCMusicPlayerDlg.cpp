@@ -149,6 +149,11 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_TIMER()
 	ON_WM_DROPFILES()
+	ON_MESSAGE(WM_SMTC_PLAY, &CMFCMusicPlayerDlg::OnSmtcPlayButtonPressed)
+	ON_MESSAGE(WM_SMTC_PAUSE, &CMFCMusicPlayerDlg::OnSmtcPauseButtonPressed)
+    ON_MESSAGE(WM_SMTC_STOP, &CMFCMusicPlayerDlg::OnSmtcStopButtonPressed)
+    ON_MESSAGE(WM_SMTC_PLAY_PREV, &CMFCMusicPlayerDlg::OnSmtcPrevButtonPressed)
+	ON_MESSAGE(WM_SMTC_PLAY_NEXT, &CMFCMusicPlayerDlg::OnSmtcNextButtonPressed)
 END_MESSAGE_MAP()
 
 
@@ -331,6 +336,7 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 		}
 		else {
 			this->PostMessage(WM_PLAYER_TIME_CHANGE, 0);
+			smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
 			CString title = music_player->GetSongTitle();
 			CString artist = music_player->GetSongArtist();
 			if (title.IsEmpty() || artist.IsEmpty()) {
@@ -518,6 +524,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
+		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Playing));
 	}
 }
 
@@ -526,6 +533,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPause()
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
 		music_player->Pause();
+		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Paused));
 	}
 }
 
@@ -562,6 +570,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPrevious()
 			fBasePlayTime = 0.0f;
 			PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 		}
+		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
 		return;
 	}
 	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
@@ -589,6 +598,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonNext()
 			fBasePlayTime = 0.0f;
 			PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 		}
+		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
 		return;
 	}
 	const CString& music = playlist_controller.GetMusicFileAt(playlist_controller.GetCurrentIndex()),
@@ -612,6 +622,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 	}
 	fBasePlayTime = 0.f;
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
+	smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
 }
 
 LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NOLINT(*-convert-member-functions-to-static)
@@ -644,6 +655,8 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 		if (m_pPlaylistDlg)
 			m_pPlaylistDlg->PostMessage(WM_PLAYLIST_CHANGE_BY_PLAYER);
 		OnClickedButtonPlay();
+	} else {
+		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
 	}
 	return LRESULT();
 }
@@ -680,6 +693,16 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 			m_labelAlbumArt.SetBitmap(no_image);
 		}
 	}
+	// this will delete by winrt processor, disable check
+	// ReSharper disable once CppDFAMemoryLeak
+	auto info = new SMTCControllerUpdateInfo {
+		.title = music_player ? music_player->GetSongTitle() : CString(_T("")),
+		.artist = music_player ? music_player->GetSongArtist() : CString(_T("")),
+		.album = CString(_T("")),
+		.albumPic = reinterpret_cast<HBITMAP>(wParam)
+	};
+	smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC, reinterpret_cast<WPARAM>(info));
+
 	return HRESULT();
 }
 
@@ -1251,4 +1274,29 @@ void CMFCMusicPlayerDlg::OnMenuWindowAlwaysOnTop()
 			}
 		}
 	}
+}
+
+LRESULT CMFCMusicPlayerDlg::OnSmtcPlayButtonPressed(WPARAM wParam, LPARAM lParam) {
+	OnClickedButtonPlay();
+	return {};
+}
+
+LRESULT CMFCMusicPlayerDlg::OnSmtcPauseButtonPressed(WPARAM wParam, LPARAM lParam) {
+	OnClickedButtonPause();
+	return {};
+}
+
+LRESULT CMFCMusicPlayerDlg::OnSmtcStopButtonPressed(WPARAM wParam, LPARAM lParam) {
+	OnClickedButtonStop();
+	return {};
+}
+
+LRESULT CMFCMusicPlayerDlg::OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam) {
+	OnClickedButtonPrevious();
+	return {};
+}
+
+LRESULT CMFCMusicPlayerDlg::OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam) {
+	OnClickedButtonNext();
+	return {};
 }

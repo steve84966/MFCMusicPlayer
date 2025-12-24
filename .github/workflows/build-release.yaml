@@ -19,14 +19,14 @@ jobs:
         include:
           - arch: x64
             triplet: x64-windows
-            artifact: windows-build-with-ffmpeg
+            artifact: windows-build-with-ffmpeg-x64
           - arch: ARM64
             triplet: arm64-windows
             artifact: windows-build-with-ffmpeg-ARM64
 
     steps:
 
-    - name: Print runner hardware info (PowerShell)
+    - name: Print runner hardware info
       run: |
         $cpu = Get-CimInstance Win32_Processor
         Write-Output "Hosted Runner Information:"
@@ -57,7 +57,7 @@ jobs:
     - name: Setup vcpkg and install FFmpeg
       uses: lukka/run-vcpkg@v7.6
       with:
-        vcpkgArguments: 'ffmpeg rapidjson cpp-base64 openssl'
+        vcpkgArguments: 'ffmpeg rapidjson cpp-base64 openssl cppwinrt'
         vcpkgTriplet: ${{ matrix.triplet }}
         vcpkgGitCommitId: 'de46587b4beaa638743916fe5674825cecfb48b3'
         vcpkgDirectory: ${{ github.workspace }}/vcpkg  
@@ -91,22 +91,3 @@ jobs:
       with:
         name: ${{ matrix.artifact }}
         path: build_output.zip
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*.zip
-          generate_release_notes: true

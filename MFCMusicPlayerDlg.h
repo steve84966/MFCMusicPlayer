@@ -144,4 +144,9 @@ public:
 	afx_msg void OnClickedButtonPlaylistMgmt();
 	afx_msg void OnMove(int cx, int cy);
 	afx_msg void OnMenuWindowAlwaysOnTop();
+	afx_msg LRESULT OnSmtcPlayButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSmtcPauseButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSmtcStopButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam);
 };
