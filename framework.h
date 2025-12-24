@@ -87,6 +87,9 @@ extern "C" {
 #include <avrt.h>
 #include <crtdbg.h>
 #include <synchapi.h>
+#include <shobjidl.h>
+#include <propkey.h>
+#include <propvarutil.h>
 #include <ShellScalingAPI.h>
 #include <io.h>
 #include <wincodec.h>

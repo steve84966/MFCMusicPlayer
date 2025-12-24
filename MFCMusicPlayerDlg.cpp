@@ -663,11 +663,12 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerStop(WPARAM wParam, LPARAM lParam) // NOLINT
 
 LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 {
+	HBITMAP no_image = nullptr;
 	if (HBITMAP album_art = reinterpret_cast<HBITMAP>(wParam)) {  // NOLINT(*-use-auto)
 		m_labelAlbumArt.SetBitmap(album_art);
 	}
 	else {
-		HBITMAP no_image = ::LoadBitmap(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_NOIMAGE));
+		no_image = ::LoadBitmap(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_NOIMAGE));
 		if (float aspect_ratio = GetSystemDpiScale(); fabs(aspect_ratio - 1.0f) > 1e-6) {
 			HDC hScreenDC = ::GetDC(NULL); // NOLINT(*-use-nullptr)
 			HDC hSrcDC = ::CreateCompatibleDC(hScreenDC);
@@ -699,8 +700,15 @@ LRESULT CMFCMusicPlayerDlg::OnAlbumArtInit(WPARAM wParam, LPARAM lParam)
 		.title = music_player ? music_player->GetSongTitle() : CString(_T("")),
 		.artist = music_player ? music_player->GetSongArtist() : CString(_T("")),
 		.album = CString(_T("")),
-		.albumPic = reinterpret_cast<HBITMAP>(wParam)
+		.albumPic = wParam ? reinterpret_cast<HBITMAP>(wParam) : no_image
 	};
+	if (info->title.IsEmpty() || info->artist.IsEmpty()) {
+		// get window title
+		CString title;
+		GetWindowText(title);
+		info->title = title;
+		info->artist = _T("");
+	}
 	smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC, reinterpret_cast<WPARAM>(info));
 
 	return HRESULT();
