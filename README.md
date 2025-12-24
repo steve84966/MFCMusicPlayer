@@ -61,6 +61,9 @@ Contact: lucas150670@petalmail.com
 - [Vladimir15963](https://github.com/Vladimir15963)
 - and anyone else who has contributed to this project / help test the program.
 
+### sponsor the project
+- [爱发电](https://afdian.com/a/lucas150670)
+
 ### ingredient of the project!
 
 *そっと咲いて征く言葉だけ どうか綺麗で居て欲しいだけ*
