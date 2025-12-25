@@ -38,12 +38,10 @@ void WinRT_SMTCController::Initialize(HWND hWnd) {
                 case winrt::Windows::Media::SystemMediaTransportControlsButton::Play:
                     ATLTRACE("info: SMTC controller: play button pressed\n");
                     ::PostMessage(hWnd, WM_SMTC_PLAY, 0, 0);
-                    SMTC.PlaybackStatus(winrt::Windows::Media::MediaPlaybackStatus::Playing);
                     break;
                 case winrt::Windows::Media::SystemMediaTransportControlsButton::Pause:
                     ATLTRACE("info: SMTC controller: pause button pressed\n");
                     ::PostMessage(hWnd, WM_SMTC_PAUSE, 0, 0);
-                    SMTC.PlaybackStatus(winrt::Windows::Media::MediaPlaybackStatus::Paused);
                     break;
                 case winrt::Windows::Media::SystemMediaTransportControlsButton::Next:
                     ATLTRACE("info: SMTC controller: next button pressed\n");
@@ -56,7 +54,6 @@ void WinRT_SMTCController::Initialize(HWND hWnd) {
                 case winrt::Windows::Media::SystemMediaTransportControlsButton::Stop:
                     ATLTRACE("info: SMTC controller: stop button pressed\n");
                     ::PostMessage(hWnd, WM_SMTC_STOP, 0, 0);
-                    SMTC.PlaybackStatus(winrt::Windows::Media::MediaPlaybackStatus::Stopped);
                     break;
                 default:
                     break;
