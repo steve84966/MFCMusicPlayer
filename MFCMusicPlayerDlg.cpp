@@ -405,32 +405,10 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 					CString foundFileName = finder.GetFileName();
 					// ATLTRACE(_T("info: comparing file %s"), foundFileName.GetString());
 					CString foundNameWithoutExt = foundFileName.Left(foundFileName.GetLength() - 4);
-					CString targetNameWithoutExt = lrc_file_name.Left(lrc_file_name.GetLength() - 4);
-					CString targetNameTmp = lrc_file_name.Left(lrc_file_name.GetLength() - 4);
-					foundNameWithoutExt.Replace(_T('-'), _T(' '));
-					targetNameWithoutExt.Replace(_T('-'), _T(' '));
-					// 跳过类似(dj何鹏版)(feat.xxx)这种括号后缀
-					auto braceIndex = targetNameWithoutExt.Find(_T('('));
-					if (braceIndex == -1)
-						braceIndex = targetNameWithoutExt.Find(_T('['));
-					if (braceIndex == -1)
-						braceIndex = targetNameWithoutExt.Find(_T('（'));
-					if (braceIndex != -1)
-					{
-						targetNameWithoutExt = targetNameWithoutExt.Left(braceIndex);
-					}
-					int iPos = 0;
-					CStringArray tokens;
-					while (targetNameTmp.Trim() != _T("")) {
-						tokens.Add(targetNameTmp);
-						// ATLTRACE(_T("info: token = %s\n"), targetNameTmp.GetString());
-						targetNameTmp = targetNameWithoutExt.Tokenize(_T(" "), iPos);
-					}
-					// 防止同一歌手名被匹配，仅检查最后一个token
-					LONGLONG index = tokens.GetSize() - 1;
+					CString targetNameWithoutExt = music_player->GetSongTitle();
 					// ATLTRACE(_T("info: token = %s\n"), tokens.ElementAt(index).GetString());
-					if (foundNameWithoutExt.Find(tokens.ElementAt(index)) != -1) {
-						ATLTRACE(_T("info: token hit, ->%s\n"), tokens.ElementAt(index).GetString());
+					if (foundNameWithoutExt.Find(targetNameWithoutExt) != -1) {
+						ATLTRACE(_T("info: token hit, ->%s\n"), targetNameWithoutExt.GetString());
 						bestSimilarity = 1.0f;
 						bestMatchFile = finder.GetFilePath();
 						break;
