@@ -2,6 +2,11 @@
 // Microsoft Visual C++ 生成的包含文件。
 // 供 MFCMusicPlayer.rc 使用
 //
+#include <windows.h>
+
+#ifndef IDC_STATIC
+#define IDC_STATIC                      -1
+#endif
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
@@ -20,6 +25,7 @@
 #define IDI_ICONSINGLELOOP              143
 #define IDD_DIALOGPLAYLIST              143
 #define IDI_ICONPREVIOUS                144
+#define IDD_DIALOGSPECTRUM              144
 #define IDI_ICONNEXT                    145
 #define IDI_ICONPLAYLIST                146
 #define IDI_ICONSEQUENTIAL              147
@@ -86,11 +92,12 @@
 #define ID_MENU_PLAYLISTCTRL_CLEARPLAYLIST    32791
 #define ID_MENU_WINDOW_ALWAYSONTOP           32792
 #define ID_MENU_WINDOW_PLAYLIST              32793
+#define ID_MENU_WINDOW_SPECTRUM              32794
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        143
+#define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32788
 #define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           104

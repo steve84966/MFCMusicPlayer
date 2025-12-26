@@ -1,17 +1,8 @@
 // Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
-#include <windows.h>
+
 #include "resource.h"
-#ifndef IDC_STATIC
-#define IDC_STATIC (-1)
-#endif
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
 /////////////////////////////////////////////////////////////////////////////
 // 中文(简体，中国) resources
 
@@ -142,6 +133,14 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "确定",IDOK,89,219,50,14
     CONTROL         "",IDC_LISTPLAYLIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,17,15,110,196
+END
+
+IDD_DIALOGSPECTRUM DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "频谱图"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
 END
 
 
@@ -289,6 +288,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 233
     END
+
+    IDD_DIALOGSPECTRUM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -324,6 +331,11 @@ BEGIN
 END
 
 IDD_DIALOGPLAYLIST AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOGSPECTRUM AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -410,6 +422,7 @@ BEGIN
     BEGIN
         MENUITEM "窗口始终置于最前",                  ID_MENU_WINDOW_ALWAYSONTOP
         MENUITEM "播放列表...",                     ID_MENU_WINDOW_PLAYLIST
+        MENUITEM "频谱可视化...",                    ID_MENU_WINDOW_SPECTRUM
     END
     POPUP "关于(&A)"
     BEGIN
@@ -421,13 +434,38 @@ IDR_MENUPLAYLISTCTRL MENU
 BEGIN
     POPUP " "
     BEGIN
-        MENUITEM "播放所选项",                      ID_MENU_PLAYLISTCTRL_PLAYSELECTED
-        MENUITEM "下一首播放",                      ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED
-        MENUITEM "删除所选项",                      ID_MENU_PLAYLISTCTRL_DELETESELECTED
+        MENUITEM "播放所选项",                       ID_MENU_PLAYLISTCTRL_PLAYSELECTED
+        MENUITEM "下一首播放",                       ID_MENU_PLAYLISTCTRL_PLAYNEXTSELECTED
+        MENUITEM "删除所选项",                       ID_MENU_PLAYLISTCTRL_DELETESELECTED
         MENUITEM SEPARATOR
-        MENUITEM "清空播放列表",                     ID_MENU_PLAYLISTCTRL_CLEARPLAYLIST
+        MENUITEM "清空播放列表",                      ID_MENU_PLAYLISTCTRL_CLEARPLAYLIST
     END
 END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -443,4 +481,16 @@ END
 
 #endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
 

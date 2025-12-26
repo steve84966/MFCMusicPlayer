@@ -160,6 +160,7 @@ extern "C" {
 #define WM_SMTC_PLAY_PREV                  (WM_USER + 113)
 #define WM_PLAYER_UPDATE_SMTC 			   (WM_USER + 114)
 #define WM_PLAYER_UPDATE_SMTC_STATUS       (WM_USER + 115)
+#define WM_PLAYER_UPDATE_SPECTRUM          (WM_USER + 116)
 #pragma endregion
 
 #pragma region Common Type Definition

@@ -28,7 +28,8 @@ add_executable(MFCMusicPlayer WIN32
     PlaylistController.cpp
     PlaylistDialog.cpp
     NcmDecryptor.cpp
-        WinRT_SMTCController.cpp
+    WinRT_SMTCController.cpp
+    SpectrumVisualizer.cpp
 )
 
 target_include_directories(MFCMusicPlayer
