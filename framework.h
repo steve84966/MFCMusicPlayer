@@ -104,6 +104,7 @@ extern "C" {
 #include <string>
 #include <stack>
 #include <algorithm>
+#include <deque>
 #pragma endregion
 
 #pragma region XAudio2 Header

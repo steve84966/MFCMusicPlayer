@@ -809,6 +809,9 @@ void MusicPlayer::audio_playback_worker_thread()
 		av_freep(&fifo_buf[0]);
 		av_free(fifo_buf);
 		// LeaveCriticalSection(audio_fifo_section);
+		std::vector out_buffer_for_callback(out_buffer, out_buffer + out_buffer_size);
+		if (audio_pre_submit_callback)
+			audio_pre_submit_callback(out_buffer_for_callback);
 		if (out_samples < 0) {
 			FFMPEG_CRITICAL_ERROR(out_samples);
 			// LeaveCriticalSection(audio_playback_section);

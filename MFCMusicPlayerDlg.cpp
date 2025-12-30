@@ -264,6 +264,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 		LocalFree(str);
 	}
 	DragAcceptFiles(TRUE);
+	visualizer.ShowWindow(SW_SHOW);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
