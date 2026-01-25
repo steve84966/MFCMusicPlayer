@@ -508,9 +508,15 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
+		visualizer.ResetSpectrum();
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
+		music_player->RegisterWritePCMBytesCallback([this](const uint8_t* data_out, uint32_t samples_out)
+		{
+			auto data = std::vector(data_out, data_out + samples_out * music_player->GetNBlockAlign());
+			visualizer.AddSamplesToRingBuffer(data.data(), data.size());
+		});
 		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Playing));
 	}
 }
@@ -519,6 +525,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPause()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
+		visualizer.ResetSpectrum();
 		music_player->Pause();
 		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Paused));
 	}
@@ -607,6 +614,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonStop()
 	if (music_player) {
 		music_player->Stop();
 	}
+	visualizer.ResetSpectrum();
 	fBasePlayTime = 0.f;
 	m_scrollBarLrcVertical.SetScrollPos(0, TRUE);
 	smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Stopped));
@@ -616,6 +624,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerFileInit(WPARAM wParam, LPARAM lParam) // NO
 {
 	// TODO: 在此添加控件通知处理程序代码
 	fBasePlayTime = 0.f;
+	visualizer.ResetSpectrum();
 	PostMessage(WM_PLAYER_TIME_CHANGE, *reinterpret_cast<WPARAM*>(&fBasePlayTime));
 	return 0;
 }
@@ -745,6 +754,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	if (!bIsAdjustingLrcVertical)
 		lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
 	// judge if playing, update spectrum data
+	/*
 	if (music_player->IsPlaying())
 	{
 		constexpr int pcm_buffer_size = 512 * 4;  // 512 frames * 4 bytes/frame
@@ -753,7 +763,7 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 		visualizer.AddSamplesToRingBuffer(pcm_buffer, pcm_buffer_size);
 		visualizer.UpdateSpectrum();
 		delete[] pcm_buffer;
-	}
+	}*/
 	return LRESULT();
 }
 

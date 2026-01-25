@@ -103,7 +103,6 @@ class MusicPlayer
 	void init_decoder_thread();
 	void uninitialize_audio_engine();
 	void audio_playback_worker_thread();
-	// todo: separate audio decode & buffer submission
 	void audio_decode_worker_thread();
 	void start_audio_playback();
 	void stop_audio_decode(int mode = 0);
@@ -128,8 +127,10 @@ class MusicPlayer
 	int decoder_query_xaudio2_buffer_size();
 	bool is_xaudio2_initialized();
 	size_t get_samples_played_per_session();
-
-	std::function<void(const std::vector<std::uint8_t>&)> audio_pre_submit_callback;
+public:
+	using WriteRawPCMBytesCallback = std::function<void(const uint8_t* buffer_out, int buffer_size)>;
+protected:
+	WriteRawPCMBytesCallback write_raw_pcm_bytes_callback;
 
 	// debug function
 	void dialog_ffmpeg_critical_error(int err_code, const char* file, int line);
@@ -155,7 +156,14 @@ public:
 	void Stop();
 	void SetMasterVolume(float volume);
 	void SeekToPosition(float time, bool need_stop);
-	int GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const;
+	// int GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const;
+
+	// WritePCMBytesCallback:
+	// uint8_t* out: provided by MusicPlayer, out_buffer
+	// int buffer_size: provided by MusicPlayer, actual written bytes
+	void RegisterWritePCMBytesCallback(WriteRawPCMBytesCallback callback);
+	void ClearWritePCMBytesCallback();
+	int GetNBlockAlign();
 
 	// destructor
 	~MusicPlayer();

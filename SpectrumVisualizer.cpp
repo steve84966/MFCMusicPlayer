@@ -180,7 +180,8 @@ void SpectrumVisualizer::UpdateSpectrum()
     spectrum_data.clear();
     MapFreqToSegments(fft_result, spectrum_data, boundaries);
 
-    for (auto& val : spectrum_data) {
+    for (size_t i=0; i < spectrum_data.size(); ++i) {
+        float& val = spectrum_data[i];
         // transition db
         float db = 20.0f * log10f(val + 1e-6f);
         constexpr float db_min = 10.0f;   // supress noise
@@ -188,7 +189,27 @@ void SpectrumVisualizer::UpdateSpectrum()
         val = (db - db_min) / (db_max - db_min);
         if (val < 0.0f) val = 0.0f;
         if (val > 1.0f) val = 1.0f;
+
+        // high freq attenuation
+        constexpr size_t high_freq_start = segment_num * 2 / 3;
+        if (i >= high_freq_start) {
+            float attenuation = 1.0f - 0.4f * static_cast<float>(i - high_freq_start) / (segment_num - high_freq_start);
+            val *= attenuation;
+        }
     }
+
+    // time-domain smoothing
+    if (spectrum_smooth_data.size() != spectrum_data.size()) {
+        spectrum_smooth_data.resize(spectrum_data.size(), 0.0f);
+    }
+
+    for (size_t i = 0; i < spectrum_data.size(); ++i) {
+        float smooth_factor = 0.75f;
+        spectrum_smooth_data[i] = smooth_factor * spectrum_smooth_data[i]
+                                 + (1.0f - smooth_factor) * spectrum_data[i];
+    }
+
+    spectrum_data = spectrum_smooth_data;
 
     /*
     CString spectrum_str = _T("info: Spectrum: [");
@@ -244,15 +265,13 @@ void SpectrumVisualizer::OnPaint()
         std::floor(spectrum_seg_width), 2,
             RGB(255, 255, 255));
     }
-
-    for (int i = 0; i < spectrum_seg_count; ++i)
-    {
-    }
 }
 
 void SpectrumVisualizer::ResetSpectrum()
 {
+    spectrum_data_ring_buffer.clear();
     spectrum_data.clear();
+    spectrum_data.resize(32);
     spectrum_max_data.resize(32);
     std::ranges::fill(spectrum_max_data, -128.0f);
     Invalidate(FALSE);
@@ -274,6 +293,7 @@ void SpectrumVisualizer::OnTimer(UINT_PTR nIDEvent)
 {
     if (nIDEvent == 114515)
     {
+		UpdateSpectrum();
         Invalidate(FALSE);
     }
 }

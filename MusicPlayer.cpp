@@ -809,9 +809,6 @@ void MusicPlayer::audio_playback_worker_thread()
 		av_freep(&fifo_buf[0]);
 		av_free(fifo_buf);
 		// LeaveCriticalSection(audio_fifo_section);
-		std::vector out_buffer_for_callback(out_buffer, out_buffer + out_buffer_size);
-		if (audio_pre_submit_callback)
-			audio_pre_submit_callback(out_buffer_for_callback);
 		if (out_samples < 0) {
 			FFMPEG_CRITICAL_ERROR(out_samples);
 			// LeaveCriticalSection(audio_playback_section);
@@ -822,6 +819,12 @@ void MusicPlayer::audio_playback_worker_thread()
 			ATLTRACE("info: no samples read, spin wait instead\n");
 			Sleep(5); // wait for producing buffer
 			continue;
+		}
+		// samples read, send to callback func
+		if (write_raw_pcm_bytes_callback)
+		{
+			// out_samples * wfx.nBlockAlign = actual write buffers
+			write_raw_pcm_bytes_callback(out_buffer, out_samples);
 		}
 
 		while (state.BuffersQueued >= 64)
@@ -1494,6 +1497,22 @@ void MusicPlayer::SeekToPosition(float time, bool need_stop)
 	}
 }
 
+void MusicPlayer::RegisterWritePCMBytesCallback(WriteRawPCMBytesCallback callback)
+{
+	this->write_raw_pcm_bytes_callback = callback;
+}
+
+void MusicPlayer::ClearWritePCMBytesCallback()
+{
+	this->write_raw_pcm_bytes_callback = nullptr;
+}
+
+int MusicPlayer::GetNBlockAlign()
+{
+	return wfx.nBlockAlign;
+}
+
+/*
 int MusicPlayer::GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const
 {
 	int read_size = -1;
@@ -1507,6 +1526,7 @@ int MusicPlayer::GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const
 	}
 	return read_size;
 }
+*/
 
 void MusicPlayer::Pause()
 {

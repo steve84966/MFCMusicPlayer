@@ -42,5 +42,6 @@ protected:
     std::deque<uint8_t> spectrum_data_ring_buffer;
     std::vector<float> spectrum_data;
     std::vector<float> spectrum_max_data{};
+    std::vector<float> spectrum_smooth_data{};
 };
 
