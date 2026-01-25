@@ -1494,6 +1494,20 @@ void MusicPlayer::SeekToPosition(float time, bool need_stop)
 	}
 }
 
+int MusicPlayer::GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const
+{
+	int read_size = -1;
+	{
+		CriticalSectionLock lock(audio_playback_section);
+		if (!this->out_buffer) return -1;
+		read_size = static_cast<int>(out_buffer_size);
+		if (!read_size) return -1;
+		if (read_size > buffer_size) read_size = buffer_size;
+		memcpy(buffer_out, this->out_buffer, read_size);
+	}
+	return read_size;
+}
+
 void MusicPlayer::Pause()
 {
 	if (IsInitialized() && IsPlaying()) {

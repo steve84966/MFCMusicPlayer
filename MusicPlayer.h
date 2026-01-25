@@ -155,6 +155,7 @@ public:
 	void Stop();
 	void SetMasterVolume(float volume);
 	void SeekToPosition(float time, bool need_stop);
+	int GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const;
 
 	// destructor
 	~MusicPlayer();

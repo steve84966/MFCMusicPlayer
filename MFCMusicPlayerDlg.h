@@ -151,4 +151,5 @@ public:
 	afx_msg LRESULT OnSmtcStopButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnClickedButtonSpectrum();
 };

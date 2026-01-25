@@ -3,6 +3,8 @@
 #include <fftw3.h>
 
 BEGIN_MESSAGE_MAP(SpectrumVisualizer, CDialogEx)
+    ON_WM_PAINT()
+    ON_WM_MOVE()
 END_MESSAGE_MAP()
 
 void SpectrumVisualizer::DoDataExchange(CDataExchange *pDX) {
@@ -37,13 +39,19 @@ int SpectrumVisualizer::GetRingBufferSize() const
 
 void SpectrumVisualizer::ApplyWindow(const std::vector<uint8_t>& input, std::vector<double>& output)
 {
-    const size_t fft_size = input.size();
-    output.resize(fft_size);
-    for (size_t i = 0; i < fft_size; ++i) {
-        // hann窗系数
-        const double w = 0.5 * (1.0 - cos(2.0 * M_PI * i / (fft_size - 1)));
-        // 信号居中
-        output[i] = (static_cast<double>(input[i]) - 128.0) * w;
+    const size_t bytes_per_frame = 4;  // 2 channels * 2 bytes
+    const size_t frame_count = input.size() / bytes_per_frame;
+    output.resize(frame_count);
+
+    for (size_t i = 0; i < frame_count; ++i) {
+        auto left = static_cast<int16_t>(input[i * 4] | (input[i * 4 + 1] << 8));
+        auto right = static_cast<int16_t>(input[i * 4 + 2] | (input[i * 4 + 3] << 8));
+        // mix 2 channels
+        double sample = (static_cast<double>(left) + static_cast<double>(right)) / 2.0;
+        // hann window
+        const double w = 0.5 * (1.0 - cos(2.0 * M_PI * i / (frame_count - 1)));
+        // normalize
+        output[i] = (sample / 32768.0) * w;
     }
 }
 
@@ -78,10 +86,11 @@ void SpectrumVisualizer::DoFFT(const std::vector<double>& windowed_data, std::ve
 
         // 幅度谱
         fft_result.resize(fft_size / 2);
+        fft_result.resize(fft_size / 2);
         for (size_t i = 0; i < fft_size / 2; ++i) {
             double real = out[i][0];
             double imag = out[i][1];
-            fft_result[i] = static_cast<float>(sqrt(real * real + imag * imag) / fft_size);
+            fft_result[i] = static_cast<float>(sqrt(real * real + imag * imag));
         }
 
         fftw_destroy_plan(plan);
@@ -134,13 +143,15 @@ void SpectrumVisualizer::UpdateSpectrum()
     if (spectrum_data_ring_buffer.size() < RING_BUFFER_MAX_SIZE)
         return;
 
-    // 从环形缓冲区提取数据
+    // drain data
     std::vector raw_samples(spectrum_data_ring_buffer.begin(),
                             spectrum_data_ring_buffer.end());
 
-    // 加窗
+    // windowing
     std::vector<double> windowed;
     ApplyWindow(raw_samples, windowed);
+    if (windowed.empty())
+        return;
 
     // FFT
     std::vector<float> fft_result;
@@ -149,25 +160,87 @@ void SpectrumVisualizer::UpdateSpectrum()
     if (fft_result.empty())
         return;
 
-    // 44100hz, 16 segments
+    // 44100hz, 32 segments
     constexpr float sample_rate = 44100.0f;
-    constexpr size_t segment_num = 16;
+    constexpr size_t segment_num = 32;
     size_t fft_size = 1;
-    while (fft_size < raw_samples.size()) fft_size <<= 1;
+    while (fft_size < windowed.size()) fft_size <<= 1;
 
     auto boundaries = GenBoundaries(sample_rate, fft_size, segment_num);
 
-    std::vector<float> segments;
-    MapFreqToSegments(fft_result, segments, boundaries);
+    spectrum_data.clear();
+    MapFreqToSegments(fft_result, spectrum_data, boundaries);
 
+    for (auto& val : spectrum_data) {
+        // transition db
+        float db = 20.0f * log10f(val + 1e-6f);
+        constexpr float db_min = 10.0f;   // supress noise
+        constexpr float db_max = 45.0f;   // full
+        val = (db - db_min) / (db_max - db_min);
+        if (val < 0.0f) val = 0.0f;
+        if (val > 1.0f) val = 1.0f;
+    }
+
+    /*
     CString spectrum_str = _T("info: Spectrum: [");
-    for (size_t i = 0; i < segments.size(); ++i) {
+    for (size_t i = 0; i < spectrum_data.size(); ++i) {
         CString val;
-        val.Format(_T("%.2f"), segments[i]);
+        val.Format(_T("%.2f"), spectrum_data[i]);
         spectrum_str += val;
-        if (i < segments.size() - 1)
+        if (i < spectrum_data.size() - 1)
             spectrum_str += _T(", ");
     }
     spectrum_str += _T("]\n");
     ATLTRACE(spectrum_str);
+    */
+
+    // Call gdi+ to initialize spectrum
+    Invalidate(FALSE);
 }
+
+void SpectrumVisualizer::OnPaint()
+{
+    CPaintDC dc(this);
+    CRect rect;
+    GetClientRect(&rect);
+    dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(0, 0, 0));
+
+    constexpr float spectrum_seg_width = 18.0f;
+    constexpr float spectrum_seg_distance = 2.0f;
+    const int spectrum_seg_count = static_cast<int>(spectrum_data.size());
+    const int spectrum_seg_start =
+       (rect.Width() - static_cast<int>(spectrum_seg_width) * spectrum_seg_count - static_cast<int>(spectrum_seg_distance) * (spectrum_seg_count - 1)) / 2;
+
+    for (int i = 0; i < spectrum_seg_count; ++i) {
+        const float spectrum_seg_height = spectrum_data[i] * static_cast<float>(rect.Height());
+        const float spectrum_seg_height_start = static_cast<float>(rect.Height()) - spectrum_seg_height;
+        const float spectrum_seg_x_start = static_cast<float>(spectrum_seg_start)
+            + static_cast<float>(i) * spectrum_seg_width
+            + static_cast<float>(i - 1) * spectrum_seg_distance;
+        dc.FillSolidRect(
+            std::floor(spectrum_seg_x_start),
+            std::floor(spectrum_seg_height_start),
+            std::floor(spectrum_seg_width),
+            std::floor(spectrum_seg_height),
+            RGB(0, 255, 0));
+    }
+}
+
+void SpectrumVisualizer::ResetSpectrum()
+{
+    spectrum_data.clear();
+    Invalidate(FALSE);
+}
+
+void SpectrumVisualizer::OnMove(int cx, int cy) {
+    if (this->m_pParentWnd != nullptr)
+    {
+        CRect thisRect;
+        this->GetWindowRect(&thisRect);
+        CRect parentDlgRect;
+        this->m_pParentWnd->GetWindowRect(&parentDlgRect);
+        m_pParentWnd->MoveWindow(thisRect.left - parentDlgRect.Width(), thisRect.top, parentDlgRect.Width(), parentDlgRect.Height());
+    }
+    CDialogEx::OnMove(cx, cy);
+}
+
