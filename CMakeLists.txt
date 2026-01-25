@@ -8,6 +8,7 @@ find_package(FFMPEG REQUIRED)
 find_package(rapidjson REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(cppwinrt CONFIG REQUIRED)
+find_package(FFTW3 CONFIG REQUIRED)
 find_path(CPP_BASE64_INCLUDE_DIRS "cpp-base64/base64.cpp")
 
 if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")) # check if using clang-cl
@@ -28,7 +29,8 @@ add_executable(MFCMusicPlayer WIN32
     PlaylistController.cpp
     PlaylistDialog.cpp
     NcmDecryptor.cpp
-        WinRT_SMTCController.cpp
+    WinRT_SMTCController.cpp
+    SpectrumVisualizer.cpp
 )
 
 target_include_directories(MFCMusicPlayer
@@ -93,5 +95,5 @@ target_link_directories(MFCMusicPlayer
 
 target_link_libraries(MFCMusicPlayer
    PRIVATE
-        ${FFMPEG_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto Microsoft::CppWinRT
+        ${FFMPEG_LIBRARIES} OpenSSL::SSL OpenSSL::Crypto Microsoft::CppWinRT FFTW3::fftw3
 )

@@ -129,6 +129,8 @@ class MusicPlayer
 	bool is_xaudio2_initialized();
 	size_t get_samples_played_per_session();
 
+	std::function<void(const std::vector<std::uint8_t>&)> audio_pre_submit_callback;
+
 	// debug function
 	void dialog_ffmpeg_critical_error(int err_code, const char* file, int line);
 
@@ -153,6 +155,7 @@ public:
 	void Stop();
 	void SetMasterVolume(float volume);
 	void SeekToPosition(float time, bool need_stop);
+	int GetRawPCMBytes(uint8_t* buffer_out, int buffer_size) const;
 
 	// destructor
 	~MusicPlayer();

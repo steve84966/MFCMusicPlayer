@@ -91,7 +91,8 @@ CString CMFCMusicPlayerDlg::get_common_dialog_music_filter()
 
 
 CMFCMusicPlayerDlg::CMFCMusicPlayerDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_MFCMUSICPLAYER_DIALOG, pParent), music_player(nullptr)
+	: CDialogEx(IDD_MFCMUSICPLAYER_DIALOG, pParent),
+		music_player(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -141,6 +142,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_32778, &CMFCMusicPlayerDlg::OnMenuSettingUnplayedTextColor)
 	ON_COMMAND(ID_MENU_WINDOW_ALWAYSONTOP, &CMFCMusicPlayerDlg::OnMenuWindowAlwaysOnTop)
 	ON_COMMAND(ID_MENU_WINDOW_PLAYLIST, &CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt)
+	ON_COMMAND(ID_MENU_WINDOW_SPECTRUM, &CMFCMusicPlayerDlg::OnClickedButtonSpectrum)
 	ON_MESSAGE(WM_PLAYLIST_CHANGED, &CMFCMusicPlayerDlg::OnPlaylistChanged)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
@@ -164,6 +166,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	smtc_controller = &WinRT_SMTCController::GetInstance();
 	smtc_controller->Initialize(m_hWnd);
+	visualizer.SetParent(this);
 	// 将“关于...”菜单项添加到系统菜单中。
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -264,6 +267,7 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 		LocalFree(str);
 	}
 	DragAcceptFiles(TRUE);
+	visualizer.Create(IDD_DIALOGSPECTRUM, this);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -318,6 +322,7 @@ HCURSOR CMFCMusicPlayerDlg::OnQueryDragIcon()
 
 void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 {
+	visualizer.ResetSpectrum();
 	if (!file_path.IsEmpty() && !ext.IsEmpty())
 	{
 		delete music_player;
@@ -406,6 +411,10 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
 					// ATLTRACE(_T("info: comparing file %s"), foundFileName.GetString());
 					CString foundNameWithoutExt = foundFileName.Left(foundFileName.GetLength() - 4);
 					CString targetNameWithoutExt = music_player->GetSongTitle();
+					if (targetNameWithoutExt.IsEmpty())
+					{
+						targetNameWithoutExt = file_path.Right(file_path.GetLength() - ext.GetLength() - 1);
+					}
 					// ATLTRACE(_T("info: token = %s\n"), tokens.ElementAt(index).GetString());
 					if (foundNameWithoutExt.Find(targetNameWithoutExt) != -1) {
 						ATLTRACE(_T("info: token hit, ->%s\n"), targetNameWithoutExt.GetString());
@@ -735,6 +744,16 @@ LRESULT CMFCMusicPlayerDlg::OnPlayerTimeChange(WPARAM wParam, LPARAM lParam)
 	// re-post message to LrcManagerWnd
 	if (!bIsAdjustingLrcVertical)
 		lrc_manager_wnd.PostMessage(WM_PLAYER_TIME_CHANGE, wParam);
+	// judge if playing, update spectrum data
+	if (music_player->IsPlaying())
+	{
+		constexpr int pcm_buffer_size = 512 * 4;  // 512 frames * 4 bytes/frame
+		auto* pcm_buffer = new uint8_t[pcm_buffer_size];
+		music_player->GetRawPCMBytes(pcm_buffer, pcm_buffer_size);
+		visualizer.AddSamplesToRingBuffer(pcm_buffer, pcm_buffer_size);
+		visualizer.UpdateSpectrum();
+		delete[] pcm_buffer;
+	}
 	return LRESULT();
 }
 
@@ -1285,4 +1304,24 @@ LRESULT CMFCMusicPlayerDlg::OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam
 LRESULT CMFCMusicPlayerDlg::OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam) {
 	OnClickedButtonNext();
 	return {};
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonSpectrum()
+{
+	if (!visualizer.IsWindowVisible()) {
+		CRect mainRect;
+		GetWindowRect(&mainRect);
+
+		CRect visualizerRect;
+		visualizer.GetWindowRect(&visualizerRect);
+
+		int newX = mainRect.left;
+		int newY = mainRect.bottom + 10;
+
+		visualizer.SetWindowPos(nullptr, newX, newY,
+			visualizerRect.Width(), visualizerRect.Height(),
+			SWP_NOZORDER | SWP_NOACTIVATE);
+
+		visualizer.ShowWindow(SW_SHOW);
+	}
 }

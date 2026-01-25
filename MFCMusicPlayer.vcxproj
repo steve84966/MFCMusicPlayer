@@ -297,6 +297,7 @@
     <ClInclude Include="PlaylistController.h" />
     <ClInclude Include="PlayListDialog.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WinRT_SMTCController.h" />
   </ItemGroup>
@@ -319,6 +320,7 @@
     </ClCompile>
     <ClCompile Include="PlaylistController.cpp" />
     <ClCompile Include="PlayListDialog.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="WinRT_SMTCController.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -330,6 +332,15 @@
   <ItemGroup>
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\ico00001.ico" />
+    <Image Include="res\ico00002.ico" />
+    <Image Include="res\ico00003.ico" />
+    <Image Include="res\ico00004.ico" />
+    <Image Include="res\ico00005.ico" />
+    <Image Include="res\ico00006.ico" />
+    <Image Include="res\ico00007.ico" />
+    <Image Include="res\ico00008.ico" />
+    <Image Include="res\ico00009.ico" />
+    <Image Include="res\ico00010.ico" />
     <Image Include="res\icon1.ico" />
     <Image Include="res\icon2.ico" />
     <Image Include="res\MFCMusicPlayer.ico" />

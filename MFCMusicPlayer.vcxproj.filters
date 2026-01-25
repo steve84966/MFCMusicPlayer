@@ -60,6 +60,9 @@
     <ClInclude Include="WinRT_SMTCController.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SpectrumVisualizer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMusicPlayer.cpp">
@@ -98,6 +101,9 @@
     <ClCompile Include="WinRT_SMTCController.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SpectrumVisualizer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCMusicPlayer.rc">
@@ -123,6 +129,33 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="res\ico00001.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00002.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00003.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00004.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00005.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00006.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00007.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00008.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00009.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\ico00010.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

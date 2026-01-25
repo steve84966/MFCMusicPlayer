@@ -8,6 +8,7 @@
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
 #include "PlaylistController.h"
+#include "SpectrumVisualizer.h"
 #include "WinRT_SMTCController.h"
 
 class PlayListDialog;
@@ -128,6 +129,7 @@ public:
 	CProgressScrollBar m_scrollBarLrcVertical;
 	PlayListDialog* m_pPlaylistDlg = nullptr;
 	WinRT_SMTCController* smtc_controller;
+	SpectrumVisualizer visualizer;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();
@@ -149,4 +151,5 @@ public:
 	afx_msg LRESULT OnSmtcStopButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnClickedButtonSpectrum();
 };
