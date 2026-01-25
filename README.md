@@ -26,12 +26,13 @@ Features:
 - ARM64 build, tested on Snapdragon X Elite
 - NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
 - Windows's SystemMediaTransportControls support
+- audio spectrum display based on fftw3
 
 Screenshot:
 
 ![Screenshot](res/screenshot-1.png)
 
-Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt
+Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt, fftw3
 
 UI: MFC(main), Direct2D(lyric)
 
