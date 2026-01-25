@@ -21,6 +21,7 @@ class SpectrumVisualizer
     void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV 支持
 
 public:
+    afx_msg int OnInitDialog() override;
     SpectrumVisualizer(CWnd* pParent = nullptr);
     void AddSamplesToRingBuffer(uint8_t* samples, int sample_size);
     [[nodiscard]] int GetRingBufferSize() const;
@@ -34,10 +35,12 @@ public:
     afx_msg void OnPaint();
     void ResetSpectrum();
     afx_msg void OnMove(int cx, int cy);
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
 
 protected:
     // ring buffer, fix size=2560 samples
     std::deque<uint8_t> spectrum_data_ring_buffer;
     std::vector<float> spectrum_data;
+    std::vector<float> spectrum_max_data{};
 };
 

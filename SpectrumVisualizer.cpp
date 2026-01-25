@@ -5,10 +5,19 @@
 BEGIN_MESSAGE_MAP(SpectrumVisualizer, CDialogEx)
     ON_WM_PAINT()
     ON_WM_MOVE()
+    ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 void SpectrumVisualizer::DoDataExchange(CDataExchange *pDX) {
     CDialogEx::DoDataExchange(pDX);
+}
+
+int SpectrumVisualizer::OnInitDialog()
+{
+    SetTimer(114515, 20, nullptr);
+    spectrum_max_data.resize(32);
+    std::ranges::fill(spectrum_max_data, -128.0f);
+    return CDialogEx::OnInitDialog();
 }
 
 SpectrumVisualizer::SpectrumVisualizer(CWnd *pParent): CDialogEx(IDD_DIALOGSPECTRUM, pParent) {
@@ -48,8 +57,8 @@ void SpectrumVisualizer::ApplyWindow(const std::vector<uint8_t>& input, std::vec
         auto right = static_cast<int16_t>(input[i * 4 + 2] | (input[i * 4 + 3] << 8));
         // mix 2 channels
         double sample = (static_cast<double>(left) + static_cast<double>(right)) / 2.0;
-        // hann window
-        const double w = 0.5 * (1.0 - cos(2.0 * M_PI * i / (frame_count - 1)));
+        // hamming window
+        const double w = 0.53836 * (1.0 - cos(2.0 * M_PI * i / (frame_count - 1)));
         // normalize
         output[i] = (sample / 32768.0) * w;
     }
@@ -195,7 +204,6 @@ void SpectrumVisualizer::UpdateSpectrum()
     */
 
     // Call gdi+ to initialize spectrum
-    Invalidate(FALSE);
 }
 
 void SpectrumVisualizer::OnPaint()
@@ -223,12 +231,30 @@ void SpectrumVisualizer::OnPaint()
             std::floor(spectrum_seg_width),
             std::floor(spectrum_seg_height),
             RGB(0, 255, 0));
+        if (spectrum_seg_height > spectrum_max_data[i])
+            spectrum_max_data[i] = spectrum_seg_height;
+        else
+            spectrum_max_data[i] -= 2.0f;
+        if (spectrum_max_data[i] < 0.0f)
+                spectrum_max_data[i] = 0.0f;
+
+        dc.FillSolidRect(
+        std::floor(spectrum_seg_x_start),
+        std::floor(static_cast<float>(rect.Height()) - spectrum_max_data[i]),
+        std::floor(spectrum_seg_width), 2,
+            RGB(255, 255, 255));
+    }
+
+    for (int i = 0; i < spectrum_seg_count; ++i)
+    {
     }
 }
 
 void SpectrumVisualizer::ResetSpectrum()
 {
     spectrum_data.clear();
+    spectrum_max_data.resize(32);
+    std::ranges::fill(spectrum_max_data, -128.0f);
     Invalidate(FALSE);
 }
 
@@ -244,3 +270,10 @@ void SpectrumVisualizer::OnMove(int cx, int cy) {
     CDialogEx::OnMove(cx, cy);
 }
 
+void SpectrumVisualizer::OnTimer(UINT_PTR nIDEvent)
+{
+    if (nIDEvent == 114515)
+    {
+        Invalidate(FALSE);
+    }
+}
