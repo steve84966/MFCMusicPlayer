@@ -52,14 +52,14 @@ jobs:
       run: |
          git clone https://github.com/microsoft/vcpkg.git ${{ github.workspace }}/vcpkg
          cd ${{ github.workspace }}/vcpkg
-         git checkout de46587b4beaa638743916fe5674825cecfb48b3
+         git checkout 6d332a018c433fad20822ff4b536e4ccdc3413bd
 
     - name: Setup vcpkg and install FFmpeg
       uses: lukka/run-vcpkg@v7.6
       with:
         vcpkgArguments: 'ffmpeg rapidjson cpp-base64 openssl cppwinrt fftw3'
         vcpkgTriplet: ${{ matrix.triplet }}
-        vcpkgGitCommitId: 'de46587b4beaa638743916fe5674825cecfb48b3'
+        vcpkgGitCommitId: '6d332a018c433fad20822ff4b536e4ccdc3413bd'
         vcpkgDirectory: ${{ github.workspace }}/vcpkg  
         doNotCache: true
 
