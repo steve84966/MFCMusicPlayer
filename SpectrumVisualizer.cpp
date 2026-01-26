@@ -26,6 +26,7 @@ SpectrumVisualizer::SpectrumVisualizer(CWnd *pParent): CDialogEx(IDD_DIALOGSPECT
 
 void SpectrumVisualizer::AddSamplesToRingBuffer(uint8_t* samples, int sample_size)
 {
+    std::lock_guard ring_buffer_lock(ring_buffer_mutex);
     if (samples == nullptr || sample_size <= 0)
         return;
 
@@ -148,6 +149,7 @@ void SpectrumVisualizer::MapFreqToSegments(
 
 void SpectrumVisualizer::UpdateSpectrum()
 {
+    std::lock_guard ring_buffer_lock(ring_buffer_mutex);
     // 检查缓冲区是否有足够数据
     if (spectrum_data_ring_buffer.size() < RING_BUFFER_MAX_SIZE)
         return;

@@ -884,7 +884,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             }
         }
         // 解析时间tag
-        if (line.GetLength() <= 10)
+        if (line.GetLength() < 10)
         {
             AfxMessageBox(_T("err: invalid lrc line, aborting!"), MB_ICONERROR);
             // clear stack

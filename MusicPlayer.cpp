@@ -203,6 +203,13 @@ int MusicPlayer::load_audio_context_stream(CFile* in_file_stream)
 	}
 	avcodec_parameters_to_context(codec_context, format_context->streams[audio_stream_index]->codecpar);
 
+	// 降低错误容忍度
+	codec_context->err_recognition = AV_EF_IGNORE_ERR | AV_EF_COMPLIANT;
+	// 错误隐藏
+	codec_context->error_concealment = FF_EC_GUESS_MVS | FF_EC_DEBLOCK;
+	// 跳过坏帧
+	codec_context->skip_frame = AVDISCARD_NONREF;
+
 	// 解码文件
 	res = avcodec_open2(codec_context, codec, nullptr);
 	if (res)
@@ -1002,6 +1009,12 @@ void MusicPlayer::audio_decode_worker_thread()
 			continue; // skip non-audio packet
 		}
 		if (int ret = avcodec_send_packet(codec_context, packet); ret < 0) {
+			if (ret == AVERROR_INVALIDDATA)
+			{
+				// ignore bad block, continue
+				av_packet_unref(packet);
+				continue;
+			}
 			FFMPEG_CRITICAL_ERROR(ret);
 			InterlockedExchange(playback_state, audio_playback_state_stopped);
 			av_packet_unref(packet);

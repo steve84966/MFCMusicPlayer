@@ -92,7 +92,7 @@ CString CMFCMusicPlayerDlg::get_common_dialog_music_filter()
 
 CMFCMusicPlayerDlg::CMFCMusicPlayerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MFCMUSICPLAYER_DIALOG, pParent),
-		music_player(nullptr)
+		music_player(nullptr), smtc_controller(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -166,7 +166,6 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	smtc_controller = &WinRT_SMTCController::GetInstance();
 	smtc_controller->Initialize(m_hWnd);
-	visualizer.SetParent(this);
 	// 将“关于...”菜单项添加到系统菜单中。
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -320,13 +319,16 @@ HCURSOR CMFCMusicPlayerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext)
+void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_in)
 {
 	visualizer.ResetSpectrum();
-	if (!file_path.IsEmpty() && !ext.IsEmpty())
+	if (!file_path.IsEmpty() && !ext_in.IsEmpty())
 	{
 		delete music_player;
 		music_player = new MusicPlayer();
+		// make ext lower
+		CString ext = ext_in;
+		ext.MakeLower();
 		// judge ext is music file?
 		if (std::ranges::find(music_ext_list, ext) == music_ext_list.end()) {
 			ATLTRACE(_T("err: file ext %s not supported!\n"), ext.GetString());
@@ -459,8 +461,9 @@ void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
 	if (array.GetCount() > 0)
 	{
 		for (int i = 0; i < playlist_controller.GetPlaylistSize(); ++i) {
-			const CString& music = playlist_controller.GetMusicFileAt(i),
-							 ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+			const CString& music = playlist_controller.GetMusicFileAt(i);
+			CString ext = music.Mid(music.ReverseFind(_T('.')) + 1);
+			ext.MakeLower();
 			if (std::ranges::find(music_ext_list, ext) == music_ext_list.end()) {
 				AfxMessageBox(_T("不支持的文件格式！"), MB_ICONERROR);
 				ResetPlayer();

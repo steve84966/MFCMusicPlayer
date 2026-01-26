@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "framework.h"
 #include "resource.h"
+#include <mutex>
 
 struct AudioFrameData {
     std::vector<uint8_t> data;
@@ -43,5 +44,6 @@ protected:
     std::vector<float> spectrum_data;
     std::vector<float> spectrum_max_data{};
     std::vector<float> spectrum_smooth_data{};
+    std::mutex ring_buffer_mutex;
 };
 
