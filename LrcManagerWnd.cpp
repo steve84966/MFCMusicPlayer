@@ -108,6 +108,21 @@ int CLrcManagerWnd::InitLrcControllerWithFile(const CString& file_path)
     return lrc_controller.valid();
 }
 
+int CLrcManagerWnd::InitLrcControllerWithStream(const CString& stream)
+{
+    CStringA input;
+    LPCTSTR stream_str = stream.GetString();
+    int input_size = WideCharToMultiByte(CP_UTF8, 0, stream_str, -1, nullptr, 0, nullptr, nullptr);
+    LPSTR buffer = input.GetBufferSetLength(input_size);
+    WideCharToMultiByte(CP_UTF8, 0, stream_str, -1, buffer, input_size, nullptr, nullptr);
+    input.ReleaseBuffer();
+    CFile* file = new CMemFile(reinterpret_cast<BYTE*>(const_cast<CHAR*>(input.GetString())), input_size);
+    lrc_controller.parse_lrc_file_stream(file);
+    delete file;
+    Invalidate(FALSE);
+    return lrc_controller.valid();
+}
+
 void CLrcManagerWnd::DestroyLrcController()
 {
     lrc_controller.clear_lrc_nodes();

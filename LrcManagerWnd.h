@@ -202,6 +202,7 @@ public:
 	CString GetDirectWriteFontName(LOGFONT *logfont);
 
 	int InitLrcControllerWithFile(const CString& file_path);
+	int InitLrcControllerWithStream(const CString& stream);
 	void DestroyLrcController();
 	void UpdateLyric();
 

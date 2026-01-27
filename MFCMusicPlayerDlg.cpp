@@ -354,6 +354,12 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 				windowTitle.Format(_T("%s - %s"), artist.GetString(), title.GetString());
 				this->SetWindowText(windowTitle);
 			}
+			auto id3_lyric = music_player->GetID3Lyric();
+			if (!id3_lyric.IsEmpty())
+			{
+				if (lrc_manager_wnd.InitLrcControllerWithStream(id3_lyric))
+					return;
+			}
 			CString lrc_file = file_path.Left(file_path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
 			CString lrc_file_name = lrc_file.Right(lrc_file.GetLength() - lrc_file.ReverseFind(_T('\\')) - 1);
 			CString lrc_path = lrc_file.Left(lrc_file.GetLength() - lrc_file_name.GetLength());

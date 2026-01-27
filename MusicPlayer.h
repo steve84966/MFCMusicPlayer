@@ -82,6 +82,7 @@ class MusicPlayer
 	double standard_frametime = 0.0, last_frametime = 0.0;
 	float message_interval = 16.67f, message_interval_timer = 0.0f;
 	size_t prev_decode_cycle_xaudio2_played_samples = 0;
+	CString id3_string_lyric;
 
 	// file I/O Area
 	int read_func(uint8_t* buf, int buf_size);
@@ -164,6 +165,7 @@ public:
 	void RegisterWritePCMBytesCallback(WriteRawPCMBytesCallback callback);
 	void ClearWritePCMBytesCallback();
 	int GetNBlockAlign();
+	CString GetID3Lyric();
 
 	// destructor
 	~MusicPlayer();

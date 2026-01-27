@@ -525,6 +525,15 @@ void MusicPlayer::read_metadata()
 			song_artist = value;
 			ATLTRACE(_T("info: song artist: %s\n"), song_artist.GetString());
 		}
+		else
+		{
+			key.MakeLower();
+			if (key.Find(_T("lyric")) != -1)
+			{
+				this->id3_string_lyric = value;
+				ATLTRACE("info: song contains lyric in metadata\n");
+			}
+		}
 		};
 
 	AVDictionaryEntry* tag = nullptr;
@@ -1544,6 +1553,11 @@ void MusicPlayer::ClearWritePCMBytesCallback()
 int MusicPlayer::GetNBlockAlign()
 {
 	return wfx.nBlockAlign;
+}
+
+CString MusicPlayer::GetID3Lyric()
+{
+	return id3_string_lyric;
 }
 
 /*
