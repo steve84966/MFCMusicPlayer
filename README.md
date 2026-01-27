@@ -60,6 +60,7 @@ Contact: lucas150670@petalmail.com
 - [Xx_Dark_D_xX](https://github.com/mizu-mio)
 - [xuezhaju](https://github.com/xuezhaju)
 - [Vladimir15963](https://github.com/Vladimir15963)
+- [dachuan_DC](https://x.com/dachuan_DC)
 - and anyone else who has contributed to this project / help test the program.
 
 ### sponsor the project

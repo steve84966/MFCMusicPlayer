@@ -443,9 +443,29 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 	UINT width, height;
 	UNREFERENCED_PARAMETER(source->GetSize(&width, &height));
 
+	const double scale_x = static_cast<double>(scale_size) / width;
+	const double scale_y = static_cast<double>(scale_size) / height;
+	const double scale = scale_x > scale_y ? scale_x : scale_y;
+
+	const UINT crop_width = static_cast<UINT>(scale_size / scale);
+	const UINT crop_height = static_cast<UINT>(scale_size / scale);
+	const UINT crop_x = (width - crop_width) / 2;
+	const UINT crop_y = (height - crop_height) / 2;
+
+	ATLTRACE("info: center crop - src(%u %u), crop(%u %u) at (%u %u)\n",
+			 width, height, crop_width, crop_height, crop_x, crop_y);
+
+	IWICBitmapClipper* clipper = nullptr;
+	UNREFERENCED_PARAMETER(imaging_factory->CreateBitmapClipper(&clipper));
+
+	const WICRect crop_rect = { static_cast<INT>(crop_x), static_cast<INT>(crop_y),
+						  static_cast<INT>(crop_width), static_cast<INT>(crop_height) };
+	UNREFERENCED_PARAMETER(clipper->Initialize(iwic_format_converter, &crop_rect));
+
+
 	IWICBitmapScaler* scaler = nullptr;
 	UNREFERENCED_PARAMETER(imaging_factory->CreateBitmapScaler(&scaler));
-	UNREFERENCED_PARAMETER(scaler->Initialize(iwic_format_converter, scale_size, scale_size, WICBitmapInterpolationModeFant));
+	UNREFERENCED_PARAMETER(scaler->Initialize(clipper, scale_size, scale_size, WICBitmapInterpolationModeFant));
 
 	BITMAPINFO bmi = {};
 	bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
@@ -464,6 +484,7 @@ HBITMAP MusicPlayer::decode_id3_album_art(const int stream_index, int scale_size
 	UNREFERENCED_PARAMETER(scaler->CopyPixels(nullptr, stride, buffer_size, image_bits));
 
 	scaler->Release();
+	clipper->Release();
 	iwic_format_converter->Release();
 	iwic_stream->Release();
 	imaging_factory->Release();
