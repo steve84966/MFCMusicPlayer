@@ -28,13 +28,16 @@ public:
 	[[nodiscard]] virtual int get_auxiliary_info_at(LrcAuxiliaryInfo info) const = 0;
 	[[nodiscard]] virtual bool is_translation_enabled() const { return false; }
 	[[nodiscard]] virtual bool is_romanization_enabled() const { return false; }
+	[[nodiscard]] virtual float get_lrc_percentage(float current_timestamp) const = 0;
+	[[nodiscard]] virtual bool is_lrc_percentage_enabled() const { return false; }
+	virtual void set_lrc_end_timestamp(int end_time_ms) { }
 
 	bool operator<(const LrcAbstractNode& other) const {
 		return time_ms < other.time_ms;
 	}
 };
 
-class LrcNode : public LrcAbstractNode {
+class LrcNode final: public LrcAbstractNode {
 	CString lrc_text;       // lyric text
 public:
 	LrcNode(int t, const CString& text)
@@ -60,12 +63,16 @@ public:
 		if (info == LrcAuxiliaryInfo::Lyric) return 0;
 		return -1;
 	}
+	[[nodiscard]] float get_lrc_percentage(float current_timestamp) const override
+	{
+		return 1.0f;
+	}
 };
 
 /*
 * for display lrc with translation or romanization
 */
-class LrcMultiNode : public LrcAbstractNode {
+class LrcMultiNode : virtual public LrcAbstractNode {
 	int str_count;
 	CSimpleArray<CString> lrc_texts;
 	CSimpleArray<LrcAuxiliaryInfo> aux_infos;
@@ -101,15 +108,101 @@ public:
 	[[nodiscard]] bool is_romanization_enabled() const override {
 		return aux_infos.Find(LrcAuxiliaryInfo::Romanization) != -1;
 	}
+
+	[[nodiscard]] float get_lrc_percentage(float current_timestamp) const override
+	{
+		return 1.0f;
+	}
+};
+
+class LrcProgressNode: virtual public LrcAbstractNode
+{
+protected:
+	int node_count;
+	struct node_info
+	{
+		int time_ms;
+		CString node_text;
+	};
+	int end_time_ms;
+	CSimpleArray<node_info> nodes;
+public:
+	LrcProgressNode(int t, const CString& text_with_node);
+	[[nodiscard]] int get_lrc_str_count() const override { return 1; }
+	int get_lrc_str_at(int index, CString& out_str) const override
+	{
+		if (index != 0) return -1;
+		CString text;
+		for (int i = 0; i < node_count; ++i)
+		{
+			text.Append(nodes[i].node_text);
+		}
+		return out_str = text, 0;
+	}
+	[[nodiscard]] LrcAuxiliaryInfo get_auxiliary_info(int index) const override
+	{
+		if (index == 0)
+			return LrcAuxiliaryInfo::Lyric;
+		return LrcAuxiliaryInfo::Ignored;
+	}
+	[[nodiscard]] int get_auxiliary_info_at(LrcAuxiliaryInfo info) const override
+	{
+		if (info == LrcAuxiliaryInfo::Lyric) return 0;
+		return -1;
+	}
+	[[nodiscard]] float get_lrc_percentage(float current_timestamp) const override;
+	[[nodiscard]] bool is_lrc_percentage_enabled() const override { return true; }
+	void set_lrc_end_timestamp(int time_ms) override { this->end_time_ms = time_ms; }
+};
+
+class LrcProgressMultiNode final:
+	public LrcProgressNode, public LrcMultiNode
+{
+public:
+	LrcProgressMultiNode(int t, const CString& str_1, const CSimpleArray<CString>& str_arr_2);
+	[[nodiscard]] int get_lrc_str_count() const override
+	{
+		return LrcMultiNode::get_lrc_str_count();
+	}
+	int get_lrc_str_at(int index, CString& out_str) const override
+	{
+		return LrcMultiNode::get_lrc_str_at(index, out_str);
+	}
+	[[nodiscard]] LrcAuxiliaryInfo get_auxiliary_info(int index) const override
+	{
+		return LrcMultiNode::get_auxiliary_info(index);
+	}
+	[[nodiscard]] int get_auxiliary_info_at(LrcAuxiliaryInfo info) const override
+	{
+		return LrcMultiNode::get_auxiliary_info_at(info);
+	}
+	[[nodiscard]] float get_lrc_percentage(float current_timestamp) const override
+	{
+		return LrcProgressNode::get_lrc_percentage(current_timestamp);
+	}
+	[[nodiscard]] bool is_translation_enabled() const override { return LrcMultiNode::is_translation_enabled(); }
+	[[nodiscard]] bool is_romanization_enabled() const override { return LrcMultiNode::is_romanization_enabled(); }
+	[[nodiscard]] bool is_lrc_percentage_enabled() const override { return true; }
+	void set_lrc_end_timestamp(int time_ms) override { LrcProgressNode::set_lrc_end_timestamp(time_ms); }
 };
 
 class LrcNodeFactory {
 public:
 	static LrcAbstractNode* CreateLrcNode(int time_ms, const CSimpleArray<CString>& lrc_texts) {
+		auto ifLrcContainsControllerNode = [](const CString& lrc_text)
+		{
+			const auto last_index = lrc_text.GetLength() - 1;
+			return lrc_text.GetLength() > 0 &&
+				(lrc_text[last_index] == ']' || lrc_text[last_index] == '>');
+		};
 		if (lrc_texts.GetSize() == 1) {
+			if (ifLrcContainsControllerNode(lrc_texts[0]))
+				return new LrcProgressNode(time_ms, lrc_texts[0]);
 			return new LrcNode(time_ms, lrc_texts[0]);
 		}
 		if (lrc_texts.GetSize() > 1) {
+			if (ifLrcContainsControllerNode(lrc_texts[0]))
+				return new LrcProgressMultiNode(time_ms, lrc_texts[0], lrc_texts);
 			return new LrcMultiNode(time_ms, lrc_texts);
 		}
 		return nullptr;
@@ -130,6 +223,7 @@ class LrcFileController {
 		CString artist, album, author, by, title;
 	} metadata;
 	int aux_enable_info = 0;
+	float song_duration_sec = 0;
 public:
 	~LrcFileController();
 	void parse_lrc_file(const CString& file_path);
@@ -137,6 +231,7 @@ public:
 	void clear_lrc_nodes();
 	void set_time_stamp(int time_stamp_ms_in);
 	void time_stamp_increase(int ms);
+	void set_song_duration(float duration_sec) { song_duration_sec = duration_sec; }
 	[[nodiscard]] bool valid() const;
 	[[nodiscard]] int get_current_time_stamp() const { return time_stamp_ms; }
 	[[nodiscard]] int get_current_lrc_lines_count() const;
@@ -161,6 +256,8 @@ public:
 		aux_enable_info &= ~(1 << static_cast<int>(enable_info));
 	}
 	void reset_auxiliary_info_enabled() { aux_enable_info = 0; }
+	bool is_percentage_enabled(int index) { return lrc_nodes[index]->is_lrc_percentage_enabled(); }
+	float get_lrc_percentage(int index) { return lrc_nodes[index]->get_lrc_percentage(time_stamp_ms / 1000.0f); }
 
 	// static helpers
 	static LrcMetadataType get_metadata_type(const CString& str);
@@ -201,8 +298,8 @@ public:
 
 	CString GetDirectWriteFontName(LOGFONT *logfont);
 
-	int InitLrcControllerWithFile(const CString& file_path);
-	int InitLrcControllerWithStream(const CString& stream);
+	int InitLrcControllerWithFile(const CString& file_path, float);
+	int InitLrcControllerWithStream(const CString& stream, float);
 	void DestroyLrcController();
 	void UpdateLyric();
 

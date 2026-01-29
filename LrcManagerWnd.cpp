@@ -101,15 +101,17 @@ int CLrcManagerWnd::InitDirectWrite()
     return 0;
 }
 
-int CLrcManagerWnd::InitLrcControllerWithFile(const CString& file_path)
+int CLrcManagerWnd::InitLrcControllerWithFile(const CString& file_path, float song_duration)
 {
+    lrc_controller.set_song_duration(song_duration);
     lrc_controller.parse_lrc_file(file_path);
     Invalidate(FALSE);
     return lrc_controller.valid();
 }
 
-int CLrcManagerWnd::InitLrcControllerWithStream(const CString& stream)
+int CLrcManagerWnd::InitLrcControllerWithStream(const CString& stream, float song_duration)
 {
+    lrc_controller.set_song_duration(song_duration);
     CStringA input;
     LPCTSTR stream_str = stream.GetString();
     int input_size = WideCharToMultiByte(CP_UTF8, 0, stream_str, -1, nullptr, 0, nullptr, nullptr);
@@ -148,31 +150,194 @@ void CLrcManagerWnd::UpdateLyric()
         D2D1_RECT_F center_lyric_layout = D2D1::RectF(rc.left, center_y, rc.right,
                                                       center_y + lyric_main_metrics_height);
 
-        render_target->DrawText(
-            lyric_main_text.GetString(),
-            lyric_main_text.GetLength(),
-            text_format,
-            &center_lyric_layout,
-            brush_played_text);
+        bool percentage_enabled = lrc_controller.is_percentage_enabled(lrc_controller.get_current_lrc_node_index());
+        if (percentage_enabled)
+        {
+            float percentage = lrc_controller.get_lrc_percentage(lrc_controller.get_current_lrc_node_index());
+
+            render_target->DrawText(
+                lyric_main_text.GetString(),
+                lyric_main_text.GetLength(),
+                text_format,
+                &center_lyric_layout,
+                brush_unplay_text);
+
+            // text_layout: line info
+            Microsoft::WRL::ComPtr<IDWriteTextLayout> text_layout;
+            write_factory->CreateTextLayout(
+                lyric_main_text.GetString(),
+                lyric_main_text.GetLength(),
+                text_format,
+                static_cast<float>(rc.right - rc.left),
+                FLT_MAX,
+                &text_layout);
+
+            if (text_layout)
+            {
+                text_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+
+                UINT32 line_count = 0;
+                text_layout->GetLineMetrics(nullptr, 0, &line_count);
+
+                if (line_count <= 1)
+                {
+                    float played_width = lyric_main_metrics_width * percentage;
+                    float text_left = (rc.right - rc.left - lyric_main_metrics_width) / 2.0f;
+
+                    D2D1_RECT_F clip_rect = D2D1::RectF(
+                        text_left,
+                        center_y,
+                        text_left + played_width,
+                        center_y + lyric_main_metrics_height
+                    );
+
+                    render_target->PushAxisAlignedClip(clip_rect, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+                    render_target->DrawText(
+                        lyric_main_text.GetString(),
+                        lyric_main_text.GetLength(),
+                        text_format,
+                        &center_lyric_layout,
+                        brush_played_text);
+                    render_target->PopAxisAlignedClip();
+                }
+                else
+                {
+                    // get all line metrics
+                    std::vector<DWRITE_LINE_METRICS> line_metrics(line_count);
+                    text_layout->GetLineMetrics(line_metrics.data(), line_count, &line_count);
+
+                    // calc sum of width
+                    float total_width = 0.0f;
+                    std::vector<float> line_widths(line_count);
+                    UINT32 char_pos = 0;
+
+                    for (UINT32 i = 0; i < line_count; ++i)
+                    {
+                        UINT32 visible_length = line_metrics[i].length - line_metrics[i].trailingWhitespaceLength;
+                        if (visible_length > 0)
+                        {
+                            DWRITE_HIT_TEST_METRICS hit{};
+                            float x, y;
+                            // get end font pos
+                            UNREFERENCED_PARAMETER(
+                                text_layout->HitTestTextPosition(char_pos + visible_length - 1, TRUE, &x, &y, &hit)
+                            );
+                            DWRITE_HIT_TEST_METRICS hit_start{};
+                            float x_start, y_start;
+                            // get start font pos
+                            UNREFERENCED_PARAMETER(
+                            text_layout->HitTestTextPosition(char_pos, FALSE, &x_start, &y_start, &hit_start)
+                            );
+                            line_widths[i] = hit.left + hit.width - hit_start.left;
+                        }
+                        else
+                        {
+                            line_widths[i] = 0.0f;
+                        }
+                        total_width += line_widths[i];
+                        char_pos += line_metrics[i].length;
+                    }
+
+                    float played_total_width = total_width * percentage;
+                    float accumulated_width = 0.0f;
+                    float current_y = center_y;
+                    char_pos = 0;
+
+                    for (UINT32 i = 0; i < line_count; ++i)
+                    {
+                        float line_height = line_metrics[i].height;
+
+                        if (accumulated_width + line_widths[i] <= played_total_width)
+                        {
+                            D2D1_RECT_F line_clip = D2D1::RectF(
+                                static_cast<float>(rc.left),
+                                current_y,
+                                static_cast<float>(rc.right),
+                                current_y + line_height
+                            );
+
+                            render_target->PushAxisAlignedClip(line_clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+                            render_target->DrawText(
+                                lyric_main_text.GetString(),
+                                lyric_main_text.GetLength(),
+                                text_format,
+                                &center_lyric_layout,
+                                brush_played_text);
+                            render_target->PopAxisAlignedClip();
+
+                            accumulated_width += line_widths[i];
+                        }
+                        else if (accumulated_width < played_total_width)
+                        {
+                            float remaining = played_total_width - accumulated_width;
+
+                            DWRITE_HIT_TEST_METRICS hit_start{};
+                            float x_start, y_start;
+                            UNREFERENCED_PARAMETER(
+                                text_layout->HitTestTextPosition(char_pos, FALSE, &x_start, &y_start, &hit_start)
+                            );
+                            float line_start_x = hit_start.left;
+
+                            D2D1_RECT_F line_clip = D2D1::RectF(
+                                static_cast<float>(rc.left),
+                                current_y,
+                                static_cast<float>(rc.left) + line_start_x + remaining,
+                                current_y + line_height
+                            );
+
+                            render_target->PushAxisAlignedClip(line_clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+                            render_target->DrawText(
+                                lyric_main_text.GetString(),
+                                lyric_main_text.GetLength(),
+                                text_format,
+                                &center_lyric_layout,
+                                brush_played_text);
+                            render_target->PopAxisAlignedClip();
+
+                            break;
+                        }
+
+                        current_y += line_height;
+                        char_pos += line_metrics[i].length;
+                    }
+                }
+            }
+        }
+        else
+        {
+            render_target->DrawText(
+                lyric_main_text.GetString(),
+                lyric_main_text.GetLength(),
+                text_format,
+                &center_lyric_layout,
+                brush_played_text);
+        }
 
         float lyric_aux_metrics_width, lyric_aux_metrics_height;
         if ((IsTranslationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation))
-             || (IsRomanizationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Romanization)))
+            || (IsRomanizationEnabled() && lrc_controller.is_auxiliary_info_enabled(LrcAuxiliaryInfo::Romanization)))
         {
             LrcAuxiliaryInfo lrc_aux_info = LrcAuxiliaryInfo::Ignored;
-            if (IsTranslationEnabled() && lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation) != -1)
+            if (IsTranslationEnabled() && lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation)
+                != -1)
                 lrc_aux_info = LrcAuxiliaryInfo::Translation;
-            else if (IsRomanizationEnabled() && lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Romanization) != -1)
+            else if (IsRomanizationEnabled() && lrc_controller.get_current_lrc_line_aux_index(
+                LrcAuxiliaryInfo::Romanization) != -1)
                 lrc_aux_info = LrcAuxiliaryInfo::Romanization;
             if (lrc_aux_info != LrcAuxiliaryInfo::Ignored)
             {
                 int lrc_aux_index = -1;
                 UNREFERENCED_PARAMETER(lrc_aux_index);
                 CString lrc_aux_text;
-                switch (lrc_aux_info) {
-                    case LrcAuxiliaryInfo::Translation: lrc_aux_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Translation); break;
-                    case LrcAuxiliaryInfo::Romanization: lrc_aux_index = lrc_controller.get_current_lrc_line_aux_index(LrcAuxiliaryInfo::Romanization); break;
-                    default:  assert(false);
+                switch (lrc_aux_info)
+                {
+                case LrcAuxiliaryInfo::Translation: lrc_aux_index = lrc_controller.get_current_lrc_line_aux_index(
+                        LrcAuxiliaryInfo::Translation);
+                    break;
+                case LrcAuxiliaryInfo::Romanization: lrc_aux_index = lrc_controller.get_current_lrc_line_aux_index(
+                        LrcAuxiliaryInfo::Romanization);
+                    break;
+                default: assert(false);
                 }
 
                 lrc_controller.get_current_lrc_line_at(lrc_aux_index, lrc_aux_text);
@@ -187,7 +352,7 @@ void CLrcManagerWnd::UpdateLyric()
                     lrc_aux_text.GetLength(),
                     text_format_translation,
                     &translation_layout,
-                    brush_played_text);
+                    percentage_enabled ? brush_unplay_text : brush_played_text);
             }
         }
 
@@ -544,6 +709,37 @@ void CLrcManagerWnd::DiscardDeviceResources()
     }
 }
 
+CSimpleArray<CString> SplitLrcForProgressMultiNode2(const CSimpleArray<CString>& texts)
+{
+    CSimpleArray<CString> strs;
+    for (int i = 0; i < texts.GetSize(); ++i)
+    {
+        const auto& text = texts[i];
+        auto new_text = CString();
+        bool is_pressed = false;
+        for (int j = 0; j < text.GetLength(); ++j)
+        {
+            if (text[j] == '[' || text[j] == '<')
+            {
+                is_pressed = true;
+                continue;
+            }
+            if (text[j] == ']' || text[j] == '>')
+            {
+                is_pressed = false;
+            }
+            else
+            {
+                if (is_pressed) continue;
+                new_text.AppendChar(text[j]);
+            }
+        }
+        strs.Add(new_text);
+    }
+    return strs;
+}
+
+
 LrcMultiNode::LrcMultiNode(int t, const CSimpleArray<CString>& texts) :
     LrcAbstractNode(t), str_count(texts.GetSize()), lrc_texts(texts)
 {
@@ -669,7 +865,7 @@ void LrcLanguageHelper::detect_eng_vs_jpn_romaji_prob(const CString& input, floa
     if (vowel_ratio > 0.45) romaji_score++;
     else english_score++;
 
-    if (float total = static_cast<float>(romaji_score + english_score); total == 0)
+    if (auto total = static_cast<float>(romaji_score + english_score); total == 0)
     { // NOLINT(*-use-auto)
         eng_prob_out = 0.5f;
         romaji_prob_out = 0.5f;
@@ -766,6 +962,100 @@ LrcLanguageHelper::detect_language_type(const CString& input, float* probability
     return LanguageType::others;
 }
 
+LrcProgressNode::LrcProgressNode(int t, const CString& text_with_node)
+    : LrcAbstractNode(t), node_count(0), end_time_ms(0)
+{
+    CString text = text_with_node;
+    int find_right_brace_info;
+    const TCHAR right_brace_type = text[text.GetLength() - 1];
+    TCHAR left_brace_type;
+    switch (right_brace_type)
+    {
+        case _T(']'): left_brace_type = _T('['); break;
+        case _T('>'): left_brace_type = _T('<'); break;
+        default: return;
+    }
+    do
+    {
+        find_right_brace_info = text.Find(right_brace_type);
+        CString node = text.Left(find_right_brace_info + 1);
+        if (node.IsEmpty())
+            continue;
+        auto node_controller_start_index = node.Find(left_brace_type);
+        if (node_controller_start_index == -1)
+        {
+            ATLTRACE(_T("warn: invalid progress node: %s\n"), node.GetString());
+            break;
+        }
+        auto time_stamp = node.Mid(node_controller_start_index + 1);
+        time_stamp.Remove(right_brace_type);
+        auto lyric_text = node.Left(node_controller_start_index);
+        int minutes = _ttoi(time_stamp.Left(2));
+        int seconds = _ttoi(time_stamp.Mid(3, 2));
+        CString milliseconds_str = time_stamp.Mid(6);
+        int milliseconds = _ttoi(milliseconds_str);
+        if (milliseconds_str.GetLength() < 3)
+        {
+            auto multiples = 3 - milliseconds_str.GetLength();
+            milliseconds *= std::floor(pow(10, multiples));
+        }
+        int total_ms = minutes * 60000 + seconds * 1000 + milliseconds;
+        nodes.Add({
+            .time_ms = total_ms,
+            .node_text = lyric_text
+        });
+        node_count++;
+        text = text.Mid(find_right_brace_info + 1);
+    } while (find_right_brace_info != -1);
+}
+
+float LrcProgressNode::get_lrc_percentage(float current_timestamp) const
+{
+    auto base = nodes.GetSize();
+    if (base == 0) return 1.0f;
+
+    const int timestamp_in_ms = static_cast<int>(current_timestamp * 1000);
+    if (timestamp_in_ms >= nodes[base - 1].time_ms)
+    {
+        return 1.0f;
+    }
+    if (timestamp_in_ms < time_ms)
+    {
+        return 0.0f;
+    }
+
+    int index;
+    float percentage_in_node = 0.0f, distance = 0.0f, percentage = 0.0f;
+    for (index = 0; index < base; ++index)
+    {
+        if (timestamp_in_ms < nodes[index].time_ms) break;
+    }
+
+    if (index != 0)
+    {
+        distance = static_cast<float>(nodes[index].time_ms - nodes[index - 1].time_ms);
+        percentage_in_node = static_cast<float>(timestamp_in_ms - nodes[index - 1].time_ms) / distance;
+    }
+    else
+    {
+        // time_ms->start
+        distance = static_cast<float>(nodes[0].time_ms - time_ms);
+        if (distance > 0)
+            percentage_in_node = static_cast<float>(timestamp_in_ms - time_ms) / distance;
+        else
+            percentage_in_node = 1.0f;
+    }
+
+    percentage = static_cast<float>(index) / base + (percentage_in_node / base);
+    return percentage;
+}
+
+LrcProgressMultiNode::LrcProgressMultiNode
+    (int t, const CString& str_1, const CSimpleArray<CString>& str_arr_2):
+    LrcAbstractNode(t),
+    LrcProgressNode(t, str_1),
+    LrcMultiNode(t, SplitLrcForProgressMultiNode2(str_arr_2)) { }
+
 LrcFileController::~LrcFileController()
 {
     clear_lrc_nodes();
@@ -823,8 +1113,9 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
     int start = 0, flag_decoding_metadata = 1;
     std::stack<CString> lyrics_in_ms;
     int recorded_ms = 0;
+    bool is_lrc_end = false;
 
-    auto pump_stack = [&]()
+    auto pump_stack = [&](bool is_lrc_ended)
     {
         CSimpleArray<CString> lrc_texts;
         while (!lyrics_in_ms.empty())
@@ -838,6 +1129,14 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             return;
         if (LrcAbstractNode* node = LrcNodeFactory::CreateLrcNode(recorded_ms, lrc_texts))
         {
+            if (!lrc_nodes.IsEmpty())
+            {
+                lrc_nodes[lrc_nodes.GetCount() - 1]->set_lrc_end_timestamp(recorded_ms);
+            }
+            if (is_lrc_ended)
+            {
+                node->set_lrc_end_timestamp(std::floor(this->song_duration_sec * 1000));
+            }
             lrc_nodes.Add(node);
             if (node->is_translation_enabled())
                 this->set_auxiliary_info_enabled(LrcAuxiliaryInfo::Translation);
@@ -856,6 +1155,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
         if (end == -1)
         {
             end = file_content_w.GetLength();
+            is_lrc_end = true;
         }
         CString line = file_content_w.Mid(start, end - start).Trim();
         if (line.IsEmpty())
@@ -925,7 +1225,13 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
         }
         int minutes = _ttoi(line.Mid(1, 2));
         int seconds = _ttoi(line.Mid(4, 2));
-        int milliseconds = _ttoi(line.Mid(7, time_tag_end_index - 7));
+        CString milliseconds_str = line.Mid(7, time_tag_end_index - 7);
+        int milliseconds = _ttoi(milliseconds_str);
+        if (milliseconds_str.GetLength() < 3)
+        {
+            auto multiples = 3 - milliseconds_str.GetLength();
+            milliseconds *= std::floor(pow(10, multiples));
+        }
 
         switch (int total_ms = minutes * 60000 + seconds * 1000 + milliseconds + lrc_offset_ms; WAY3RES(
             total_ms <=> recorded_ms))
@@ -943,7 +1249,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             // 先处理之前的歌词
             if (total_ms < 0) total_ms = 0;
             if (!lyrics_in_ms.empty())
-                pump_stack();
+                pump_stack(is_lrc_end);
             recorded_ms = total_ms;
             break;
         default:
@@ -952,7 +1258,7 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
         lyrics_in_ms.push(line.Mid(time_tag_end_index + 1).Trim());
         start = end + 1;
     }
-    pump_stack();
+    pump_stack(is_lrc_end);
     cur_lrc_node_index = 0;
 }
 
@@ -997,7 +1303,7 @@ void LrcFileController::time_stamp_increase(int ms)
 
 bool LrcFileController::valid() const
 {
-    return lrc_nodes.GetCount() > 0;
+    return lrc_nodes.GetCount() > 0 && song_duration_sec >= 0;
 }
 
 int LrcFileController::get_current_lrc_lines_count() const
@@ -1031,10 +1337,13 @@ int LrcFileController::get_lrc_line_aux_index(int lrc_node_index, LrcAuxiliaryIn
 
 LrcMetadataType LrcFileController::get_metadata_type(const CString& str)
 {
-    if (str.IsEmpty() || str.GetLength() < 3 || str[0] != '[' || str[str.GetLength() - 1] != ']')
+    if (str.IsEmpty() || str.GetLength() < 3 || str[0] != '[')
     {
         return LrcMetadataType::Error;
     }
+    // 逐字歌词有可能每个单位后都带有时间戳
+    if (str.Find(']') != str.GetLength() - 1)
+        return LrcMetadataType::Error;
     int metadata_end_index = str.Find(':', 1);
     if (metadata_end_index == -1)
         return LrcMetadataType::Error;

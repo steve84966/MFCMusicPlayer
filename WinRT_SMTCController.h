@@ -28,7 +28,7 @@ private:
 #pragma region Message Dispatching
 protected:
     DECLARE_MESSAGE_MAP()
-    winrt::Windows::Storage::Streams::IRandomAccessStream ConvertHBitmapToStream(HBITMAP hbitmap);
+    static winrt::Windows::Storage::Streams::IRandomAccessStream ConvertHBitmapToStream(HBITMAP hbitmap);
 
 public:
     afx_msg LRESULT OnSMTCUpdate(WPARAM wParam, LPARAM lParam);

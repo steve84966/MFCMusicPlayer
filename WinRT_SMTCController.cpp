@@ -32,7 +32,7 @@ void WinRT_SMTCController::Initialize(HWND hWnd) {
     SMTC.DisplayUpdater().Update();
 
     auto result = SMTC.ButtonPressed(
-        [hWnd, this](winrt::Windows::Media::SystemMediaTransportControls const& sender,
+        [hWnd](winrt::Windows::Media::SystemMediaTransportControls const& sender,
                      winrt::Windows::Media::SystemMediaTransportControlsButtonPressedEventArgs const& args) {
                 switch (args.Button()) {
                 case winrt::Windows::Media::SystemMediaTransportControlsButton::Play:
@@ -62,6 +62,7 @@ void WinRT_SMTCController::Initialize(HWND hWnd) {
     UNREFERENCED_PARAMETER(result);
 }
 
+// ReSharper disable once CppDFAConstantFunctionResult
 LRESULT WinRT_SMTCController::OnSMTCUpdate(WPARAM wParam, LPARAM lParam) {
     auto updateInfo = reinterpret_cast<SMTCControllerUpdateInfo*>(wParam);
 
@@ -110,8 +111,7 @@ LRESULT WinRT_SMTCController::OnSMTCUpdateStatus(WPARAM wParam, LPARAM lParam) {
 }
 
 
-winrt::Windows::Storage::Streams::IRandomAccessStream WinRT_SMTCController::ConvertHBitmapToStream(HBITMAP hbitmap)
-{
+winrt::Windows::Storage::Streams::IRandomAccessStream WinRT_SMTCController::ConvertHBitmapToStream(HBITMAP hbitmap) {
     if (!hbitmap)
         return nullptr;
 

@@ -357,7 +357,7 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 			auto id3_lyric = music_player->GetID3Lyric();
 			if (!id3_lyric.IsEmpty())
 			{
-				if (lrc_manager_wnd.InitLrcControllerWithStream(id3_lyric))
+				if (LoadLyric(id3_lyric, true, music_player->GetMusicTimeLength()))
 					return;
 			}
 			CString lrc_file = file_path.Left(file_path.GetLength() - ext.GetLength() - 1) + _T(".lrc");
@@ -444,13 +444,13 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 				if (!bestMatchFile.IsEmpty()) {
 					ATLTRACE(_T("info: found matching lrc file: %s (similarity: %.2f)\n"),
 							 bestMatchFile.GetString(), bestSimilarity);
-					LoadLyric(bestMatchFile);
+					LoadLyric(bestMatchFile, false, music_player->GetMusicTimeLength());
 					bLoadedLyric = true;
 					break;
 				}
 			}
 			if (!bLoadedLyric) {
-				LoadLyric(lrc_file);
+				LoadLyric(lrc_file, false, music_player->GetMusicTimeLength());
 			}
 		}
 	}
@@ -815,9 +815,12 @@ void CMFCMusicPlayerDlg::OnContextMenu(CWnd* pWnd, CPoint point)
 	CDialogEx::OnContextMenu(pWnd, point);
 }
 
-bool CMFCMusicPlayerDlg::LoadLyric(const CString &file_path) {
+bool CMFCMusicPlayerDlg::LoadLyric(const CString &in_str, bool is_lyric_text, float song_duration) {
 	lrc_manager_wnd.DestroyLrcController();
-	int result = lrc_manager_wnd.InitLrcControllerWithFile(file_path);
+	int result =
+		is_lyric_text
+		?   lrc_manager_wnd.InitLrcControllerWithStream(in_str, song_duration)
+		:	lrc_manager_wnd.InitLrcControllerWithFile(in_str, song_duration);
 	ATLTRACE(_T("info: lrc controller init result: %d\n"), result);
 	if (lrc_manager_wnd.IsValid())
 	{
@@ -1036,7 +1039,7 @@ void CMFCMusicPlayerDlg::OnMenuOpenCustomLrc() {
 		CFileDialog dlg(TRUE, _T("lrc"), nullptr, OFN_FILEMUSTEXIST, _T("Lyric Files (*.lrc)|*.lrc||"));
 		if (dlg.DoModal() == IDOK) {
 			CString path = dlg.GetPathName();
-			LoadLyric(path);
+			LoadLyric(path, FALSE, music_player->GetMusicTimeLength());
 		}
 	}
 }

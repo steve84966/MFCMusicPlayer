@@ -109,7 +109,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 
-	bool LoadLyric(const CString &file_path);
+	bool LoadLyric(const CString &in_str, bool is_lyric_text, float song_duration);
 	void DestroyMediaPlayer();
 	CStatic m_labelTime;
 	afx_msg void OnClickedButtonStop();
