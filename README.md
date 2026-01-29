@@ -22,6 +22,7 @@ Features:
 - real-time playback with XAudio2, swresample -> 44.1kHz/16bit/2ch pcm output
 - simple gui
 - lyric display support
+- word-by-word LRC parser / ESLyric parser, karaoke-like display
 - translation / romanization support
 - ARM64 build, tested on Snapdragon X Elite
 - NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
