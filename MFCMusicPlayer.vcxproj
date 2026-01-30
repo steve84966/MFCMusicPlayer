@@ -285,6 +285,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AtlTraceRedirect.h" />
+    <ClInclude Include="EqualizerDialog.h" />
     <ClInclude Include="LrcManagerWnd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCMusicPlayer.h" />
@@ -302,6 +303,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AtlTraceRedirect.cpp" />
+    <ClCompile Include="EqualizerDialog.cpp" />
     <ClCompile Include="LrcManagerWnd.cpp" />
     <ClCompile Include="MFCMusicPlayer.cpp" />
     <ClCompile Include="MFCMusicPlayerDlg.cpp" />

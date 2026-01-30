@@ -69,6 +69,7 @@
 #define IDC_BUTTONPREVIOUS              1021
 #define IDC_BUTTONNEXT                  1022
 #define IDC_BUTTONPLAYLISTMGMT          1023
+#define IDC_BUTTONRESETSPECTRUM         1024
 #define ID__32771                       32771
 #define ID__32772                       32772
 #define ID_32773                        32773
@@ -93,6 +94,7 @@
 #define ID_MENU_WINDOW_ALWAYSONTOP           32792
 #define ID_MENU_WINDOW_PLAYLIST              32793
 #define ID_MENU_WINDOW_SPECTRUM              32794
+#define ID_MENU_WINDOW_EQUALIZER             32795
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

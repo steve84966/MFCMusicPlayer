@@ -184,6 +184,10 @@ public:
 	int GetNBlockAlign();
 	CString GetID3Lyric();
 
+	// Equalizer interfaces
+	int GetEqualizerBand(int index);
+	void SetEqualizerBand(int index, int value);
+
 	// destructor
 	~MusicPlayer();
 };

@@ -9,6 +9,7 @@
 
 #include <set>
 
+#include "EqualizerDialog.h"
 #include "PlaylistDialog.h"
 
 
@@ -143,6 +144,7 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_WINDOW_ALWAYSONTOP, &CMFCMusicPlayerDlg::OnMenuWindowAlwaysOnTop)
 	ON_COMMAND(ID_MENU_WINDOW_PLAYLIST, &CMFCMusicPlayerDlg::OnClickedButtonPlaylistMgmt)
 	ON_COMMAND(ID_MENU_WINDOW_SPECTRUM, &CMFCMusicPlayerDlg::OnClickedButtonSpectrum)
+	ON_COMMAND(ID_MENU_WINDOW_EQUALIZER, &CMFCMusicPlayerDlg::OnClickedButtonEqualizer)
 	ON_MESSAGE(WM_PLAYLIST_CHANGED, &CMFCMusicPlayerDlg::OnPlaylistChanged)
 	ON_WM_CLOSE()
 	ON_WM_HSCROLL()
@@ -267,6 +269,8 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	}
 	DragAcceptFiles(TRUE);
 	visualizer.Create(IDD_DIALOGSPECTRUM, this);
+	equalizer.Create(IDD_SETTINGS_CHILDPAGE_EQUALIZER, this);
+	equalizer.SetParentDlg(this);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -454,6 +458,7 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 			}
 		}
 	}
+	UpdateEqualizer(eq_bands);
 }
 
 void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
@@ -518,6 +523,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
 		visualizer.ResetSpectrum();
+		UpdateEqualizer(eq_bands);
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
@@ -1345,5 +1351,20 @@ void CMFCMusicPlayerDlg::OnClickedButtonSpectrum()
 			SWP_NOZORDER | SWP_NOACTIVATE);
 
 		visualizer.ShowWindow(SW_SHOW);
+	}
+}
+
+void CMFCMusicPlayerDlg::OnClickedButtonEqualizer()
+{
+	equalizer.ShowWindow(SW_SHOW);
+}
+
+void CMFCMusicPlayerDlg::UpdateEqualizer(CSimpleArray<int> eq_bands)
+{
+	if (eq_bands.GetSize() != 10) return;
+	this->eq_bands = eq_bands;
+	if (!music_player || !music_player->IsInitialized()) return;
+	for (int i = 0; i < 10; i++) {
+		music_player->SetEqualizerBand(i, eq_bands[i]);
 	}
 }

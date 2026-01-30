@@ -1121,8 +1121,9 @@ void MusicPlayer::audio_decode_worker_thread()
 		av_packet_unref(packet);
 		clock_t decode_end = clock();
 		double decode_time_ms = (decode_end - decode_begin) * 1000.0 / CLOCKS_PER_SEC;
-		if (decode_time_ms > 10)
-			ATLTRACE("warn: decode cycle time=%lf ms > 10, may cause frame underrun!\n", decode_time_ms);
+		// this seems to be disrupting.
+//		if (decode_time_ms > 10)
+//			ATLTRACE("warn: decode cycle time=%lf ms > 10, may cause frame underrun!\n", decode_time_ms);
 	}
 }
 
@@ -1679,6 +1680,25 @@ int MusicPlayer::GetNBlockAlign()
 CString MusicPlayer::GetID3Lyric()
 {
 	return id3_string_lyric;
+}
+
+int MusicPlayer::GetEqualizerBand(int index)
+{
+	if (index < 0 || index >= 10) return 0;
+	return filter_graphs[index].gain_values;
+}
+
+void MusicPlayer::SetEqualizerBand(int index, int value)
+{
+	if (index < 0 || index >= 10) return;
+	if (value < -24) value = -24;
+	else if (value > 24) value = 24;
+	filter_graphs[index].gain_values = value;
+	CStringA eq_name, gain_val;
+	eq_name.Format("eq%d", index);
+	gain_val.Format("%d", value);
+
+	avfilter_graph_send_command(filter_graph, eq_name.GetString(), "gain", gain_val.GetString(), nullptr, 0, 0);
 }
 
 /*
