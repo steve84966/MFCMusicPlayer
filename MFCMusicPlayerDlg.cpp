@@ -524,7 +524,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 		music_player->RegisterWritePCMBytesCallback([this](const uint8_t* data_out, uint32_t samples_out)
 		{
 			auto data = std::vector(data_out, data_out + samples_out * music_player->GetNBlockAlign());
-			visualizer.AddSamplesToRingBuffer(data.data(), data.size());
+			visualizer.AddSamplesToRingBuffer(data.data(), static_cast<int>(data.size()));
 		});
 		smtc_controller->PostMessage(WM_PLAYER_UPDATE_SMTC_STATUS, static_cast<WPARAM>(winrt::Windows::Media::MediaPlaybackStatus::Playing));
 	}

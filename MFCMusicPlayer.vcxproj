@@ -290,7 +290,6 @@
     <ClInclude Include="MFCMusicPlayer.h" />
     <ClInclude Include="MFCMusicPlayerDlg.h" />
     <ClInclude Include="MusicPlayer.h" />
-    <ClInclude Include="MusicPlayerSettingDlg.h" />
     <ClInclude Include="MusicPlayerSettingsManager.h" />
     <ClInclude Include="NcmDecryptor.h" />
     <ClInclude Include="pch.h" />
@@ -307,7 +306,6 @@
     <ClCompile Include="MFCMusicPlayer.cpp" />
     <ClCompile Include="MFCMusicPlayerDlg.cpp" />
     <ClCompile Include="MusicPlayer.cpp" />
-    <ClCompile Include="MusicPlayerSettingDlg.cpp" />
     <ClCompile Include="MusicPlayerSettingsManager.cpp" />
     <ClCompile Include="NcmDecryptor.cpp" />
     <ClCompile Include="pch.cpp">

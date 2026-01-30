@@ -61,9 +61,9 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 			std::vector<uint8_t> file_data;
 			DWORD file_size = 0;
 			file_stream->SeekToBegin();
-			file_size = file_stream->GetLength();
+			file_size = static_cast<DWORD>(file_stream->GetLength());
 			file_data.resize(file_size);
-			file_stream->Read(file_data.data(), file_stream->GetLength());
+			file_stream->Read(file_data.data(), static_cast<UINT>(file_stream->GetLength()));
 			file_stream->SeekToBegin();
 			auto decryptor = new NcmDecryptor(file_data, audio_filename);
 			auto decryptor_result = decryptor->Decrypt();
@@ -72,7 +72,7 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 			mem_file->Write(decryptor_result.audioData.data(), static_cast<UINT>(decryptor_result.audioData.size()));
 			mem_file->SeekToBegin();
 			file_stream = mem_file;
-			download_ncm_album_art_async(decryptor_result.pictureUrl, 160 * GetSystemDpiScale());
+			download_ncm_album_art_async(decryptor_result.pictureUrl, static_cast<int>(160.f * GetSystemDpiScale()));
 			delete decryptor;
 		}
 		catch (std::exception& e)
@@ -344,7 +344,7 @@ HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 		void* pBufMax = nullptr;
 		file->GetBufferPtr(CFile::bufferRead, 0, &pBufStart, &pBufMax);
 		BYTE* pData = (BYTE*)pBufStart;
-		UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pData, file->GetLength()));
+		UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pData, static_cast<DWORD>(file->GetLength())));
 		IWICBitmapDecoder* bitmap_decoder = nullptr;
 		UNREFERENCED_PARAMETER(imaging_factory->CreateDecoderFromStream(iwic_stream, nullptr,
 			WICDecodeMetadataCacheOnLoad, &bitmap_decoder));
@@ -496,7 +496,7 @@ void MusicPlayer::download_ncm_album_art_async(const CString& url, int scale_siz
 {
 	AfxBeginThread([](LPVOID param) -> UINT {
 		auto* ctx = reinterpret_cast<std::pair<MusicPlayer*, CString>*>(param);
-		HBITMAP bitmap = download_ncm_album_art(ctx->second, 160 * GetSystemDpiScale());
+		HBITMAP bitmap = download_ncm_album_art(ctx->second, static_cast<int>(160.f * GetSystemDpiScale()));
 		AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(bitmap));
 		delete ctx;
 		return 0;

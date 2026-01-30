@@ -249,10 +249,10 @@ void SpectrumVisualizer::OnPaint()
             + static_cast<float>(i) * spectrum_seg_width
             + static_cast<float>(i - 1) * spectrum_seg_distance;
         dc.FillSolidRect(
-            std::floor(spectrum_seg_x_start),
-            std::floor(spectrum_seg_height_start),
-            std::floor(spectrum_seg_width),
-            std::floor(spectrum_seg_height),
+            static_cast<int>(spectrum_seg_x_start),
+            static_cast<int>(spectrum_seg_height_start),
+            static_cast<int>(spectrum_seg_width),
+            static_cast<int>(spectrum_seg_height),
             RGB(0, 255, 0));
         if (spectrum_seg_height > spectrum_max_data[i])
             spectrum_max_data[i] = spectrum_seg_height;
@@ -262,9 +262,9 @@ void SpectrumVisualizer::OnPaint()
                 spectrum_max_data[i] = 0.0f;
 
         dc.FillSolidRect(
-        std::floor(spectrum_seg_x_start),
-        std::floor(static_cast<float>(rect.Height()) - spectrum_max_data[i]),
-        std::floor(spectrum_seg_width), 2,
+        static_cast<int>(spectrum_seg_x_start),
+        static_cast<int>(static_cast<float>(rect.Height()) - spectrum_max_data[i]),
+        static_cast<int>(spectrum_seg_width), 2,
             RGB(255, 255, 255));
     }
 }

@@ -39,9 +39,6 @@
     <ClInclude Include="AtlTraceRedirect.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MusicPlayerSettingDlg.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MusicPlayerSettingsManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -81,9 +78,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="AtlTraceRedirect.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MusicPlayerSettingDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MusicPlayerSettingsManager.cpp">
