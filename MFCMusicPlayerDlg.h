@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "EqualizerDialog.h"
 #include "MusicPlayerSettingsManager.h"
 #include "MusicPlayer.h"
 #include "LrcManagerWnd.h"
@@ -88,6 +89,7 @@ protected:
 	bool bIsAdjustingLrcVertical = false;
 	int iPlaylistIndex = 0;
 	MusicPlayerSettingsManager settings_manager;
+	CSimpleArray<int> eq_bands;
 	DECLARE_MESSAGE_MAP()
 public:
 	static std::initializer_list<CString> music_ext_list;
@@ -130,6 +132,7 @@ public:
 	PlayListDialog* m_pPlaylistDlg = nullptr;
 	WinRT_SMTCController* smtc_controller;
 	SpectrumVisualizer visualizer;
+	EqualizerDialog equalizer;
 	afx_msg void OnMenuAbout();
 	[[noreturn]] afx_msg void OnMenuExit();
 	afx_msg void OnMenuOpenCustomLrc();
@@ -152,4 +155,6 @@ public:
 	afx_msg LRESULT OnSmtcPrevButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnClickedButtonSpectrum();
+	afx_msg void OnClickedButtonEqualizer();
+	void UpdateEqualizer(CSimpleArray<int> eq_bands);
 };

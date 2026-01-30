@@ -66,6 +66,11 @@ extern "C" {
 #include <libavutil/mem.h>
 #include <libswresample/swresample.h>
 #include <libswscale/swscale.h>
+#include <libavutil/frame.h>
+#include <libavfilter/avfilter.h>
+#include <libavfilter/buffersrc.h>
+#include <libavfilter/buffersink.h>
+
 #if defined(_WIN32) || defined(WIN32) || defined(__cplusplus)
 }
 #endif

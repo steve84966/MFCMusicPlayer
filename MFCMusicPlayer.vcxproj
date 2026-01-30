@@ -285,12 +285,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AtlTraceRedirect.h" />
+    <ClInclude Include="EqualizerDialog.h" />
     <ClInclude Include="LrcManagerWnd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCMusicPlayer.h" />
     <ClInclude Include="MFCMusicPlayerDlg.h" />
     <ClInclude Include="MusicPlayer.h" />
-    <ClInclude Include="MusicPlayerSettingDlg.h" />
     <ClInclude Include="MusicPlayerSettingsManager.h" />
     <ClInclude Include="NcmDecryptor.h" />
     <ClInclude Include="pch.h" />
@@ -303,11 +303,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AtlTraceRedirect.cpp" />
+    <ClCompile Include="EqualizerDialog.cpp" />
     <ClCompile Include="LrcManagerWnd.cpp" />
     <ClCompile Include="MFCMusicPlayer.cpp" />
     <ClCompile Include="MFCMusicPlayerDlg.cpp" />
     <ClCompile Include="MusicPlayer.cpp" />
-    <ClCompile Include="MusicPlayerSettingDlg.cpp" />
     <ClCompile Include="MusicPlayerSettingsManager.cpp" />
     <ClCompile Include="NcmDecryptor.cpp" />
     <ClCompile Include="pch.cpp">

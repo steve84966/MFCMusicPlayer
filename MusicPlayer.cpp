@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "MusicPlayer.h"
 #include "NcmDecryptor.h"
+#include <inttypes.h>
 
 int MusicPlayer::read_func(uint8_t* buf, int buf_size) {
 	// ATLTRACE("info: read buf_size=%d, rest=%lld\n", buf_size, file_stream->GetLength() - file_stream->GetPosition());
@@ -61,9 +62,9 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 			std::vector<uint8_t> file_data;
 			DWORD file_size = 0;
 			file_stream->SeekToBegin();
-			file_size = file_stream->GetLength();
+			file_size = static_cast<DWORD>(file_stream->GetLength());
 			file_data.resize(file_size);
-			file_stream->Read(file_data.data(), file_stream->GetLength());
+			file_stream->Read(file_data.data(), static_cast<UINT>(file_stream->GetLength()));
 			file_stream->SeekToBegin();
 			auto decryptor = new NcmDecryptor(file_data, audio_filename);
 			auto decryptor_result = decryptor->Decrypt();
@@ -72,7 +73,7 @@ inline int MusicPlayer::load_audio_context(const CString& audio_filename, const 
 			mem_file->Write(decryptor_result.audioData.data(), static_cast<UINT>(decryptor_result.audioData.size()));
 			mem_file->SeekToBegin();
 			file_stream = mem_file;
-			download_ncm_album_art_async(decryptor_result.pictureUrl, 160 * GetSystemDpiScale());
+			download_ncm_album_art_async(decryptor_result.pictureUrl, static_cast<int>(160.f * GetSystemDpiScale()));
 			delete decryptor;
 		}
 		catch (std::exception& e)
@@ -211,6 +212,7 @@ int MusicPlayer::load_audio_context_stream(CFile* in_file_stream)
 	codec_context->skip_frame = AVDISCARD_NONREF;
 
 	// 解码文件
+	codec_context->request_sample_fmt = AV_SAMPLE_FMT_S32P;
 	res = avcodec_open2(codec_context, codec, nullptr);
 	if (res)
 	{
@@ -242,9 +244,14 @@ int MusicPlayer::load_audio_context_stream(CFile* in_file_stream)
 
 	// init decoder
 	frame = av_frame_alloc();
+	filt_frame = av_frame_alloc();
 	packet = av_packet_alloc();
 	decoder_audio_channels = codec_context->ch_layout.nb_channels;
 	decoder_audio_sample_fmt = codec_context->sample_fmt;
+
+	reset_av_filter_equalizer();
+	init_av_filter_equalizer();
+
 	init_decoder_thread();
 	return 0;
 }
@@ -344,7 +351,7 @@ HBITMAP MusicPlayer::download_ncm_album_art(const CString& url, int scale_size)
 		void* pBufMax = nullptr;
 		file->GetBufferPtr(CFile::bufferRead, 0, &pBufStart, &pBufMax);
 		BYTE* pData = (BYTE*)pBufStart;
-		UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pData, file->GetLength()));
+		UNREFERENCED_PARAMETER(iwic_stream->InitializeFromMemory(pData, static_cast<DWORD>(file->GetLength())));
 		IWICBitmapDecoder* bitmap_decoder = nullptr;
 		UNREFERENCED_PARAMETER(imaging_factory->CreateDecoderFromStream(iwic_stream, nullptr,
 			WICDecodeMetadataCacheOnLoad, &bitmap_decoder));
@@ -496,7 +503,7 @@ void MusicPlayer::download_ncm_album_art_async(const CString& url, int scale_siz
 {
 	AfxBeginThread([](LPVOID param) -> UINT {
 		auto* ctx = reinterpret_cast<std::pair<MusicPlayer*, CString>*>(param);
-		HBITMAP bitmap = download_ncm_album_art(ctx->second, 160 * GetSystemDpiScale());
+		HBITMAP bitmap = download_ncm_album_art(ctx->second, static_cast<int>(160.f * GetSystemDpiScale()));
 		AfxGetMainWnd()->PostMessage(WM_PLAYER_ALBUM_ART_INIT, reinterpret_cast<WPARAM>(bitmap));
 		delete ctx;
 		return 0;
@@ -670,6 +677,11 @@ inline void MusicPlayer::uninitialize_audio_engine()
 	if (frame) {
 		av_frame_free(&frame);
 		frame = nullptr;
+	}
+	if (filt_frame)
+	{
+		av_frame_free(&filt_frame);
+		filt_frame = nullptr;
 	}
 	if (packet) {
 		av_packet_free(&packet);
@@ -1060,12 +1072,23 @@ void MusicPlayer::audio_decode_worker_thread()
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
 				break;
 			}
-			CriticalSectionLock fifo_lock(audio_fifo_section);
-			if (int ret_code = 0; (ret_code = add_samples_to_fifo(frame->extended_data, frame->nb_samples)) < 0) {
+			if (int ret_code = av_buffersrc_add_frame(filter_context_src, frame); ret_code < 0)
+			{
 				FFMPEG_CRITICAL_ERROR(ret_code);
 				InterlockedExchange(playback_state, audio_playback_state_stopped);
 				// LeaveCriticalSection(audio_fifo_section);
 				break;
+			}
+			CriticalSectionLock fifo_lock(audio_fifo_section);
+			while (av_buffersink_get_frame(filter_context_sink, filt_frame) >= 0)
+			{
+				if (int ret_code = 0; (ret_code = add_samples_to_fifo(filt_frame->extended_data, filt_frame->nb_samples)) < 0) {
+					FFMPEG_CRITICAL_ERROR(ret_code);
+					InterlockedExchange(playback_state, audio_playback_state_stopped);
+					// LeaveCriticalSection(audio_fifo_section);
+					break;
+				}
+				av_frame_unref(filt_frame);
 			}
 			// ATLTRACE("info: decoded frame nb_samples=%d, pts=%lld\n", frame->nb_samples, frame->pts);
 			// LeaveCriticalSection(audio_fifo_section);
@@ -1098,8 +1121,9 @@ void MusicPlayer::audio_decode_worker_thread()
 		av_packet_unref(packet);
 		clock_t decode_end = clock();
 		double decode_time_ms = (decode_end - decode_begin) * 1000.0 / CLOCKS_PER_SEC;
-		if (decode_time_ms > 10)
-			ATLTRACE("warn: decode cycle time=%lf ms > 10, may cause frame underrun!\n", decode_time_ms);
+		// this seems to be disrupting.
+//		if (decode_time_ms > 10)
+//			ATLTRACE("warn: decode cycle time=%lf ms > 10, may cause frame underrun!\n", decode_time_ms);
 	}
 }
 
@@ -1439,6 +1463,104 @@ MusicPlayer::MusicPlayer() :
 	ATLTRACE("info: audio api backend: XAudio2 version %s\n", get_backend_implement_version());
 }
 
+void MusicPlayer::init_av_filter_equalizer()
+{
+	filter_graph = avfilter_graph_alloc();
+
+	CStringA layout_str;
+	auto layout_str_buffer = layout_str.GetBufferSetLength(256);
+	av_channel_layout_describe(&codec_context->ch_layout, layout_str_buffer, 256);
+	layout_str.ReleaseBuffer();
+	CStringA args;
+	args.Format("sample_rate=%d:sample_fmt=%s:channel_layout=%s",
+	            codec_context->sample_rate,
+	            av_get_sample_fmt_name(codec_context->sample_fmt),
+	            layout_str.GetString());
+	ATLTRACE("info: init_av_filter_equalizer, filter args: %s\n", args.GetString());
+	avfilter_graph_create_filter(&filter_context_src, avfilter_get_by_name("abuffer"),
+	                             "src", args.GetString(), nullptr, filter_graph);
+	for (int i = 0; i < 10; i++)
+	{
+		constexpr int freq_hz[] = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
+		av_filter_eq_graph eq_graph{
+			.freq = freq_hz[i],
+			.gain_values = 0,
+			.eq_context = nullptr
+		};
+		eq_graph.eq_name.Format("eq%d", i);
+		CStringA arg_str;
+		arg_str.Format("f=%d:t=q:w=1:g=%d", freq_hz[i], 0);
+		ATLTRACE("info: init_av_filter_equalizer, filter args: %s\n", arg_str.GetString());
+
+		int ret = avfilter_graph_create_filter(&eq_graph.eq_context, avfilter_get_by_name("equalizer"),
+		                                       eq_graph.eq_name.GetString(),
+		                                       arg_str.GetString(), nullptr, filter_graph);
+		if (ret < 0)
+		{
+			FFMPEG_CRITICAL_ERROR(ret);
+			return;
+		}
+
+		filter_graphs.Add(eq_graph);
+	}
+	avfilter_graph_create_filter(&filter_context_sink, avfilter_get_by_name("abuffersink"),
+	                             "sink", nullptr, nullptr, filter_graph);
+	int ret = avfilter_graph_create_filter(&volume_ctx, avfilter_get_by_name("volume"),
+	                                       "pregain", "volume=0.7", nullptr, filter_graph);
+	if (ret < 0)
+	{
+		FFMPEG_CRITICAL_ERROR(ret);
+		return;
+	}
+	avfilter_link(filter_context_src, 0, volume_ctx, 0);
+	avfilter_link(volume_ctx, 0, filter_graphs[0].eq_context, 0);
+	for (int i = 0; i < 9; i++)
+	{
+		avfilter_link(filter_graphs[i].eq_context, 0, filter_graphs[i + 1].eq_context, 0);
+	}
+	ret = avfilter_graph_create_filter(&limiter_ctx, avfilter_get_by_name("alimiter"),
+	                                   "lim", "limit=0.70:attack=5:release=50:level=disabled", nullptr, filter_graph);
+	if (ret < 0)
+	{
+		FFMPEG_CRITICAL_ERROR(ret);
+		return;
+	}
+	avfilter_link(filter_graphs[9].eq_context, 0, limiter_ctx, 0);
+	ATLTRACE("info: limiter linked\n");
+	CStringA fmt_args;
+	fmt_args.Format("sample_fmts=%s:channel_layouts=stereo",
+	                av_get_sample_fmt_name(codec_context->sample_fmt));
+	ret = avfilter_graph_create_filter(&format_normalize_ctx,
+	                                   avfilter_get_by_name("aformat"),
+	                                   "aformat", fmt_args.GetString(), nullptr, filter_graph);
+	if (ret < 0)
+	{
+		FFMPEG_CRITICAL_ERROR(ret);
+		return;
+	}
+	ATLTRACE("info: format filter created, param = %s\n", fmt_args.GetString());
+	avfilter_link(limiter_ctx, 0, format_normalize_ctx, 0);
+	avfilter_link(format_normalize_ctx, 0, filter_context_sink, 0);
+
+	avfilter_graph_config(filter_graph, nullptr);
+}
+
+bool MusicPlayer::is_av_filter_equalizer_initialized()
+{
+	return filter_graphs.GetSize() > 0
+			&& filter_context_src && filter_context_sink;
+}
+
+void MusicPlayer::reset_av_filter_equalizer()
+{
+	if (filter_graph)
+		avfilter_graph_free(&filter_graph);
+	filter_graph = nullptr;
+	filter_context_src = filter_context_sink = nullptr;
+	volume_ctx = limiter_ctx = format_normalize_ctx = nullptr;
+	filter_graphs.RemoveAll();
+}
+
 bool MusicPlayer::IsInitialized()
 {
 	return is_audio_context_initialized() && is_xaudio2_initialized();
@@ -1446,7 +1568,7 @@ bool MusicPlayer::IsInitialized()
 
 bool MusicPlayer::IsPlaying()
 {
-	return (*playback_state != audio_playback_state_init) && (*playback_state != audio_playback_state_stopped);
+	return *playback_state != audio_playback_state_init && *playback_state != audio_playback_state_stopped;
 }
 
 void MusicPlayer::OpenFile(const CString& fileName, const CString& file_extension_in)
@@ -1558,6 +1680,25 @@ int MusicPlayer::GetNBlockAlign()
 CString MusicPlayer::GetID3Lyric()
 {
 	return id3_string_lyric;
+}
+
+int MusicPlayer::GetEqualizerBand(int index)
+{
+	if (index < 0 || index >= 10) return 0;
+	return filter_graphs[index].gain_values;
+}
+
+void MusicPlayer::SetEqualizerBand(int index, int value)
+{
+	if (index < 0 || index >= 10) return;
+	if (value < -24) value = -24;
+	else if (value > 24) value = 24;
+	filter_graphs[index].gain_values = value;
+	CStringA eq_name, gain_val;
+	eq_name.Format("eq%d", index);
+	gain_val.Format("%d", value);
+
+	avfilter_graph_send_command(filter_graph, eq_name.GetString(), "gain", gain_val.GetString(), nullptr, 0, 0);
 }
 
 /*
