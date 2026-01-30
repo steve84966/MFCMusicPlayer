@@ -1356,6 +1356,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonSpectrum()
 
 void CMFCMusicPlayerDlg::OnClickedButtonEqualizer()
 {
+	equalizer.UpdateEqualizerUI(this->eq_bands);
 	equalizer.ShowWindow(SW_SHOW);
 }
 

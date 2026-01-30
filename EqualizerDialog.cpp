@@ -70,6 +70,15 @@ void EqualizerDialog::OnClickedButtonResetSpectrum()
 }
 
 
+void EqualizerDialog::UpdateEqualizerUI(CSimpleArray<int> eq_bands)
+{
+	for (int i = 0; i < eq_bands.GetSize(); ++i)
+	{
+		const int pos = static_cast<int>(-10.0f * eq_bands[i] + 120);
+		m_sliderGain[i].SetPos(pos);
+	}
+}
+
 BEGIN_MESSAGE_MAP(EqualizerDialog, CDialogEx)
 	ON_WM_VSCROLL()
 	ON_BN_CLICKED(IDC_BUTTONRESETSPECTRUM, &EqualizerDialog::OnClickedButtonResetSpectrum)

@@ -34,6 +34,7 @@ public:
 	{
 		m_pParentDlg = pParentDlg;
 	}
+	void UpdateEqualizerUI(CSimpleArray<int> eq_bands);
 protected:
 	DECLARE_MESSAGE_MAP()
 };
