@@ -28,6 +28,7 @@ Features:
 - NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
 - Windows's SystemMediaTransportControls support
 - audio spectrum display based on fftw3
+- equalizer support based on libavfilter
 
 Screenshot:
 
