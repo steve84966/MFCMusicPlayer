@@ -263,7 +263,10 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 			ATLTRACE(_T("err: file ext is empty!\n"));
 		}
 		else {
-			OpenMusic(file_path, ext);
+			// fix argv[1] open, playlist not working
+			CStringArray array;
+			array.Add(file_path);
+			OpenMusic(array);
 		}
 		LocalFree(str);
 	}

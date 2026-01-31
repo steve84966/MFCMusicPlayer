@@ -1463,6 +1463,12 @@ MusicPlayer::MusicPlayer() :
 	ATLTRACE("info: audio api backend: XAudio2 version %s\n", get_backend_implement_version());
 }
 
+/**
+ * @brief Initializes the audio filter graph using libavfilter
+ *
+ * @note in case of pcm buffering using AVAudioFifo,
+ * equalizer will only affect decoding after ~1s.
+ */
 void MusicPlayer::init_av_filter_equalizer()
 {
 	filter_graph = avfilter_graph_alloc();

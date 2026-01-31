@@ -1163,6 +1163,13 @@ void LrcFileController::parse_lrc_file_stream(CFile* file_stream)
             start = end + 1;
             continue;
         }
+        auto line_start_index = line.Find(_T('['));
+        // 剔除行开头的不合法字符
+        if (line_start_index != -1 && line_start_index != 0)
+        {
+            ATLTRACE(_T("warn: invalid lrc format, ignoring start character: %s\n"), line.Left(line_start_index).GetString());
+            line = line.Right(line.GetLength() - line_start_index);
+        }
         if (flag_decoding_metadata)
         {
             // 走metadata解析，不遵守标准lrc解码
