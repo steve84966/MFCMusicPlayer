@@ -26,6 +26,7 @@
 #define IDD_DIALOGPLAYLIST              143
 #define IDI_ICONPREVIOUS                144
 #define IDD_DIALOGSPECTRUM              144
+#define IDD_SETTINGS_CHILDPAGE_EQUALIZER_PRESET 145
 #define IDI_ICONNEXT                    145
 #define IDI_ICONPLAYLIST                146
 #define IDI_ICONSEQUENTIAL              147
@@ -70,6 +71,9 @@
 #define IDC_BUTTONNEXT                  1022
 #define IDC_BUTTONPLAYLISTMGMT          1023
 #define IDC_BUTTONRESETSPECTRUM         1024
+#define IDC_BUTTONPRESETSPECTRUM        1025
+#define IDC_BUTTONINPUTSPECTRUM         1026
+#define IDC_COMBO_PRESET                1027
 #define ID__32771                       32771
 #define ID__32772                       32772
 #define ID_32773                        32773

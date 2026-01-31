@@ -274,6 +274,11 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	visualizer.Create(IDD_DIALOGSPECTRUM, this);
 	equalizer.Create(IDD_SETTINGS_CHILDPAGE_EQUALIZER, this);
 	equalizer.SetParentDlg(this);
+
+	for (int i = 0; i < 10; ++i) 
+	{
+		eq_bands.Add(0);
+	}
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -333,6 +338,13 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 	{
 		delete music_player;
 		music_player = new MusicPlayer();
+		if (eq_bands.GetSize() == 10)
+		{
+			for (int i = 0; i < 10; ++i)
+			{
+				music_player->SetEqualizerBand(i, eq_bands[i]);
+			}
+		}
 		// make ext lower
 		CString ext = ext_in;
 		ext.MakeLower();
@@ -399,10 +411,10 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 					set2.insert(str2[i]);
 				std::set<TCHAR> intersection;
 				std::ranges::set_intersection(set1, set2,
-				                              std::inserter(intersection, intersection.begin()));
+											  std::inserter(intersection, intersection.begin()));
 				std::set<TCHAR> uni;
 				std::ranges::set_union(set1, set2,
-				                       std::inserter(uni, uni.begin()));
+									   std::inserter(uni, uni.begin()));
 				return static_cast<float>(intersection.size()) / static_cast<float>(uni.size());
 			};
 			BOOL bLoadedLyric = false;
@@ -461,7 +473,6 @@ void CMFCMusicPlayerDlg::OpenMusic(const CString& file_path, const CString& ext_
 			}
 		}
 	}
-	UpdateEqualizer(eq_bands);
 }
 
 void CMFCMusicPlayerDlg::OpenMusic(const CStringArray& array)
@@ -526,7 +537,6 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
 		visualizer.ResetSpectrum();
-		UpdateEqualizer(eq_bands);
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
@@ -1367,7 +1377,7 @@ void CMFCMusicPlayerDlg::UpdateEqualizer(CSimpleArray<int> eq_bands)
 {
 	if (eq_bands.GetSize() != 10) return;
 	this->eq_bands = eq_bands;
-	if (!music_player || !music_player->IsInitialized()) return;
+	if (!music_player) return;
 	for (int i = 0; i < 10; i++) {
 		music_player->SetEqualizerBand(i, eq_bands[i]);
 	}

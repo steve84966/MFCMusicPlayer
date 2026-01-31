@@ -56,12 +56,21 @@ target_compile_definitions(MFCMusicPlayer
         _UNICODE
         _AFXDLL
         _BUILD_SYSTEM_CMAKE
-        ATLTRACE_REDIRECT_ENABLED
         $<$<CONFIG:Debug>:_DEBUG>
         $<$<CONFIG:Release>:NDEBUG>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},X86>:WIN32>
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ARCHITECTURE_ID},ARM64>:ARM64>
 )
+
+if (CMAKE_VISUAL_STUDIO)
+    message(STATUS "Visual Studio detected, ATLTRACE redirect disabled.")
+else()
+    target_compile_definitions(MFCMusicPlayer
+        PUBLIC
+            ATLTRACE_REDIRECT_ENABLED
+    )
+endif()
+
 
 target_link_libraries(MFCMusicPlayer
     PUBLIC

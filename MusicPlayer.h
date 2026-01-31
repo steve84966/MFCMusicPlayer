@@ -138,6 +138,7 @@ protected:
 	void dialog_ffmpeg_critical_error(int err_code, const char* file, int line);
 
 	// equalizer settings
+	CSimpleArray<int> eq_bands;
 	AVFilterGraph *filter_graph = nullptr;
 	struct av_filter_eq_graph
 	{

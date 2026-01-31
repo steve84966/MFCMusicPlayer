@@ -1461,6 +1461,10 @@ MusicPlayer::MusicPlayer() :
 		avutil_version(),
 		swresample_version());
 	ATLTRACE("info: audio api backend: XAudio2 version %s\n", get_backend_implement_version());
+	for (int i = 0; i < 10; ++i)
+	{
+		eq_bands.Add(0);
+	}
 }
 
 /**
@@ -1485,17 +1489,29 @@ void MusicPlayer::init_av_filter_equalizer()
 	ATLTRACE("info: init_av_filter_equalizer, filter args: %s\n", args.GetString());
 	avfilter_graph_create_filter(&filter_context_src, avfilter_get_by_name("abuffer"),
 	                             "src", args.GetString(), nullptr, filter_graph);
+	if (eq_bands.GetSize() != 10)
+	{
+		ATLTRACE("warn: invalid eq_bands size, =%d\n", eq_bands.GetSize());
+		eq_bands.RemoveAll();
+		for (int i = 0; i < 10; i++)
+		{
+			eq_bands.Add(0);
+		}
+	} else
+	{
+		ATLTRACE("info: eq_bands already initialized, skip\n");
+	}
 	for (int i = 0; i < 10; i++)
 	{
 		constexpr int freq_hz[] = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
 		av_filter_eq_graph eq_graph{
 			.freq = freq_hz[i],
-			.gain_values = 0,
+			.gain_values = eq_bands[i],
 			.eq_context = nullptr
 		};
 		eq_graph.eq_name.Format("eq%d", i);
 		CStringA arg_str;
-		arg_str.Format("f=%d:t=q:w=1:g=%d", freq_hz[i], 0);
+		arg_str.Format("f=%d:t=q:w=1:g=%d", freq_hz[i], eq_bands[i]);
 		ATLTRACE("info: init_av_filter_equalizer, filter args: %s\n", arg_str.GetString());
 
 		int ret = avfilter_graph_create_filter(&eq_graph.eq_context, avfilter_get_by_name("equalizer"),
@@ -1699,12 +1715,17 @@ void MusicPlayer::SetEqualizerBand(int index, int value)
 	if (index < 0 || index >= 10) return;
 	if (value < -24) value = -24;
 	else if (value > 24) value = 24;
-	filter_graphs[index].gain_values = value;
-	CStringA eq_name, gain_val;
-	eq_name.Format("eq%d", index);
-	gain_val.Format("%d", value);
+	if (eq_bands.GetSize() == 10)
+		eq_bands[index] = value;
+	if (this->is_av_filter_equalizer_initialized())
+	{
+		filter_graphs[index].gain_values = value;
+		CStringA eq_name, gain_val;
+		eq_name.Format("eq%d", index);
+		gain_val.Format("%d", value);
 
-	avfilter_graph_send_command(filter_graph, eq_name.GetString(), "gain", gain_val.GetString(), nullptr, 0, 0);
+		avfilter_graph_send_command(filter_graph, eq_name.GetString(), "gain", gain_val.GetString(), nullptr, 0, 0);
+	}
 }
 
 /*
