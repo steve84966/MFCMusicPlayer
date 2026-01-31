@@ -536,7 +536,9 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
 		visualizer.ResetSpectrum();
-		UpdateEqualizer(eq_bands);
+		for (int i = 0; i < 10; i++) {
+			music_player->SetEqualizerBand(i, eq_bands[i]);
+		}
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
