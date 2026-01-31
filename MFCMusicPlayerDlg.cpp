@@ -274,11 +274,10 @@ BOOL CMFCMusicPlayerDlg::OnInitDialog()
 	visualizer.Create(IDD_DIALOGSPECTRUM, this);
 	equalizer.Create(IDD_SETTINGS_CHILDPAGE_EQUALIZER, this);
 	equalizer.SetParentDlg(this);
+	eq_bands = settings_manager.GetEqBands();
 
-	for (int i = 0; i < 10; ++i) 
-	{
-		eq_bands.Add(0);
-	}
+	equalizer.SetPreset(settings_manager.GetEqPresetID());
+	equalizer.UpdateEqualizerUI(eq_bands);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -537,6 +536,7 @@ void CMFCMusicPlayerDlg::OnClickedButtonPlay()
 	// TODO: 在此添加控件通知处理程序代码
 	if (music_player) {
 		visualizer.ResetSpectrum();
+		UpdateEqualizer(eq_bands);
 		float volume = static_cast<float>(m_sliderVolumeCtrl.GetPos()) / 100.0f;
 		music_player->SetMasterVolume(volume);
 		music_player->Start();
@@ -1381,4 +1381,13 @@ void CMFCMusicPlayerDlg::UpdateEqualizer(CSimpleArray<int> eq_bands)
 	for (int i = 0; i < 10; i++) {
 		music_player->SetEqualizerBand(i, eq_bands[i]);
 	}
+	SaveEqualizer();
+}
+
+void CMFCMusicPlayerDlg::SaveEqualizer()
+{
+	int preset_id = equalizer.GetPreset();
+	settings_manager.SetEqPresetID(preset_id);
+	settings_manager.SetEqBands(eq_bands);
+	settings_manager.SaveIni();
 }

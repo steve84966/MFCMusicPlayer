@@ -26,6 +26,10 @@ private:
 	bool lyric_aux_font_bold = false, lyric_aux_font_italic = false;
 	COLORREF lyric_font_color = D2D1::ColorF::Black;
 	COLORREF lyric_font_color_translation = D2D1::ColorF::DarkGray;
+
+	// eq settings
+	CSimpleArray<int> eq_bands{};
+	int eq_preset_id = 0;
 public:
 	[[nodiscard]] int GetLyricFontSize() const { return lyric_font_size; }
 	void SetLyricFontSize(int font_size) { lyric_font_size = font_size; }
@@ -47,6 +51,10 @@ public:
 	void SetLyricAuxFontItalic(bool is_italic) { lyric_aux_font_italic = is_italic; }
 	[[nodiscard]] COLORREF GetLyricFontColorTranslation() const { return lyric_font_color_translation; }
 	void SetLyricFontColorTranslation(COLORREF font_color_translation) { lyric_font_color_translation = font_color_translation; }
+	[[nodiscard]] int GetEqPresetID() const { return eq_preset_id; }
+	void SetEqPresetID(int preset_id) { eq_preset_id = preset_id; }
+	[[nodiscard]] const CSimpleArray<int>& GetEqBands() const { return eq_bands; }
+	void SetEqBands(const CSimpleArray<int>& bands) { eq_bands = bands; }
 #pragma endregion
 
 #pragma region SerializeToINI
@@ -91,6 +99,14 @@ public:
 		buffer = lyric_aux_font_name.GetBuffer(MAX_PATH);
 		GetPrivateProfileString(_T("LyricSettings"), _T("LyricAuxFontName"), _T("Microsoft YaHei UI"), buffer, MAX_PATH, ini_fullpath);
 		lyric_aux_font_name.ReleaseBuffer();
+
+		eq_preset_id = GetPrivateProfileInt(_T("EqSettings"), _T("EqPresetID"), 0, ini_fullpath);
+		for (int i = 0; i < 10; ++i)
+		{
+			CString keyName;
+			keyName.Format(_T("EqBand%d"), i);
+			eq_bands.Add(GetPrivateProfileInt(_T("EqSettings"), keyName.GetString(), 0, ini_fullpath));
+		}
 	}
 	void SaveSettingsToINI()
 	{
@@ -105,6 +121,14 @@ public:
 		WritePrivateProfileString(_T("LyricSettings"), _T("LyricAuxFontName"), lyric_aux_font_name, ini_fullpath);
 		WritePrivateProfileString(_T("LyricSettings"), _T("LyricAuxFontBold"), std::to_wstring(lyric_aux_font_bold).c_str(), ini_fullpath);
 		WritePrivateProfileString(_T("LyricSettings"), _T("LyricAuxFontItalic"), std::to_wstring(lyric_aux_font_italic).c_str(), ini_fullpath);
+
+		WritePrivateProfileString(_T("EqSettings"), _T("EqPresetID"), std::to_wstring(eq_preset_id).c_str(), ini_fullpath);
+		for (int i = 0; i < 10; ++i)
+		{
+			CString keyName;
+			keyName.Format(_T("EqBand%d"), i);
+			WritePrivateProfileString(_T("EqSettings"), keyName.GetString(), std::to_wstring(eq_bands[i]).c_str(), ini_fullpath);
+		}
 	}
 
 	bool IsIniExists() const {

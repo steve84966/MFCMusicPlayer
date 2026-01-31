@@ -157,4 +157,5 @@ public:
 	afx_msg void OnClickedButtonSpectrum();
 	afx_msg void OnClickedButtonEqualizer();
 	void UpdateEqualizer(CSimpleArray<int> eq_bands);
+	void SaveEqualizer();
 };
