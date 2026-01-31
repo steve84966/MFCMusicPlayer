@@ -236,7 +236,7 @@ void SpectrumVisualizer::OnPaint()
     GetClientRect(&rect);
     dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(0, 0, 0));
 
-    constexpr float spectrum_seg_width = 18.0f;
+    const float spectrum_seg_width = 12.0f * GetSystemDpiScale();
     constexpr float spectrum_seg_distance = 2.0f;
     const int spectrum_seg_count = static_cast<int>(spectrum_data.size());
     const int spectrum_seg_start =
