@@ -7,6 +7,11 @@
 #include "EqualizerDialog.h"
 #include "MFCMusicPlayerDlg.h"
 
+IMPLEMENT_DYNAMIC(InputDlg, CDialogEx)
+
+BEGIN_MESSAGE_MAP(InputDlg, CDialogEx)
+END_MESSAGE_MAP()
+
 IMPLEMENT_DYNAMIC(EqualizerPresetDialog, CDialogEx)
 
 constexpr int eq_preset[][10] = {
@@ -130,6 +135,54 @@ void EqualizerDialog::OnClickedButtonPresetSpectrum()
 	dlg.DoModal();
 }
 
+void EqualizerDialog::OnClickedButtonInputSpectrum()
+{
+	CString equalizer_data{};
+	for (int j = 0; j < 10; ++j)
+	{
+		const auto val = -static_cast<float>(m_sliderGain[j].GetPos() - 120) / 10.0f;
+		equalizer_data.AppendFormat(_T("%d,"), static_cast<int>(val));
+	}
+	equalizer_data.TrimRight(_T(","));
+	InputDlg dlg(this);
+	dlg.m_strInput = equalizer_data;
+	if (dlg.DoModal() == IDOK)
+	{
+		CSimpleArray<int> eq_bands;
+		equalizer_data = dlg.m_strInput;
+		ATLTRACE(_T("info: input equalizer = %s\n"), equalizer_data.GetString());
+
+		int pos = 0;
+		CString token = equalizer_data.Tokenize(_T(",; \t"), pos);
+
+		while (!token.IsEmpty())
+		{
+			token.Trim();
+			if (!token.IsEmpty())
+			{
+				int token_int = _ttoi(token);
+				if (token_int < -12 || token_int > 12)
+				{
+					AfxMessageBox(_T("请输入-12db到12db之间的整数!"), MB_ICONEXCLAMATION | MB_OK);
+					return;
+				}
+				eq_bands.Add(token_int);
+			}
+			token = equalizer_data.Tokenize(_T(",; \t"), pos);
+		}
+
+		if (eq_bands.GetSize() != 10)
+		{
+			AfxMessageBox(_T("请输入10个有效数值！"), MB_ICONEXCLAMATION | MB_OK);
+			return;
+		}
+
+		preset_id = 0;
+		UpdateEqualizerUI(eq_bands);
+		SetEqualizerBandByUI();
+	}
+}
+
 
 void EqualizerDialog::UpdateEqualizerUI(CSimpleArray<int> eq_bands)
 {
@@ -167,6 +220,7 @@ BEGIN_MESSAGE_MAP(EqualizerDialog, CDialogEx)
 	ON_WM_VSCROLL()
 	ON_BN_CLICKED(IDC_BUTTONRESETSPECTRUM, &EqualizerDialog::OnClickedButtonResetSpectrum)
 	ON_BN_CLICKED(IDC_BUTTONPRESETSPECTRUM, &EqualizerDialog::OnClickedButtonPresetSpectrum)
+	ON_BN_CLICKED(IDC_BUTTONINPUTSPECTRUM, &EqualizerDialog::OnClickedButtonInputSpectrum)
 END_MESSAGE_MAP()
 
 

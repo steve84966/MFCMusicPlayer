@@ -144,6 +144,17 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
 END
 
+IDD_INPUT_DIALOG DIALOGEX 0, 0, 250, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "输入均衡器..."
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "请输入均衡器数据：",IDC_STATIC,10,12,230,12
+    EDITTEXT        IDC_EDIT_INPUT,10,28,230,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "确定",IDOK,130,60,50,14
+    PUSHBUTTON      "取消",IDCANCEL,190,60,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

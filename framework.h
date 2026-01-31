@@ -98,6 +98,7 @@ extern "C" {
 #include <ShellScalingAPI.h>
 #include <io.h>
 #include <wincodec.h>
+#include <commctrl.h>
 #pragma endregion
 
 #pragma region Standard C++ Header Files

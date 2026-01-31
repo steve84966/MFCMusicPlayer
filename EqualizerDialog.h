@@ -4,6 +4,31 @@
 
 class CMFCMusicPlayerDlg;
 
+class InputDlg : public CDialogEx
+{
+	DECLARE_DYNAMIC(InputDlg)
+
+public:
+	CString m_strInput;
+
+	explicit InputDlg(CWnd* pParent = nullptr)
+		: CDialogEx(IDD_INPUT_DIALOG, pParent) {}
+	~InputDlg() override = default;
+
+#ifdef AFX_DESIGN_TIME
+	enum { IDD = IDD_INPUT_DIALOG };
+#endif
+
+	void DoDataExchange(CDataExchange* pDX) override
+	{
+		CDialogEx::DoDataExchange(pDX);
+		DDX_Text(pDX, IDC_EDIT_INPUT, m_strInput);
+	}
+
+	DECLARE_MESSAGE_MAP()
+};
+
+
 class EqualizerPresetDialog : public CDialogEx
 {
 	DECLARE_DYNAMIC(EqualizerPresetDialog)
@@ -53,6 +78,7 @@ protected:
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnClickedButtonResetSpectrum();
 	afx_msg void OnClickedButtonPresetSpectrum();
+	afx_msg void OnClickedButtonInputSpectrum();
 	int preset_id;
 public:
 	void SetParentDlg(CMFCMusicPlayerDlg* pParentDlg)
