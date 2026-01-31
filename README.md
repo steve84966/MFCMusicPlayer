@@ -36,7 +36,9 @@ Screenshot:
 
 Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt, fftw3
 
-UI: MFC(main), Direct2D(lyric)
+Supported Platform: Windows 10 version 10240 or later(in theory), Windows 11 latest(tested)
+
+UI: MFC(main), Direct2D/DirectWrite(lyric), GDI+(spectrum)
 
 License: MIT (main-program), LGPL (ffmpeg), MIT (Windows App SDK), [Microsoft DirectX Software Development Kit License](LICENSE.XAudio2.txt) (XAudio2, direct2d), MIT (NCM Decoder)
 
@@ -49,6 +51,7 @@ Contact: lucas150670@petalmail.com
 - automatic builds from [Github Actions](https://github.com/lucas150670/MFCMusicPlayer/actions) are available. ffmpeg libraries in build artifact are fetched from vcpkg directly and under LGPL license.
 - resources used are under their own licenses. if their usage violated your right, please contact me.
 - the project icon was created by [白菜叶_](https://space.bilibili.com/1954890407). this icon is not free for use, and is not distributed under the main program's license.  any utilization, reproduction, modification, or distribution of the icon is strictly prohibited without the explicit written authorization of the original author or lucas150670.
+- MSBuild project files are only used to modify UI. Building the project with CMake is recommended, as MSBuild project is not tested and properly configured with 3rd party libraries.
 
 ### for mainland china users:
 - you can access this project from [GitCode Mirror](https://gitcode.com/lucas150670/MFCMusicPlayer).
