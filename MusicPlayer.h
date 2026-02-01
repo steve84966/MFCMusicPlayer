@@ -147,7 +147,7 @@ protected:
 		AVFilterContext *eq_context;
 		CStringA eq_name;
 	};
-	AVFilterContext *filter_context_src = nullptr, *filter_context_sink = nullptr,
+	AVFilterContext *filter_context_src = nullptr, *filter_context_sink = nullptr, *channels_normalize_ctx = nullptr,
 	*volume_ctx = nullptr, *limiter_ctx = nullptr, *format_normalize_ctx = nullptr;
 	CSimpleArray<av_filter_eq_graph> filter_graphs;
 

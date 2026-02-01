@@ -27,7 +27,7 @@ Features:
 - ARM64 build, tested on Snapdragon X Elite
 - NCM music format support (algorithm from [音乐解锁](https://git.unlock-music.dev/um/web))
 - Windows's SystemMediaTransportControls support
-- audio spectrum display based on fftw3
+- audio spectrum display based on kissfft
 - equalizer support based on libavfilter
 
 Screenshot:
