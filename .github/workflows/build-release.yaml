@@ -57,7 +57,7 @@ jobs:
     - name: Setup vcpkg and install FFmpeg
       uses: lukka/run-vcpkg@v7.6
       with:
-        vcpkgArguments: 'ffmpeg rapidjson cpp-base64 openssl cppwinrt fftw3'
+        vcpkgArguments: 'ffmpeg rapidjson cpp-base64 openssl cppwinrt kissfft'
         vcpkgTriplet: ${{ matrix.triplet }}
         vcpkgGitCommitId: '6d332a018c433fad20822ff4b536e4ccdc3413bd'
         vcpkgDirectory: ${{ github.workspace }}/vcpkg  

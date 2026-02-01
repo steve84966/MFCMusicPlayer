@@ -34,13 +34,14 @@ Screenshot:
 
 ![Screenshot](res/screenshot-1.png)
 
-Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt, fftw3
+Depends: FFmpeg, XAudio2, OpenSSL, rapidjson, cpp-base64, cppwinrt, kissfft
 
 Supported Platform: Windows 10 version 10240 or later(in theory), Windows 11 latest(tested)
 
 UI: MFC(main), Direct2D/DirectWrite(lyric), GDI+(spectrum)
 
-License: MIT (main-program), LGPL (ffmpeg), MIT (Windows App SDK), [Microsoft DirectX Software Development Kit License](LICENSE.XAudio2.txt) (XAudio2, direct2d), MIT (NCM Decoder)
+License: MIT (main-program), LGPL (ffmpeg), MIT (Windows App SDK), [Microsoft DirectX Software Development Kit License](LICENSE.XAudio2.txt) (XAudio2, direct2d), MIT (NCM Decoder),
+BSD-3-Clause(kissfft), Apache 2.0(openssl), [MIT](LICENSE.thirdparty.txt)(rapidjson), [cpp-base64 license](LICENSE.thirdparty.txt)(cpp-base64), MIT(cppwinrt)
 
 Contact: lucas150670@petalmail.com
 

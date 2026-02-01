@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "SpectrumVisualizer.h"
-#include <fftw3.h>
+#include <kissfft/kiss_fft.h>
 
 BEGIN_MESSAGE_MAP(SpectrumVisualizer, CDialogEx)
     ON_WM_PAINT()
@@ -72,42 +72,38 @@ void SpectrumVisualizer::DoFFT(const std::vector<double>& windowed_data, std::ve
 
     size_t fft_size = 1;
     while (fft_size < n) fft_size <<= 1;
-    double* in = fftw_alloc_real(fft_size);
-    fftw_complex* out = fftw_alloc_complex(fft_size / 2 + 1);
-    if (!in || !out) {
-        if (in) fftw_free(in);
-        if (out) fftw_free(out);
-        return;
-    }
 
-    // 复制加窗后的数据
+    // kissfft config
+    kiss_fft_cfg cfg = kiss_fft_alloc(static_cast<int>(fft_size), 0, nullptr, nullptr);
+    if (!cfg) return;
+
+    // in/out buffer alloc
+    std::vector<kiss_fft_cpx> in(fft_size);
+    std::vector<kiss_fft_cpx> out(fft_size);
+
+    // padding imaginary part to zero
+    // cause kissfft only supports real input
     for (size_t i = 0; i < n; ++i) {
-        in[i] = windowed_data[i];
+        in[i].r = static_cast<float>(windowed_data[i]);
+        in[i].i = 0.0f;
     }
-    // 零填充
+    // zero padding
     for (size_t i = n; i < fft_size; ++i) {
-        in[i] = 0.0;
+        in[i].r = 0.0f;
+        in[i].i = 0.0f;
     }
 
-    fftw_plan plan = fftw_plan_dft_r2c_1d(static_cast<int>(fft_size), in, out, FFTW_ESTIMATE);
+    kiss_fft(cfg, in.data(), out.data());
 
-    if (plan) {
-        fftw_execute(plan);
-
-        // 幅度谱
-        fft_result.resize(fft_size / 2);
-        fft_result.resize(fft_size / 2);
-        for (size_t i = 0; i < fft_size / 2; ++i) {
-            double real = out[i][0];
-            double imag = out[i][1];
-            fft_result[i] = static_cast<float>(sqrt(real * real + imag * imag));
-        }
-
-        fftw_destroy_plan(plan);
+    // 幅度谱
+    fft_result.resize(fft_size / 2);
+    for (size_t i = 0; i < fft_size / 2; ++i) {
+        float real = out[i].r;
+        float imag = out[i].i;
+        fft_result[i] = sqrtf(real * real + imag * imag);
     }
 
-    fftw_free(in);
-    fftw_free(out);
+    kiss_fft_free(cfg);
 }
 
 std::vector<size_t> SpectrumVisualizer::GenBoundaries(float sample_rate, size_t fft_size, size_t segment_num, float f_lo, float f_hi)
