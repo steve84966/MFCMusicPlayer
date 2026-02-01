@@ -229,9 +229,10 @@ int MusicPlayer::load_audio_context_stream(CFile* in_file_stream)
 	av_opt_set_int(codec_context, "threads", 0, 0);
 
 	// init avaudiofifo
+	AVChannelLayout stereo_layout = AV_CHANNEL_LAYOUT_STEREO;
 	if (!audio_fifo) {
 		res = initialize_audio_fifo(codec_context->sample_fmt,
-			codec_context->ch_layout.nb_channels,
+			stereo_layout.nb_channels,
 			1024); // initial size
 		if (res < 0) {
 			ATLTRACE("err: initialize_audio_fifo failed\n");
@@ -1489,6 +1490,13 @@ void MusicPlayer::init_av_filter_equalizer()
 	ATLTRACE("info: init_av_filter_equalizer, filter args: %s\n", args.GetString());
 	avfilter_graph_create_filter(&filter_context_src, avfilter_get_by_name("abuffer"),
 	                             "src", args.GetString(), nullptr, filter_graph);
+	if (codec_context->ch_layout.nb_channels != 2) {
+		CStringA channel_layout_str;
+		channel_layout_str.Format("in_chlayout=%s:out_chlayout=stereo", layout_str.GetString());
+		avfilter_graph_create_filter(&channels_normalize_ctx, avfilter_get_by_name("aresample"),
+			"aresample", channel_layout_str.GetString(), nullptr, filter_graph);
+		ATLTRACE("info: non-stereo audio detected, normalize to stereo!\n");
+	}
 	if (eq_bands.GetSize() != 10)
 	{
 		ATLTRACE("warn: invalid eq_bands size, =%d\n", eq_bands.GetSize());
@@ -1534,7 +1542,13 @@ void MusicPlayer::init_av_filter_equalizer()
 		FFMPEG_CRITICAL_ERROR(ret);
 		return;
 	}
-	avfilter_link(filter_context_src, 0, volume_ctx, 0);
+	if (codec_context->ch_layout.nb_channels != 2) {
+		avfilter_link(filter_context_src, 0, channels_normalize_ctx, 0);
+		avfilter_link(channels_normalize_ctx, 0, volume_ctx, 0);
+	}
+	else {
+		avfilter_link(filter_context_src, 0, volume_ctx, 0);
+	}
 	avfilter_link(volume_ctx, 0, filter_graphs[0].eq_context, 0);
 	for (int i = 0; i < 9; i++)
 	{
