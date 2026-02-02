@@ -63,6 +63,9 @@
     <ClInclude Include="EqualizerDialog.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OpenMethodLinker.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMusicPlayer.cpp">
@@ -102,6 +105,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="EqualizerDialog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenMethodLinker.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

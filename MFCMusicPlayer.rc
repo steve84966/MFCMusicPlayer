@@ -42,6 +42,8 @@ IDI_ICONPAUSE           ICON                    "res\\ico00009.ico"
 
 IDI_ICONSTOP            ICON                    "res\\ico00010.ico"
 
+IDI_NCM_LOGO            ICON                    "res\\icon_base_ncm.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -404,6 +406,9 @@ BEGIN
     BEGIN
         MENUITEM "打开文件...",                     ID_MENU_OPENFILE
         MENUITEM "打开文件夹（作为播放列表）",               ID_MENU_OPENFOLDER
+        MENUITEM SEPARATOR
+        MENUITEM "关联NCM格式",                   ID_MENU_LINK_NCM
+        MENUITEM "取消NCM格式关联",               ID_MENU_UNLINK_NCM
         MENUITEM SEPARATOR
         MENUITEM "退出",                          ID_MENU_EXIT
     END

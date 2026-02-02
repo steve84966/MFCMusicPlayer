@@ -11,6 +11,7 @@
 
 #include "EqualizerDialog.h"
 #include "PlaylistDialog.h"
+#include "OpenMethodLinker.h"
 
 
 #ifdef _DEBUG
@@ -158,6 +159,8 @@ BEGIN_MESSAGE_MAP(CMFCMusicPlayerDlg, CDialogEx)
     ON_MESSAGE(WM_SMTC_STOP, &CMFCMusicPlayerDlg::OnSmtcStopButtonPressed)
     ON_MESSAGE(WM_SMTC_PLAY_PREV, &CMFCMusicPlayerDlg::OnSmtcPrevButtonPressed)
 	ON_MESSAGE(WM_SMTC_PLAY_NEXT, &CMFCMusicPlayerDlg::OnSmtcNextButtonPressed)
+	ON_COMMAND(ID_MENU_LINK_NCM, &CMFCMusicPlayerDlg::OnMenuLinkNcm)
+	ON_COMMAND(ID_MENU_UNLINK_NCM, &CMFCMusicPlayerDlg::OnMenuUnlinkNcm)
 END_MESSAGE_MAP()
 
 
@@ -1373,6 +1376,14 @@ void CMFCMusicPlayerDlg::OnClickedButtonEqualizer()
 {
 	equalizer.UpdateEqualizerUI(this->eq_bands);
 	equalizer.ShowWindow(SW_SHOW);
+}
+
+void CMFCMusicPlayerDlg::OnMenuLinkNcm() {
+	OpenMethodLinker::LinkNcmOpenMethod();
+}
+
+void CMFCMusicPlayerDlg::OnMenuUnlinkNcm() {
+	OpenMethodLinker::UnlinkNcmOpenMethod();
 }
 
 void CMFCMusicPlayerDlg::UpdateEqualizer(CSimpleArray<int> eq_bands)

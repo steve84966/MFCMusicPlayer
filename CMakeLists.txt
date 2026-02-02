@@ -33,6 +33,7 @@ add_executable(MFCMusicPlayer WIN32
     WinRT_SMTCController.cpp
     SpectrumVisualizer.cpp
     EqualizerDialog.cpp
+    OpenMethodLinker.cpp
 )
 
 target_include_directories(MFCMusicPlayer

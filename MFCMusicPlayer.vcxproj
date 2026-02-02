@@ -293,6 +293,7 @@
     <ClInclude Include="MusicPlayer.h" />
     <ClInclude Include="MusicPlayerSettingsManager.h" />
     <ClInclude Include="NcmDecryptor.h" />
+    <ClInclude Include="OpenMethodLinker.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlaylistController.h" />
     <ClInclude Include="PlayListDialog.h" />
@@ -310,6 +311,7 @@
     <ClCompile Include="MusicPlayer.cpp" />
     <ClCompile Include="MusicPlayerSettingsManager.cpp" />
     <ClCompile Include="NcmDecryptor.cpp" />
+    <ClCompile Include="OpenMethodLinker.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>

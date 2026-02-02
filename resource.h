@@ -36,6 +36,7 @@
 #define IDI_ICONPLAY                    150
 #define IDI_ICONPAUSE                   151
 #define IDI_ICONSTOP                    152
+#define IDI_NCM_LOGO                    153
 #define IDC_BUTTONOPEN                  1000
 #define IDB_NOIMAGE                     1000
 #define IDC_BUTTONPLAY                  1001
@@ -101,6 +102,8 @@
 #define ID_MENU_WINDOW_PLAYLIST              32793
 #define ID_MENU_WINDOW_SPECTRUM              32794
 #define ID_MENU_WINDOW_EQUALIZER             32795
+#define ID_MENU_LINK_NCM                     32796
+#define ID_MENU_UNLINK_NCM                   32797
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

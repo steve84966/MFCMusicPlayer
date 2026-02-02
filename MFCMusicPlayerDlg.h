@@ -156,6 +156,8 @@ public:
 	afx_msg LRESULT OnSmtcNextButtonPressed(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnClickedButtonSpectrum();
 	afx_msg void OnClickedButtonEqualizer();
+	afx_msg void OnMenuLinkNcm();
+	afx_msg void OnMenuUnlinkNcm();
 	void UpdateEqualizer(CSimpleArray<int> eq_bands);
 	void SaveEqualizer();
 };
